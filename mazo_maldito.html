@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Mazo Maldito — roguelike de cartas ASCII | AsciiCave</title>
+<meta name="description" content="Combate con cartas al estilo Slay the Spire en una mazmorra procedural ASCII. Construye tu mazo partida a partida, gratis en el navegador.">
+<link rel="canonical" href="https://asciicave.com/mazo_maldito.html">
+<link rel="icon" type="image/png" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mazo Maldito — roguelike de cartas ASCII | AsciiCave">
+<meta property="og:description" content="Combate con cartas al estilo Slay the Spire en una mazmorra procedural ASCII. Construye tu mazo partida a partida, gratis en el navegador.">
+<meta property="og:url" content="https://asciicave.com/mazo_maldito.html">
+<meta property="og:image" content="https://asciicave.com/cover.png">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mazo Maldito — roguelike de cartas ASCII | AsciiCave">
+<meta name="twitter:description" content="Combate con cartas al estilo Slay the Spire en una mazmorra procedural ASCII. Construye tu mazo partida a partida, gratis en el navegador.">
+<meta name="twitter:image" content="https://asciicave.com/cover.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
+  :root{
+    --bg:#0b0710; --panel:#160f1e; --panel-edge:#332146;
+    --wall:#5a3d6e; --wall-dim:#302038; --floor:#3a2a4a; --floor-dim:#221930;
+    --enemy:#d9503a; --elite:#e0904d; --boss:#ff4d94;
+    --player:#e0904d; --exit:#5fe0c7; --exit-dim:#2f5f56;
+    --parchment:#ece3f0; --dim:#8778a0; --danger:#e2584f; --accent:#b98cf0;
+    --atk:#e2584f; --block:#5fb0d9; --heal:#8fe08a; --energy:#e8c15a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--parchment); font-family:'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; }
+  .wrap { max-width:560px; margin:0 auto; padding:14px 12px 22px; }
+  a.back { color:var(--dim); font-size:10.5px; text-decoration:none; letter-spacing:0.5px; }
+  a.back:hover { color:var(--accent); }
+  .title { display:flex; align-items:center; justify-content:space-between; margin:8px 0 4px; }
+  .title h1 { font-size:14px; letter-spacing:2.5px; font-weight:800; margin:0; color:var(--accent); text-shadow:0 0 10px rgba(185,140,240,0.5); }
+  .title-right { display:flex; align-items:center; gap:8px; }
+  .record { font-size:10px; color:var(--dim); }
+  .icon-btn { width:26px; height:26px; padding:0; font-size:13px; display:flex; align-items:center; justify-content:center; }
+  .subbar { display:flex; gap:10px; font-size:10.5px; color:var(--dim); letter-spacing:1px; margin-bottom:8px; flex-wrap:wrap; }
+  .subbar .zone { color:var(--exit); }
+
+  .stats { background:var(--panel); border:1px solid var(--panel-edge); border-radius:6px; padding:8px 10px; margin-bottom:6px; font-size:11px; }
+  .stat-row { display:flex; align-items:center; gap:6px; }
+  .stat-row .ic { width:14px; text-align:center; }
+  .bar { flex:1; height:9px; background:#0d0812; border-radius:4px; overflow:hidden; border:1px solid var(--panel-edge); }
+  .bar-fill { height:100%; transition:width 0.25s ease; }
+  .fill-hp { background:linear-gradient(90deg,#5c9950,#7fbf6d); }
+  .fill-hp.low { background:linear-gradient(90deg,#e2584f,#b93a3a); }
+  .stat-num { font-size:9.5px; color:var(--dim); width:40px; text-align:right; }
+
+  .stage { position:relative; background:#08050c; border:1px solid var(--panel-edge); border-radius:8px; padding:10px; box-shadow:inset 0 0 40px rgba(185,140,240,0.06); overflow:hidden; }
+  .stage::after { content:""; position:absolute; inset:0; pointer-events:none; z-index:3; background:repeating-linear-gradient(0deg, rgba(255,255,255,0.014) 0px, rgba(255,255,255,0.014) 1px, transparent 1px, transparent 3px); }
+  #grid { position:relative; z-index:2; display:grid; line-height:1; font-size:16px; white-space:pre; text-align:center; }
+  #fx { position:absolute; top:10px; left:10px; overflow:visible; pointer-events:none; z-index:4; }
+
+  .mote { position:absolute; width:2px; height:2px; border-radius:50%; background:rgba(185,140,240,0.5); pointer-events:none; z-index:1; opacity:0; animation:moteFloat 3.4s ease-in-out forwards; }
+  @keyframes moteFloat { 0%{opacity:0;} 15%{opacity:0.5;} 100%{opacity:0; transform:translate(var(--ex),-60px);} }
+
+  .float-text { position:absolute; transform:translate(-50%,0); font-weight:800; font-size:12px; white-space:nowrap; animation:floatUp 1s ease-out forwards; }
+  @keyframes floatUp { 0%{opacity:1; transform:translate(-50%,0);} 100%{opacity:0; transform:translate(-50%,-24px);} }
+  .float-text.info { color:var(--energy); }
+
+  .cell { width:1ch; height:1.15em; display:flex; align-items:center; justify-content:center; }
+  .c-wall{color:var(--wall);} .c-wall-dim{color:var(--wall-dim);}
+  .c-floor{color:var(--floor);} .c-floor-dim{color:var(--floor-dim);}
+  .c-player{color:var(--player); text-shadow:0 0 8px rgba(224,144,77,0.7); font-weight:800;}
+  .c-enemy{color:var(--enemy); font-weight:700;} .c-elite{color:var(--elite); font-weight:800;} .c-boss{color:var(--boss); font-weight:800; text-shadow:0 0 8px rgba(255,77,148,0.6);}
+  .c-loot{color:var(--energy); text-shadow:0 0 6px rgba(232,193,90,0.5);}
+  .c-exit{color:var(--exit); font-weight:800; animation:pulseExit 1.6s ease-in-out infinite;}
+  .c-exit-dim{color:var(--exit-dim); font-weight:800;}
+  .c-hidden{color:transparent;}
+  @keyframes pulseExit { 0%,100%{text-shadow:0 0 6px rgba(95,224,199,0.5);} 50%{text-shadow:0 0 15px rgba(95,224,199,0.95);} }
+
+  .log { margin-top:10px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:6px; padding:8px 10px; font-size:11.5px; color:var(--dim); min-height:62px; }
+  .log div { margin:2px 0; } .log div:last-child { color:var(--parchment); }
+
+  .controls { margin-top:14px; display:flex; justify-content:center; align-items:center; gap:10px; }
+  .dpad { display:grid; grid-template-columns:42px 42px 42px; grid-template-rows:42px 42px 42px; gap:4px; }
+  .dpad button.up{grid-row:1;grid-column:2;} .dpad button.left{grid-row:2;grid-column:1;}
+  .dpad button.right{grid-row:2;grid-column:3;} .dpad button.down{grid-row:3;grid-column:2;}
+  button { font-family:inherit; background:#1c1428; color:var(--parchment); border:1px solid var(--panel-edge); border-radius:8px; cursor:pointer; font-size:14px; transition:background 0.15s ease, transform 0.05s ease; }
+  button:active { transform:scale(0.93); background:#28203a; }
+  .hint { text-align:center; color:var(--dim); font-size:10.5px; margin-top:10px; letter-spacing:0.5px; }
+
+  .overlay { position:fixed; inset:0; background:rgba(6,4,10,0.95); display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; z-index:10; text-align:center; padding:16px; }
+  .overlay.show { display:flex; }
+  .overlay h2 { color:var(--danger); letter-spacing:2px; font-size:19px; margin:0; }
+  .overlay h2.win { color:var(--accent); }
+  .overlay p { color:var(--dim); max-width:340px; font-size:13px; }
+  .overlay button { padding:10px 22px; font-size:13px; color:var(--accent); }
+
+  /* Card battle */
+  .battle-panel { background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px; padding:14px; width:100%; max-width:400px; }
+  .battle-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .enemy-box { text-align:center; }
+  .enemy-name { font-size:12px; color:var(--enemy); font-weight:800; }
+  .enemy-intent { font-size:11px; color:var(--dim); margin-top:2px; }
+  .enemy-hp-bar { width:140px; height:8px; background:#0d0812; border-radius:4px; overflow:hidden; border:1px solid var(--panel-edge); margin-top:4px; }
+  .enemy-hp-fill { height:100%; background:linear-gradient(90deg,#a03030,var(--enemy)); }
+
+  .player-battle-box { text-align:center; font-size:11px; }
+  .player-hp-bar { width:120px; height:8px; background:#0d0812; border-radius:4px; overflow:hidden; border:1px solid var(--panel-edge); margin:4px auto; }
+  .player-hp-fill { height:100%; background:linear-gradient(90deg,#5c9950,#7fbf6d); }
+  .block-badge { color:var(--block); font-size:10.5px; }
+
+  .energy-row { text-align:center; font-size:12px; color:var(--energy); margin:8px 0; font-weight:700; }
+
+  .hand { display:flex; gap:6px; overflow-x:auto; padding:4px 0 8px; }
+  .card { min-width:78px; max-width:78px; background:#1c1428; border:1px solid var(--panel-edge); border-radius:8px; padding:8px 6px; cursor:pointer; text-align:center; flex-shrink:0; }
+  .card:hover { border-color:var(--accent); }
+  .card.disabled { opacity:0.4; cursor:default; }
+  .card-name { font-size:10px; font-weight:800; color:var(--parchment); margin-bottom:4px; min-height:22px; }
+  .card-cost { font-size:9.5px; color:var(--energy); margin-bottom:3px; }
+  .card-desc { font-size:9px; color:var(--dim); line-height:1.3; }
+
+  .battle-log { font-size:10.5px; color:var(--dim); min-height:34px; margin-bottom:8px; text-align:center; }
+  .end-turn-btn { width:100%; padding:10px; font-size:12px; font-weight:700; color:var(--accent); }
+
+  .reward-cards { display:flex; gap:8px; justify-content:center; margin:12px 0; flex-wrap:wrap; }
+</style>
+  <script data-goatcounter="https://asciigames.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← ASCIICAVE</a>
+  <div class="title">
+    <h1>MAZO MALDITO</h1>
+    <div class="title-right">
+      <span class="record" id="recordLabel">Récord: Piso 1</span>
+      <button class="icon-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+    </div>
+  </div>
+  <div class="subbar">
+    <span class="zone" id="floorLabel">PISO 1</span>
+    <span id="deckLabel">Mazo: 10 cartas</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat-row"><span class="ic">❤</span><div class="bar"><div class="bar-fill fill-hp" id="hpFill"></div></div><span class="stat-num" id="hpText">30/30</span></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div id="grid"></div>
+    <div id="fx"></div>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div class="controls">
+    <div class="dpad">
+      <button class="up" onclick="handleMove(0,-1)">▲</button>
+      <button class="left" onclick="handleMove(-1,0)">◀</button>
+      <button class="right" onclick="handleMove(1,0)">▶</button>
+      <button class="down" onclick="handleMove(0,1)">▼</button>
+    </div>
+  </div>
+  <div class="hint">Flechas/WASD mueven · pisa un enemigo para iniciar combate de cartas</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <h2 id="overlayTitle">HAS CAÍDO</h2>
+  <p id="overlayText"></p>
+  <button onclick="restart()">Empezar de nuevo</button>
+</div>
+
+<div class="overlay" id="battleOverlay">
+  <div class="battle-panel">
+    <div class="battle-top">
+      <div class="player-battle-box">
+        <div>TÚ</div>
+        <div class="player-hp-bar"><div class="player-hp-fill" id="battleHpFill"></div></div>
+        <div id="battleHpText">30/30</div>
+        <div class="block-badge" id="blockBadge"></div>
+      </div>
+      <div class="enemy-box">
+        <div class="enemy-name" id="enemyName">Enemigo</div>
+        <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemyHpFill"></div></div>
+        <div id="enemyHpText">20/20</div>
+        <div class="enemy-intent" id="enemyIntent">preparando...</div>
+      </div>
+    </div>
+    <div class="energy-row" id="energyRow">⚡ 3/3 energía</div>
+    <div class="battle-log" id="battleLog"></div>
+    <div class="hand" id="hand"></div>
+    <button class="end-turn-btn" onclick="endPlayerTurn()">Terminar turno</button>
+  </div>
+</div>
+
+<div class="overlay" id="rewardOverlay">
+  <div class="battle-panel">
+    <h3 style="text-align:center; color:var(--accent); letter-spacing:1px;">¡VICTORIA! Elige una carta</h3>
+    <div class="reward-cards" id="rewardCards"></div>
+    <button class="end-turn-btn" onclick="skipReward()">No quiero ninguna</button>
+  </div>
+</div>
+
+<script>
+const VIEWPORT_W = 21, VIEWPORT_H = 13;
+const VIEW_RADIUS = 5;
+
+const CARD_LIBRARY = {
+  golpe:      { name: 'Golpe', cost: 1, type: 'attack', value: 6,  desc: 'Inflige 6 de daño.' },
+  golpeplus:  { name: 'Golpe+', cost: 1, type: 'attack', value: 9,  desc: 'Inflige 9 de daño.' },
+  estocada:   { name: 'Estocada', cost: 0, type: 'attack', value: 3, desc: 'Inflige 3 de daño. Gratis.' },
+  doble:      { name: 'Doble Golpe', cost: 1, type: 'attack2', value: 4, desc: 'Golpea 2 veces por 4.' },
+  furia:      { name: 'Furia', cost: 2, type: 'attack', value: 13, desc: 'Inflige 13 de daño.' },
+  vampiro:    { name: 'Vampirismo', cost: 1, type: 'attackheal', value: 6, heal: 3, desc: '6 de daño, curas 3.' },
+  defender:   { name: 'Defender', cost: 1, type: 'block', value: 5, desc: 'Gana 5 de bloqueo.' },
+  defenderplus:{ name: 'Defender+', cost: 1, type: 'block', value: 8, desc: 'Gana 8 de bloqueo.' },
+  escudo:     { name: 'Escudo Total', cost: 2, type: 'block', value: 13, desc: 'Gana 13 de bloqueo.' },
+};
+
+const STARTER_DECK = ['golpe','golpe','golpe','golpe','defender','defender','defender','defender','estocada','vampiro'];
+
+const ENEMY_TYPES = [
+  { name: 'Espectro', hp: 16, atks: [4,6,8], weight: 45, cls: 'c-enemy' },
+  { name: 'Gólem de Piedra', hp: 26, atks: [6,9], weight: 28, cls: 'c-elite' },
+  { name: 'Aberración', hp: 20, atks: [3,5,7,10], weight: 20, cls: 'c-enemy' },
+];
+const BOSS_TYPE = { name: 'Guardián del Abismo', hp: 55, atks: [8,12,14], weight: 0, cls: 'c-boss' };
+
+let state = {};
+let bestFloor = 1;
+let audioCtx = null;
+
+function zoneDimensions(floor) {
+  const w = Math.min(34, 20 + (floor - 1) * 3);
+  const h = Math.min(22, 13 + (floor - 1) * 2);
+  return { w, h };
+}
+
+function freshPlayer() {
+  return { x: 0, y: 0, hp: 30, maxHp: 30, deck: STARTER_DECK.slice() };
+}
+
+function freshState() {
+  return {
+    floor: 1,
+    world: { w: 0, h: 0 },
+    player: freshPlayer(),
+    grid: [], explored: [],
+    monsters: [], loot: [],
+    exit: { x: 0, y: 0 },
+    messages: [], over: false, muted: false,
+    battle: null,
+  };
+}
+
+function inBounds(x, y) { return x >= 0 && x < state.world.w && y >= 0 && y < state.world.h; }
+
+function generateDungeon(w, h) {
+  let grid = [];
+  for (let y = 0; y < h; y++) { let row = []; for (let x = 0; x < w; x++) { const border=(x===0||y===0||x===w-1||y===h-1); row.push(border?'#':(Math.random()<0.42?'#':'.')); } grid.push(row); }
+  for (let iter=0; iter<4; iter++) {
+    let next = grid.map(r=>r.slice());
+    for (let y=1;y<h-1;y++) for (let x=1;x<w-1;x++) {
+      let wc=0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ if(dx===0&&dy===0) continue; if(grid[y+dy][x+dx]==='#') wc++; }
+      next[y][x] = wc>=5 ? '#' : '.';
+    }
+    grid = next;
+  }
+  const cx=Math.floor(w/2), cy=Math.floor(h/2);
+  let start=null; const bc=(x,y)=>x>=0&&x<w&&y>=0&&y<h;
+  for (let r=0;r<Math.max(w,h)&&!start;r++) for (let dy=-r;dy<=r&&!start;dy++) for (let dx=-r;dx<=r&&!start;dx++) { const x=cx+dx,y=cy+dy; if(bc(x,y)&&grid[y][x]==='.') start={x,y}; }
+  const visited=Array.from({length:h},()=>new Array(w).fill(false));
+  const queue=[start]; visited[start.y][start.x]=true;
+  const dist=Array.from({length:h},()=>new Array(w).fill(-1)); dist[start.y][start.x]=0;
+  let farthest=start;
+  while(queue.length){ const cur=queue.shift(); for(const [dx,dy] of [[0,-1],[0,1],[-1,0],[1,0]]){ const nx=cur.x+dx,ny=cur.y+dy; if(bc(nx,ny)&&!visited[ny][nx]&&grid[ny][nx]==='.'){ visited[ny][nx]=true; dist[ny][nx]=dist[cur.y][cur.x]+1; if(dist[ny][nx]>dist[farthest.y][farthest.x]) farthest={x:nx,y:ny}; queue.push({x:nx,y:ny}); } } }
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++) { if(grid[y][x]==='.'&&!visited[y][x]) grid[y][x]='#'; }
+  const floorTiles=[]; for (let y=0;y<h;y++) for (let x=0;x<w;x++) { if(visited[y][x]) floorTiles.push({x,y}); }
+  return { grid, start, exit: farthest, floorTiles };
+}
+
+function manhattan(a,b){ return Math.abs(a.x-b.x)+Math.abs(a.y-b.y); }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function weightedPick(list){ const total=list.reduce((s,w)=>s+w.weight,0); let r=Math.random()*total; for(const w of list){ if(r<w.weight) return w; r-=w.weight; } return list[0]; }
+
+function rollLoot() {
+  const r = Math.random();
+  if (r < 0.6) return { type: 'poción' };
+  return { type: 'nada' };
+}
+
+function newFloor() {
+  const { w, h } = zoneDimensions(state.floor);
+  state.world = { w, h };
+  const { grid, start, exit, floorTiles } = generateDungeon(w, h);
+  state.grid = grid; state.exit = exit;
+  state.explored = Array.from({ length: h }, () => new Array(w).fill(false));
+  state.player.x = start.x; state.player.y = start.y;
+  state.monsters = []; state.loot = [];
+
+  const candidates = shuffle(floorTiles.filter(t => manhattan(t, start) > 3 && (t.x !== exit.x || t.y !== exit.y)));
+  const area = floorTiles.length;
+  const isBossFloor = state.floor % 5 === 0;
+  const monsterCount = Math.min(10, 2 + Math.floor(state.floor / 2) + Math.floor(area / 90));
+
+  for (let i = 0; i < monsterCount && candidates.length; i++) {
+    const spot = candidates.pop();
+    const t = weightedPick(ENEMY_TYPES);
+    state.monsters.push(makeEnemy(t, spot.x, spot.y));
+  }
+  if (isBossFloor && candidates.length) {
+    const spot = candidates.pop();
+    state.monsters.push(makeEnemy(BOSS_TYPE, spot.x, spot.y, true));
+    log('Una presencia temible acecha en este piso...');
+  }
+  const lootCount = Math.min(6, 1 + Math.floor(state.floor / 2) + Math.floor(area / 100));
+  for (let i = 0; i < lootCount && candidates.length; i++) { const spot = candidates.pop(); state.loot.push({ x: spot.x, y: spot.y }); }
+
+  log(`Piso ${state.floor}: desciendes más en la mazmorra (${w}x${h}).`);
+}
+
+function makeEnemy(t, x, y, isBoss) {
+  const scale = isBoss ? 1 : (1 + (state.floor - 1) * 0.1);
+  return { x, y, name: t.name, cls: t.cls, isBoss: !!isBoss, hp: Math.round(t.hp * scale), maxHp: Math.round(t.hp * scale), atks: t.atks, alive: true };
+}
+
+function log(msg) { state.messages.push(msg); state.messages = state.messages.slice(-4); }
+function monsterAt(x, y) { return state.monsters.find(m => m.alive && m.x === x && m.y === y); }
+
+function getCamera() {
+  const { w, h } = state.world;
+  const camX = Math.max(0, Math.min(Math.max(0, w - VIEWPORT_W), state.player.x - Math.floor(VIEWPORT_W / 2)));
+  const camY = Math.max(0, Math.min(Math.max(0, h - VIEWPORT_H), state.player.y - Math.floor(VIEWPORT_H / 2)));
+  return { camX, camY };
+}
+
+// --- Audio ---
+function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }
+function beep(freq,duration,type,vol,glide){
+  if(state.muted) return;
+  try{
+    ensureAudio();
+    const osc=audioCtx.createOscillator(); const gain=audioCtx.createGain();
+    osc.type=type||'square'; osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
+    if(glide) osc.frequency.exponentialRampToValueAtTime(Math.max(20,freq+glide),audioCtx.currentTime+duration);
+    gain.gain.setValueAtTime(vol||0.05,audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+duration);
+    osc.connect(gain).connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime+duration);
+  }catch(e){}
+}
+function sfx(name){
+  switch(name){
+    case 'attack': beep(220,0.08,'square',0.05,-80); break;
+    case 'block': beep(340,0.1,'sine',0.05,60); break;
+    case 'heal': beep(500,0.18,'sine',0.05,220); break;
+    case 'hit': beep(120,0.12,'sawtooth',0.06,-60); break;
+    case 'win': [520,660,780,880].forEach((f,i)=>setTimeout(()=>beep(f,0.15,'square',0.05),i*100)); break;
+    case 'death': beep(140,0.35,'triangle',0.05,-110); break;
+    case 'item': beep(700,0.1,'sine',0.04,140); break;
+  }
+}
+function toggleMute(){ state.muted=!state.muted; document.getElementById('muteBtn').textContent=state.muted?'🔇':'🔊'; }
+
+function spawnFloatTextWorld(wx,wy,text,cls){
+  const {camX,camY}=getCamera(); const vx=wx-camX, vy=wy-camY;
+  if (vx<0||vx>=VIEWPORT_W||vy<0||vy>=VIEWPORT_H) return;
+  const fx=document.getElementById('fx'); const gridEl=document.getElementById('grid');
+  const cw=gridEl.offsetWidth/VIEWPORT_W||10, ch=gridEl.offsetHeight/VIEWPORT_H||16;
+  const el=document.createElement('div'); el.className='float-text '+cls; el.textContent=text;
+  el.style.left=(vx*cw+cw/2)+'px'; el.style.top=(vy*ch)+'px';
+  fx.appendChild(el); setTimeout(()=>el.remove(),1000);
+}
+function spawnMote(){
+  const s=document.getElementById('stage'); if(!s || s.classList.contains('hidden')) return;
+  const el=document.createElement('div'); el.className='mote';
+  el.style.left=(Math.random()*s.clientWidth)+'px'; el.style.top=(s.clientHeight-6)+'px';
+  el.style.setProperty('--ex',(Math.random()*24-12)+'px');
+  s.appendChild(el); setTimeout(()=>el.remove(),3500);
+}
+setInterval(spawnMote, 800);
+
+async function loadRecord(){
+  try{ if(window.storage){ const res=await window.storage.get('mazo-maldito-best', false); if(res&&res.value) bestFloor=JSON.parse(res.value).bestFloor||1; } }catch(e){}
+  updateRecordLabel();
+}
+async function saveRecordIfBetter(){
+  if(state.floor>bestFloor){ bestFloor=state.floor; updateRecordLabel(); try{ if(window.storage) await window.storage.set('mazo-maldito-best', JSON.stringify({bestFloor}), false); }catch(e){} }
+}
+function updateRecordLabel(){ const el=document.getElementById('recordLabel'); if(el) el.textContent=`Récord: Piso ${bestFloor}`; }
+
+// --- Overworld movement ---
+function handleMove(dx, dy) {
+  if (state.over || state.battle) return;
+  const p = state.player;
+  const nx = p.x + dx, ny = p.y + dy;
+  const target = monsterAt(nx, ny);
+  if (target) { startBattle(target); return; }
+
+  if (inBounds(nx, ny) && state.grid[ny][nx] !== '#') {
+    p.x = nx; p.y = ny;
+    const item = state.loot.find(it => it.x === nx && it.y === ny);
+    if (item) { state.loot = state.loot.filter(it => it !== item); collectLoot(); }
+    if (nx === state.exit.x && ny === state.exit.y) {
+      state.floor++;
+      log('Bajas a un piso más profundo...');
+      saveRecordIfBetter();
+      newFloor();
+      render();
+      return;
+    }
+  }
+  render();
+}
+
+function collectLoot() {
+  const p = state.player;
+  const roll = rollLoot();
+  if (roll.type === 'nada') { log('Un cofre vacío.'); return; }
+  const heal = 10;
+  p.hp = Math.min(p.maxHp, p.hp + heal);
+  log(`Bebes una poción de vida. (+${heal} HP)`);
+  spawnFloatTextWorld(p.x, p.y, '+' + heal, 'info');
+  sfx('item');
+}
+
+// --- Card battle ---
+function drawCards(n) {
+  const b = state.battle;
+  const drawn = [];
+  for (let i = 0; i < n; i++) {
+    if (b.drawPile.length === 0) {
+      if (b.discardPile.length === 0) break;
+      b.drawPile = shuffle(b.discardPile);
+      b.discardPile = [];
+      log('Barajas el mazo de descarte.');
+    }
+    drawn.push(b.drawPile.pop());
+  }
+  b.hand.push(...drawn);
+}
+
+function pickEnemyIntent(enemy) {
+  return enemy.atks[Math.floor(Math.random() * enemy.atks.length)];
+}
+
+function startBattle(enemy) {
+  state.battle = {
+    enemy,
+    drawPile: shuffle(state.player.deck),
+    hand: [],
+    discardPile: [],
+    energy: 3, maxEnergy: 3,
+    block: 0,
+    enemyIntent: pickEnemyIntent(enemy),
+    battleLog: [],
+  };
+  drawCards(5);
+  document.getElementById('battleOverlay').classList.add('show');
+  renderBattle();
+}
+
+function battleLog(msg) {
+  const b = state.battle;
+  b.battleLog.push(msg);
+  b.battleLog = b.battleLog.slice(-3);
+}
+
+function playCard(idx) {
+  const b = state.battle;
+  const cardId = b.hand[idx];
+  const card = CARD_LIBRARY[cardId];
+  if (b.energy < card.cost) { battleLog('No tienes suficiente energía.'); renderBattle(); return; }
+
+  b.energy -= card.cost;
+  b.hand.splice(idx, 1);
+  b.discardPile.push(cardId);
+
+  const p = state.player;
+  if (card.type === 'attack') {
+    b.enemy.hp -= card.value;
+    battleLog(`Juegas ${card.name}: -${card.value} al enemigo.`);
+    sfx('attack');
+  } else if (card.type === 'attack2') {
+    b.enemy.hp -= card.value * 2;
+    battleLog(`Juegas ${card.name}: golpeas 2 veces por ${card.value}.`);
+    sfx('attack');
+  } else if (card.type === 'attackheal') {
+    b.enemy.hp -= card.value;
+    p.hp = Math.min(p.maxHp, p.hp + card.heal);
+    battleLog(`Juegas ${card.name}: -${card.value} y curas ${card.heal}.`);
+    sfx('heal');
+  } else if (card.type === 'block') {
+    b.block += card.value;
+    battleLog(`Juegas ${card.name}: +${card.value} de bloqueo.`);
+    sfx('block');
+  }
+
+  if (b.enemy.hp <= 0) { winBattle(); return; }
+  renderBattle();
+}
+
+function endPlayerTurn() {
+  const b = state.battle;
+  if (!b) return;
+  // discard hand
+  b.discardPile.push(...b.hand);
+  b.hand = [];
+
+  // enemy acts on its telegraphed intent
+  const dmg = Math.max(0, b.enemyIntent - b.block);
+  if (dmg > 0) {
+    state.player.hp -= dmg;
+    spawnFloatTextWorld(state.player.x, state.player.y, '-' + dmg, 'info');
+    sfx('hit');
+    battleLog(`${b.enemy.name} ataca: -${dmg} HP (bloqueaste ${Math.min(b.block, b.enemyIntent)}).`);
+  } else {
+    battleLog(`${b.enemy.name} ataca, pero tu bloqueo absorbe todo el daño.`);
+  }
+  b.block = 0;
+
+  if (state.player.hp <= 0) {
+    state.over = true; state.deathCause = 'battle';
+    sfx('death');
+    document.getElementById('battleOverlay').classList.remove('show');
+    render();
+    showOverlay();
+    return;
+  }
+
+  // new round
+  b.enemyIntent = pickEnemyIntent(b.enemy);
+  b.energy = b.maxEnergy;
+  drawCards(5);
+  renderBattle();
+}
+
+function winBattle() {
+  const b = state.battle;
+  const enemy = b.enemy;
+  enemy.alive = false;
+  sfx(enemy.isBoss ? 'win' : 'hit');
+  log(`¡Derrotas a ${enemy.name}!`);
+  document.getElementById('battleOverlay').classList.remove('show');
+  state.battle = null;
+  state.monsters = state.monsters.filter(m => m.alive);
+  offerCardReward();
+}
+
+const REWARD_POOL = ['golpeplus','doble','furia','vampiro','defenderplus','escudo','estocada'];
+function offerCardReward() {
+  const options = shuffle(REWARD_POOL).slice(0, 3);
+  state.pendingReward = options;
+  const el = document.getElementById('rewardCards');
+  el.innerHTML = options.map((id, i) => {
+    const c = CARD_LIBRARY[id];
+    return `<div class="card" onclick="pickReward(${i})"><div class="card-cost">⚡${c.cost}</div><div class="card-name">${c.name}</div><div class="card-desc">${c.desc}</div></div>`;
+  }).join('');
+  document.getElementById('rewardOverlay').classList.add('show');
+}
+function pickReward(i) {
+  const id = state.pendingReward[i];
+  state.player.deck.push(id);
+  log(`Añades "${CARD_LIBRARY[id].name}" a tu mazo.`);
+  document.getElementById('rewardOverlay').classList.remove('show');
+  render();
+}
+function skipReward() { document.getElementById('rewardOverlay').classList.remove('show'); render(); }
+
+function renderBattle() {
+  const b = state.battle;
+  if (!b) return;
+  const p = state.player;
+
+  document.getElementById('enemyName').textContent = b.enemy.name;
+  const enemyPct = Math.max(0, Math.round((b.enemy.hp / b.enemy.maxHp) * 100));
+  document.getElementById('enemyHpFill').style.width = enemyPct + '%';
+  document.getElementById('enemyHpText').textContent = `${Math.max(0, b.enemy.hp)}/${b.enemy.maxHp}`;
+  document.getElementById('enemyIntent').textContent = `⚔ va a atacar por ${b.enemyIntent}`;
+
+  const hpPct = Math.max(0, Math.round((p.hp / p.maxHp) * 100));
+  document.getElementById('battleHpFill').style.width = hpPct + '%';
+  document.getElementById('battleHpText').textContent = `${Math.max(0, Math.round(p.hp))}/${p.maxHp}`;
+  document.getElementById('blockBadge').textContent = b.block > 0 ? `🛡 ${b.block}` : '';
+
+  document.getElementById('energyRow').textContent = `⚡ ${b.energy}/${b.maxEnergy} energía`;
+  document.getElementById('battleLog').innerHTML = b.battleLog.map(m => `<div>${m}</div>`).join('');
+
+  const handEl = document.getElementById('hand');
+  handEl.innerHTML = b.hand.map((cardId, i) => {
+    const c = CARD_LIBRARY[cardId];
+    const can = b.energy >= c.cost;
+    return `<div class="card ${can ? '' : 'disabled'}" onclick="${can ? `playCard(${i})` : ''}"><div class="card-cost">⚡${c.cost}</div><div class="card-name">${c.name}</div><div class="card-desc">${c.desc}</div></div>`;
+  }).join('');
+}
+
+// --- Render overworld ---
+function showOverlay() {
+  document.getElementById('overlayTitle').textContent = 'HAS CAÍDO';
+  document.getElementById('overlayText').textContent = `Tu aventura terminó en el piso ${state.floor}, con un mazo de ${state.player.deck.length} cartas.`;
+  document.getElementById('overlay').classList.add('show');
+}
+function restart() {
+  document.getElementById('overlay').classList.remove('show');
+  const muted = state.muted;
+  state = freshState();
+  state.muted = muted;
+  newFloor();
+  render();
+}
+
+function render() {
+  const p = state.player;
+  document.getElementById('floorLabel').textContent = `PISO ${state.floor} (${state.world.w}x${state.world.h})`;
+  document.getElementById('deckLabel').textContent = `Mazo: ${p.deck.length} cartas`;
+
+  const hpPct = Math.max(0, Math.round((p.hp / p.maxHp) * 100));
+  const hpFill = document.getElementById('hpFill');
+  hpFill.style.width = hpPct + '%';
+  hpFill.className = 'bar-fill fill-hp' + (hpPct <= 30 ? ' low' : '');
+  document.getElementById('hpText').textContent = `${Math.max(0, Math.round(p.hp))}/${p.maxHp}`;
+
+  const gridEl = document.getElementById('grid');
+  gridEl.style.gridTemplateColumns = `repeat(${VIEWPORT_W}, 1ch)`;
+  gridEl.innerHTML = '';
+
+  const { camX, camY } = getCamera();
+  const px = p.x, py = p.y;
+
+  for (let vy = 0; vy < VIEWPORT_H; vy++) {
+    for (let vx = 0; vx < VIEWPORT_W; vx++) {
+      const wx = camX + vx, wy = camY + vy;
+      const span = document.createElement('span'); span.className = 'cell';
+      if (!inBounds(wx, wy)) { span.textContent = ' '; span.classList.add('c-hidden'); gridEl.appendChild(span); continue; }
+
+      const d = Math.hypot(wx - px, wy - py);
+      const visibleNow = d <= VIEW_RADIUS;
+      if (visibleNow) state.explored[wy][wx] = true;
+      const explored = state.explored[wy][wx];
+      if (!visibleNow && !explored) { span.textContent = ' '; span.classList.add('c-hidden'); gridEl.appendChild(span); continue; }
+
+      let ch = state.grid[wy][wx] === '#' ? '#' : '.';
+      let cls = state.grid[wy][wx] === '#' ? (visibleNow ? 'c-wall' : 'c-wall-dim') : (visibleNow ? 'c-floor' : 'c-floor-dim');
+
+      if (wx === state.exit.x && wy === state.exit.y) { ch = '>'; cls = visibleNow ? 'c-exit' : 'c-exit-dim'; }
+
+      if (visibleNow) {
+        const item = state.loot.find(it => it.x === wx && it.y === wy);
+        if (item) { ch = '$'; cls = 'c-loot'; }
+        const m = monsterAt(wx, wy);
+        if (m) { ch = m.isBoss ? 'B' : 'e'; cls = m.cls; }
+      }
+      if (wx === px && wy === py) { ch = '@'; cls = 'c-player'; }
+      span.textContent = ch; span.classList.add(cls); gridEl.appendChild(span);
+    }
+  }
+
+  const fxEl = document.getElementById('fx');
+  fxEl.style.width = gridEl.offsetWidth + 'px'; fxEl.style.height = gridEl.offsetHeight + 'px';
+  document.getElementById('log').innerHTML = state.messages.map(m => `<div>${m}</div>`).join('');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (state.battle) return;
+  const key = e.key.toLowerCase();
+  if (key === 'arrowup' || key === 'w') handleMove(0, -1);
+  else if (key === 'arrowdown' || key === 's') handleMove(0, 1);
+  else if (key === 'arrowleft' || key === 'a') handleMove(-1, 0);
+  else if (key === 'arrowright' || key === 'd') handleMove(1, 0);
+});
+
+state = freshState();
+newFloor();
+loadRecord();
+render();
+</script>
+</body>
+</html>

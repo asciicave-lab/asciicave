@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Alta Mar — roguelike naval en ASCII | AsciiCave</title>
+<meta name="description" content="Cañonea o aborda barcos enemigos en un mar procedural. Economía de puertos, jefes y saqueo. Roguelike naval en ASCII, gratis en el navegador.">
+<link rel="canonical" href="https://asciicave.com/alta_mar.html">
+<link rel="icon" type="image/png" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Alta Mar — roguelike naval en ASCII | AsciiCave">
+<meta property="og:description" content="Cañonea o aborda barcos enemigos en un mar procedural. Economía de puertos, jefes y saqueo. Roguelike naval en ASCII, gratis en el navegador.">
+<meta property="og:url" content="https://asciicave.com/alta_mar.html">
+<meta property="og:image" content="https://asciicave.com/cover.png">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Alta Mar — roguelike naval en ASCII | AsciiCave">
+<meta name="twitter:description" content="Cañonea o aborda barcos enemigos en un mar procedural. Economía de puertos, jefes y saqueo. Roguelike naval en ASCII, gratis en el navegador.">
+<meta name="twitter:image" content="https://asciicave.com/cover.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
+  :root{
+    --bg:#061018; --panel:#0d1a24; --panel-edge:#1f3a4a;
+    --water:#123246; --water-dim:#0a1f2c; --island:#7a6a4a; --island-dim:#3d3526;
+    --sloop:#8fbf6d; --frigate:#d9824a; --galleon:#e04d4d;
+    --player:#e8c15a; --exit:#5fe0c7; --exit-dim:#2f5f56;
+    --parchment:#e5ddc8; --dim:#7c8a94; --danger:#e2584f; --accent:#5fb0d9;
+    --gold:#e8c15a; --hull:#6d9fe0; --crew:#c9986a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--parchment); font-family:'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; }
+  .wrap { max-width:560px; margin:0 auto; padding:14px 12px 22px; }
+  a.back { color:var(--dim); font-size:10.5px; text-decoration:none; letter-spacing:0.5px; }
+  a.back:hover { color:var(--accent); }
+  .title { display:flex; align-items:center; justify-content:space-between; margin:8px 0 4px; }
+  .title h1 { font-size:14px; letter-spacing:2.5px; font-weight:800; margin:0; color:var(--accent); text-shadow:0 0 10px rgba(95,176,217,0.5); }
+  .title-right { display:flex; align-items:center; gap:8px; }
+  .record { font-size:10px; color:var(--dim); }
+  .icon-btn { width:26px; height:26px; padding:0; font-size:13px; display:flex; align-items:center; justify-content:center; }
+  .subbar { display:flex; gap:10px; font-size:10.5px; color:var(--dim); letter-spacing:1px; margin-bottom:8px; flex-wrap:wrap; }
+  .subbar .zone { color:var(--exit); }
+  .subbar .oro { color:var(--gold); }
+
+  .stats { background:var(--panel); border:1px solid var(--panel-edge); border-radius:6px; padding:8px 10px; margin-bottom:6px; font-size:11px; }
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px 12px; }
+  .stat-row { display:flex; align-items:center; gap:6px; }
+  .stat-row .ic { width:14px; text-align:center; }
+  .bar { flex:1; height:9px; background:#081420; border-radius:4px; overflow:hidden; border:1px solid var(--panel-edge); }
+  .bar-fill { height:100%; transition:width 0.25s ease; }
+  .fill-hull { background:linear-gradient(90deg,#3f6fa0,var(--hull)); }
+  .fill-hull.low { background:linear-gradient(90deg,#e2584f,#b93a3a); }
+  .fill-crew { background:linear-gradient(90deg,#8a5f3a,var(--crew)); }
+  .stat-num { font-size:9.5px; color:var(--dim); width:40px; text-align:right; }
+
+  .stage { position:relative; background:#040c12; border:1px solid var(--panel-edge); border-radius:8px; padding:10px; box-shadow:inset 0 0 40px rgba(95,176,217,0.06); overflow:hidden; }
+  .stage.shake { animation:shakeStage 0.4s; }
+  @keyframes shakeStage { 10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);} 30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);} }
+  .stage::after { content:""; position:absolute; inset:0; pointer-events:none; z-index:3; background:repeating-linear-gradient(0deg, rgba(255,255,255,0.016) 0px, rgba(255,255,255,0.016) 1px, transparent 1px, transparent 3px); }
+
+  #grid { position:relative; z-index:2; display:grid; line-height:1; font-size:16px; white-space:pre; text-align:center; }
+  #fx { position:absolute; top:10px; left:10px; overflow:visible; pointer-events:none; z-index:4; }
+
+  .foam { position:absolute; width:2px; height:2px; border-radius:50%; background:rgba(160,210,230,0.5); pointer-events:none; z-index:1; opacity:0; animation:foamDrift 3.2s ease-in-out forwards; }
+  @keyframes foamDrift { 0%{opacity:0; transform:translate(0,0);} 15%{opacity:0.5;} 100%{opacity:0; transform:translate(var(--ex), var(--ey));} }
+
+  .float-text { position:absolute; transform:translate(-50%,0); font-weight:800; font-size:13px; white-space:nowrap; animation:floatUp 0.9s ease-out forwards; }
+  @keyframes floatUp { 0%{opacity:1; transform:translate(-50%,0);} 100%{opacity:0; transform:translate(-50%,-24px);} }
+  .float-text.dmg { color:var(--danger); text-shadow:0 0 6px rgba(226,88,79,0.6); }
+  .float-text.heal { color:#8fe08a; }
+  .float-text.info { color:var(--gold); font-size:11px; }
+
+  .particle { position:absolute; width:4px; height:4px; border-radius:50%; transform:translate(-50%,-50%); animation:burst 0.6s ease-out forwards; }
+  @keyframes burst { 0%{transform:translate(-50%,-50%) translate(0,0); opacity:1;} 100%{transform:translate(-50%,-50%) translate(var(--dx),var(--dy)); opacity:0;} }
+  .p-sloop{background:var(--sloop);} .p-frigate{background:var(--frigate);} .p-galleon{background:var(--galleon);}
+
+  .cell { width:1ch; height:1.15em; display:flex; align-items:center; justify-content:center; }
+  .c-island{color:var(--island);} .c-island-dim{color:var(--island-dim);}
+  .c-water{color:var(--water);} .c-water-dim{color:var(--water-dim);}
+  .c-player{color:var(--player); text-shadow:0 0 8px rgba(232,193,90,0.7); font-weight:800;}
+  .c-sloop{color:var(--sloop); font-weight:700;} .c-frigate{color:var(--frigate); font-weight:700;} .c-galleon{color:var(--galleon); font-weight:800; text-shadow:0 0 8px rgba(224,77,77,0.6);}
+  .c-loot{color:var(--gold); text-shadow:0 0 6px rgba(232,193,90,0.5);}
+  .c-port{color:#c793e8; font-weight:800; animation:pulsePort 1.6s ease-in-out infinite;}
+  .c-port-dim{color:#5a4570; font-weight:800;}
+  .c-exit{color:var(--exit); font-weight:800; animation:pulseExit 1.6s ease-in-out infinite;}
+  .c-exit-dim{color:var(--exit-dim); font-weight:800;}
+  .c-hidden{color:transparent;}
+  @keyframes pulseExit { 0%,100%{text-shadow:0 0 6px rgba(95,224,199,0.5);} 50%{text-shadow:0 0 15px rgba(95,224,199,0.95);} }
+  @keyframes pulsePort { 0%,100%{text-shadow:0 0 6px rgba(199,147,232,0.5);} 50%{text-shadow:0 0 15px rgba(199,147,232,0.95);} }
+
+  .levelup-banner { position:absolute; top:8px; left:50%; transform:translate(-50%,-14px); background:rgba(10,20,30,0.94); border:1px solid var(--gold); color:var(--gold); padding:6px 14px; border-radius:6px; font-size:11px; font-weight:800; letter-spacing:0.5px; opacity:0; pointer-events:none; transition:all 0.35s ease; z-index:6; white-space:nowrap; }
+  .levelup-banner.show { opacity:1; transform:translate(-50%,0); }
+
+  .log { margin-top:10px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:6px; padding:8px 10px; font-size:11.5px; color:var(--dim); min-height:62px; }
+  .log div { margin:2px 0; } .log div:last-child { color:var(--parchment); }
+
+  .controls { margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .dpad { display:grid; grid-template-columns:42px 42px 42px; grid-template-rows:42px 42px 42px; gap:4px; }
+  .dpad button.up{grid-row:1;grid-column:2;} .dpad button.left{grid-row:2;grid-column:1;}
+  .dpad button.right{grid-row:2;grid-column:3;} .dpad button.down{grid-row:3;grid-column:2;}
+  button { font-family:inherit; background:#0f1f2a; color:var(--parchment); border:1px solid var(--panel-edge); border-radius:8px; cursor:pointer; font-size:14px; transition:background 0.15s ease, transform 0.05s ease; }
+  button:active { transform:scale(0.93); background:#16303f; }
+  .actions { display:flex; flex-direction:column; gap:5px; }
+  .btn-cannon, .btn-board { width:116px; height:33px; font-weight:700; font-size:11.5px; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .btn-cannon { color:var(--hull); border-color:rgba(109,159,224,0.4); }
+  .btn-board { color:var(--danger); border-color:rgba(226,88,79,0.4); }
+  .hint { text-align:center; color:var(--dim); font-size:10.5px; margin-top:10px; letter-spacing:0.5px; }
+
+  .overlay { position:fixed; inset:0; background:rgba(4,8,12,0.94); display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; z-index:10; text-align:center; padding:20px; }
+  .overlay.show { display:flex; }
+  .overlay h2 { color:var(--danger); letter-spacing:2px; font-size:19px; margin:0; }
+  .overlay p { color:var(--dim); max-width:320px; font-size:13px; }
+  .overlay button { padding:10px 22px; font-size:13px; color:var(--accent); }
+
+  .inv-panel { background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px; padding:16px; width:100%; max-width:340px; text-align:left; }
+  .inv-panel h3 { margin:0 0 10px; font-size:13px; letter-spacing:1px; color:var(--gold); }
+  .inv-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--panel-edge); font-size:11.5px; }
+  .inv-row:last-child { border-bottom:none; }
+  .inv-row .name { color:var(--parchment); }
+  .inv-row .qty { color:var(--dim); margin-left:6px; }
+  .inv-row button { font-size:10.5px; padding:6px 10px; color:var(--parchment); }
+  .inv-row button:disabled { opacity:0.35; cursor:default; }
+  .inv-close { margin-top:12px; width:100%; color:var(--dim); }
+</style>
+  <script data-goatcounter="https://asciigames.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← ASCIICAVE</a>
+  <div class="title">
+    <h1>ALTA MAR</h1>
+    <div class="title-right">
+      <span class="record" id="recordLabel">Récord: Zona 1</span>
+      <button class="icon-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+    </div>
+  </div>
+  <div class="subbar">
+    <span class="zone" id="zoneLabel">AGUAS 1</span>
+    <span class="oro" id="oroLabel">💰 0</span>
+    <span id="cannonLabel">Cañones: 8 dmg</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat-grid">
+      <div class="stat-row"><span class="ic">🛡</span><div class="bar"><div class="bar-fill fill-hull" id="hullFill"></div></div><span class="stat-num" id="hullText">30/30</span></div>
+      <div class="stat-row"><span class="ic">⚓</span><div class="bar"><div class="bar-fill fill-crew" id="crewFill"></div></div><span class="stat-num" id="crewText">10/10</span></div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div id="grid"></div>
+    <div id="fx"></div>
+    <div class="levelup-banner" id="levelupBanner"></div>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div class="controls">
+    <div class="dpad">
+      <button class="up" onclick="handleMove(0,-1)">▲</button>
+      <button class="left" onclick="handleMove(-1,0)">◀</button>
+      <button class="right" onclick="handleMove(1,0)">▶</button>
+      <button class="down" onclick="handleMove(0,1)">▼</button>
+    </div>
+    <div class="actions">
+      <button class="btn-cannon" onclick="handleCannon()">💣 Cañonear</button>
+      <button class="btn-board" onclick="handleBoard()">⚔ Abordar</button>
+    </div>
+  </div>
+
+  <div class="hint">Flechas/WASD mueven · C cañonea · B aborda · atraca en un puerto (P) para comerciar</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <h2 id="overlayTitle">BARCO HUNDIDO</h2>
+  <p id="overlayText"></p>
+  <button onclick="restart()">Zarpar de nuevo</button>
+</div>
+
+<div class="overlay" id="portOverlay">
+  <div class="inv-panel">
+    <h3>⚓ PUERTO</h3>
+    <div id="portList"></div>
+    <button class="inv-close" onclick="closePort()">Zarpar</button>
+  </div>
+</div>
+
+<script>
+const VIEWPORT_W = 23, VIEWPORT_H = 15;
+const VIEW_RADIUS = 6;
+
+const SHIP_TYPES = [
+  { char: 'e', name: 'balandra', hull: 10, atk: 3, gold: [8,15], weight: 50, cls: 'c-sloop', p: 'p-sloop' },
+  { char: 'E', name: 'fragata',  hull: 20, atk: 5, gold: [20,32], weight: 30, cls: 'c-frigate', p: 'p-frigate' },
+];
+const BOSS_TYPE = { char: 'G', name: 'galeón', hull: 45, atk: 8, gold: [80,120], cls: 'c-galleon', p: 'p-galleon' };
+
+let state = {};
+let bestZone = 1;
+let audioCtx = null;
+
+function zoneDimensions(zone) {
+  const w = Math.min(40, 24 + (zone - 1) * 3);
+  const h = Math.min(26, 16 + (zone - 1) * 2);
+  return { w, h };
+}
+
+function freshPlayer() {
+  return {
+    x: 0, y: 0,
+    hull: 30, maxHull: 30,
+    crew: 10, maxCrew: 10,
+    cannonDmg: 8,
+    oro: 0, municion: 6,
+  };
+}
+
+function freshState() {
+  return {
+    zone: 1,
+    world: { w: 0, h: 0 },
+    player: freshPlayer(),
+    grid: [], explored: [],
+    ships: [], loot: [], port: null,
+    exit: { x: 0, y: 0 },
+    messages: [], over: false, muted: false, portOpen: false,
+  };
+}
+
+function inBounds(x, y) { return x >= 0 && x < state.world.w && y >= 0 && y < state.world.h; }
+
+function generateSea(w, h) {
+  let grid = [];
+  for (let y = 0; y < h; y++) {
+    let row = [];
+    for (let x = 0; x < w; x++) {
+      const border = (x === 0 || y === 0 || x === w - 1 || y === h - 1);
+      row.push(border ? '#' : (Math.random() < 0.38 ? '#' : '.'));
+    }
+    grid.push(row);
+  }
+  for (let iter = 0; iter < 4; iter++) {
+    let next = grid.map(r => r.slice());
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      let wallCount = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        if (grid[y + dy][x + dx] === '#') wallCount++;
+      }
+      next[y][x] = wallCount >= 5 ? '#' : '.';
+    }
+    grid = next;
+  }
+  const cx = Math.floor(w / 2), cy = Math.floor(h / 2);
+  let start = null;
+  const bc = (x, y) => x >= 0 && x < w && y >= 0 && y < h;
+  for (let r = 0; r < Math.max(w, h) && !start; r++) {
+    for (let dy = -r; dy <= r && !start; dy++) for (let dx = -r; dx <= r && !start; dx++) {
+      const x = cx + dx, y = cy + dy;
+      if (bc(x, y) && grid[y][x] === '.') start = { x, y };
+    }
+  }
+  const visited = Array.from({ length: h }, () => new Array(w).fill(false));
+  const queue = [start];
+  visited[start.y][start.x] = true;
+  const dist = Array.from({ length: h }, () => new Array(w).fill(-1));
+  dist[start.y][start.x] = 0;
+  let farthest = start;
+  const distOrder = [];
+  while (queue.length) {
+    const cur = queue.shift();
+    distOrder.push(cur);
+    for (const [dx, dy] of [[0,-1],[0,1],[-1,0],[1,0]]) {
+      const nx = cur.x + dx, ny = cur.y + dy;
+      if (bc(nx, ny) && !visited[ny][nx] && grid[ny][nx] === '.') {
+        visited[ny][nx] = true;
+        dist[ny][nx] = dist[cur.y][cur.x] + 1;
+        if (dist[ny][nx] > dist[farthest.y][farthest.x]) farthest = { x: nx, y: ny };
+        queue.push({ x: nx, y: ny });
+      }
+    }
+  }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (grid[y][x] === '.' && !visited[y][x]) grid[y][x] = '#';
+  }
+  const floorTiles = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { if (visited[y][x]) floorTiles.push({ x, y }); }
+
+  // pick a port roughly mid-distance from start (not the farthest exit point)
+  const midCandidates = distOrder.filter(t => dist[t.y][t.x] > 3 && dist[t.y][t.x] < dist[farthest.y][farthest.x] * 0.8);
+  const port = midCandidates.length ? midCandidates[Math.floor(midCandidates.length / 2)] : null;
+
+  return { grid, start, exit: farthest, port, floorTiles };
+}
+
+function manhattan(a, b) { return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
+function weightedPick(list) {
+  const total = list.reduce((s, w) => s + w.weight, 0);
+  let r = Math.random() * total;
+  for (const w of list) { if (r < w.weight) return w; r -= w.weight; }
+  return list[0];
+}
+function randRange([a, b]) { return a + Math.floor(Math.random() * (b - a + 1)); }
+
+function rollLoot() {
+  const r = Math.random();
+  if (r < 0.4) return { type: 'oro', amount: randRange([5, 15]) };
+  if (r < 0.7) return { type: 'municion', amount: 2 };
+  if (r < 0.9) return { type: 'ron', amount: 2 };
+  return { type: 'nada' };
+}
+
+function newZone() {
+  const { w, h } = zoneDimensions(state.zone);
+  state.world = { w, h };
+  const { grid, start, exit, port, floorTiles } = generateSea(w, h);
+  state.grid = grid;
+  state.exit = exit;
+  state.port = port;
+  state.explored = Array.from({ length: h }, () => new Array(w).fill(false));
+  state.player.x = start.x;
+  state.player.y = start.y;
+  state.ships = [];
+  state.loot = [];
+
+  const candidates = floorTiles.filter(t =>
+    manhattan(t, start) > 3 && (t.x !== exit.x || t.y !== exit.y) && (!port || t.x !== port.x || t.y !== port.y)
+  );
+  shuffle(candidates);
+
+  const area = floorTiles.length;
+  const shipCount = Math.min(14, 2 + state.zone + Math.floor(area / 80));
+  const typeCap = Math.min(SHIP_TYPES.length - 1, Math.floor((state.zone - 1) / 2));
+  const pool = SHIP_TYPES.slice(0, typeCap + 1);
+
+  for (let i = 0; i < shipCount && candidates.length; i++) {
+    const spot = candidates.pop();
+    const t = weightedPick(pool);
+    state.ships.push(makeShip(t, spot.x, spot.y));
+  }
+
+  if (state.zone % 5 === 0 && candidates.length) {
+    const spot = candidates.pop();
+    state.ships.push(makeShip(BOSS_TYPE, spot.x, spot.y, true));
+    log('Un galeón de guerra patrulla estas aguas...');
+  }
+
+  const lootCount = Math.min(8, 2 + Math.floor(state.zone / 2) + Math.floor(area / 70));
+  for (let i = 0; i < lootCount && candidates.length; i++) {
+    const spot = candidates.pop();
+    state.loot.push({ x: spot.x, y: spot.y });
+  }
+
+  log(`Zona ${state.zone}: zarpas hacia aguas desconocidas (${w}x${h}).`);
+}
+
+function makeShip(t, x, y, isBoss) {
+  const scale = isBoss ? 1 : (1 + (state.zone - 1) * 0.12);
+  return {
+    x, y, char: t.char, cls: t.cls, pcls: t.p, name: t.name, isBoss: !!isBoss,
+    hull: Math.round(t.hull * scale), maxHull: Math.round(t.hull * scale),
+    atk: Math.round(t.atk * (isBoss ? 1 : (1 + (state.zone - 1) * 0.08))),
+    goldRange: t.gold, alive: true,
+  };
+}
+
+function log(msg) { state.messages.push(msg); state.messages = state.messages.slice(-4); }
+function shipAt(x, y) { return state.ships.find(s => s.alive && s.x === x && s.y === y); }
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function getCamera() {
+  const { w, h } = state.world;
+  const camX = Math.max(0, Math.min(Math.max(0, w - VIEWPORT_W), state.player.x - Math.floor(VIEWPORT_W / 2)));
+  const camY = Math.max(0, Math.min(Math.max(0, h - VIEWPORT_H), state.player.y - Math.floor(VIEWPORT_H / 2)));
+  return { camX, camY };
+}
+
+// --- Audio ---
+function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+function beep(freq, duration, type, vol, glide) {
+  if (state.muted) return;
+  try {
+    ensureAudio();
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.type = type || 'square'; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    if (glide) osc.frequency.exponentialRampToValueAtTime(Math.max(20, freq + glide), audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(vol || 0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
+  } catch (e) {}
+}
+function sfx(name) {
+  switch (name) {
+    case 'cannon': beep(140, 0.15, 'sawtooth', 0.07, -100); break;
+    case 'hit': beep(120, 0.12, 'sawtooth', 0.06, -60); break;
+    case 'board': beep(300, 0.1, 'square', 0.06, -40); break;
+    case 'gold': beep(700, 0.1, 'sine', 0.04, 220); break;
+    case 'heal': beep(500, 0.18, 'sine', 0.05, 220); break;
+    case 'sink': [220,160,110].forEach((f,i)=>setTimeout(()=>beep(f,0.2,'triangle',0.06),i*120)); break;
+    case 'death': beep(140, 0.35, 'triangle', 0.05, -110); break;
+    case 'shop': beep(440, 0.12, 'sine', 0.05, 100); break;
+  }
+}
+function toggleMute() { state.muted = !state.muted; document.getElementById('muteBtn').textContent = state.muted ? '🔇' : '🔊'; }
+
+// --- FX ---
+function spawnFloatText(wx, wy, text, cls) {
+  const { camX, camY } = getCamera();
+  const vx = wx - camX, vy = wy - camY;
+  if (vx < 0 || vx >= VIEWPORT_W || vy < 0 || vy >= VIEWPORT_H) return;
+  const fx = document.getElementById('fx'); const gridEl = document.getElementById('grid');
+  const cw = gridEl.offsetWidth / VIEWPORT_W || 10, ch = gridEl.offsetHeight / VIEWPORT_H || 16;
+  const el = document.createElement('div'); el.className = 'float-text ' + cls; el.textContent = text;
+  el.style.left = (vx * cw + cw / 2) + 'px'; el.style.top = (vy * ch) + 'px';
+  fx.appendChild(el); setTimeout(() => el.remove(), 900);
+}
+function spawnParticles(wx, wy, pcls) {
+  const { camX, camY } = getCamera();
+  const vx = wx - camX, vy = wy - camY;
+  if (vx < 0 || vx >= VIEWPORT_W || vy < 0 || vy >= VIEWPORT_H) return;
+  const fx = document.getElementById('fx'); const gridEl = document.getElementById('grid');
+  const cw = gridEl.offsetWidth / VIEWPORT_W || 10, ch = gridEl.offsetHeight / VIEWPORT_H || 16;
+  const originX = vx * cw + cw / 2, originY = vy * ch + ch / 2;
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div'); p.className = 'particle ' + pcls;
+    const angle = Math.random() * Math.PI * 2, dist = 14 + Math.random() * 16;
+    p.style.left = originX + 'px'; p.style.top = originY + 'px';
+    p.style.setProperty('--dx', Math.cos(angle) * dist + 'px'); p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+    fx.appendChild(p); setTimeout(() => p.remove(), 650);
+  }
+}
+function shakeScreen() { const s = document.getElementById('stage'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
+function showLevelUpBanner(text) {
+  const el = document.getElementById('levelupBanner'); el.textContent = text; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 1900);
+}
+function spawnFoam() {
+  const s = document.getElementById('stage'); if (!s) return;
+  const el = document.createElement('div'); el.className = 'foam';
+  el.style.left = (Math.random() * s.clientWidth) + 'px'; el.style.top = (Math.random() * s.clientHeight) + 'px';
+  el.style.setProperty('--ex', (Math.random() * 30 - 15) + 'px'); el.style.setProperty('--ey', (Math.random() * 20 - 10) + 'px');
+  s.appendChild(el); setTimeout(() => el.remove(), 3300);
+}
+setInterval(spawnFoam, 600);
+
+// --- Record ---
+async function loadRecord() {
+  try { if (window.storage) { const res = await window.storage.get('alta-mar-best', false); if (res && res.value) bestZone = JSON.parse(res.value).bestZone || 1; } }
+  catch (e) {}
+  updateRecordLabel();
+}
+async function saveRecordIfBetter() {
+  if (state.zone > bestZone) {
+    bestZone = state.zone; updateRecordLabel();
+    try { if (window.storage) await window.storage.set('alta-mar-best', JSON.stringify({ bestZone }), false); } catch (e) {}
+  }
+}
+function updateRecordLabel() { const el = document.getElementById('recordLabel'); if (el) el.textContent = `Récord: Zona ${bestZone}`; }
+
+// --- Core actions ---
+function handleMove(dx, dy) {
+  if (state.over || state.portOpen) return;
+  const p = state.player;
+  const nx = p.x + dx, ny = p.y + dy;
+  if (shipAt(nx, ny)) { log('Un barco enemigo bloquea el paso. Cañonea o aborda.'); render(); return; }
+
+  if (inBounds(nx, ny) && state.grid[ny][nx] !== '#') {
+    p.x = nx; p.y = ny;
+    const item = state.loot.find(it => it.x === nx && it.y === ny);
+    if (item) { state.loot = state.loot.filter(it => it !== item); collectLoot(); }
+
+    if (state.port && nx === state.port.x && ny === state.port.y) { openPort(); return; }
+
+    if (nx === state.exit.x && ny === state.exit.y) {
+      state.zone++;
+      log('Dejas atrás estas aguas hacia mar abierto...');
+      saveRecordIfBetter();
+      newZone();
+      render();
+      return;
+    }
+  }
+  advanceTurn();
+}
+
+function collectLoot() {
+  const p = state.player;
+  const roll = rollLoot();
+  if (roll.type === 'nada') { log('Solo restos flotantes sin valor.'); return; }
+  if (roll.type === 'oro') { p.oro += roll.amount; log(`Recoges ${roll.amount} de oro de un naufragio.`); spawnFloatText(p.x, p.y, '+' + roll.amount + 'oro', 'info'); }
+  else if (roll.type === 'municion') { p.municion += roll.amount; log(`Recuperas ${roll.amount} balas de cañón.`); spawnFloatText(p.x, p.y, '+' + roll.amount, 'info'); }
+  else if (roll.type === 'ron') { p.crew = Math.min(p.maxCrew, p.crew + roll.amount); log('Ron para la tripulación. Moral restaurada.'); spawnFloatText(p.x, p.y, '+' + roll.amount, 'heal'); }
+  sfx('gold');
+}
+
+function findLineTarget() {
+  const p = state.player;
+  for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+    for (let dist = 1; dist <= 5; dist++) {
+      const x = p.x + dx * dist, y = p.y + dy * dist;
+      if (!inBounds(x, y) || state.grid[y][x] === '#') break;
+      const s = shipAt(x, y);
+      if (s) return s;
+    }
+  }
+  return null;
+}
+
+function handleCannon() {
+  if (state.over || state.portOpen) return;
+  const p = state.player;
+  if (p.municion <= 0) { log('Sin munición para los cañones.'); render(); return; }
+  const target = findLineTarget();
+  if (!target) { log('Ningún barco a tiro.'); render(); return; }
+
+  p.municion--;
+  sfx('cannon');
+  if (Math.random() < 0.8) {
+    const dmg = Math.max(1, p.cannonDmg + Math.floor(Math.random() * 3) - 1);
+    sinkOrDamage(target, dmg);
+  } else {
+    log('La bala de cañón falla.');
+    spawnFloatText(target.x, target.y, 'fallo', 'info');
+  }
+  advanceTurn();
+}
+
+function handleBoard() {
+  if (state.over || state.portOpen) return;
+  const p = state.player;
+  let target = null;
+  for (const [dx, dy] of [[0,-1],[0,1],[-1,0],[1,0]]) { const t = shipAt(p.x + dx, p.y + dy); if (t) { target = t; break; } }
+  if (!target) { log('No hay ningún barco enemigo adyacente para abordar.'); render(); return; }
+  if (p.crew <= 1) { log('No tienes suficiente tripulación para abordar.'); render(); return; }
+
+  sfx('board');
+  const crewLoss = 1 + Math.floor(Math.random() * 3);
+  p.crew = Math.max(0, p.crew - crewLoss);
+  spawnFloatText(p.x, p.y, '-' + crewLoss + ' trip.', 'dmg');
+  log(`Tu tripulación aborda ${target.name}, perdiendo ${crewLoss} hombres en el choque.`);
+
+  const dmg = Math.max(1, 12 + Math.floor(Math.random() * 5) - 2);
+  sinkOrDamage(target, dmg, true);
+
+  if (p.crew <= 0) { state.over = true; state.deathCause = 'crew'; sfx('death'); log('Tu tripulación ha sido aniquilada. El barco queda a la deriva...'); }
+  advanceTurn();
+}
+
+function sinkOrDamage(target, dmg, wasBoarding) {
+  target.hull -= dmg;
+  spawnFloatText(target.x, target.y, '-' + dmg, 'dmg');
+  if (target.hull <= 0) {
+    target.alive = false;
+    spawnParticles(target.x, target.y, target.pcls);
+    const gold = randRange(target.goldRange);
+    state.player.oro += gold;
+    log(`¡${capitalize(target.name)} se hunde! Saqueas ${gold} de oro${wasBoarding ? ' del abordaje' : ''}.`);
+    sfx(target.isBoss ? 'sink' : 'hit');
+    spawnFloatText(target.x, target.y, '+' + gold + 'oro', 'info');
+  }
+}
+
+function shipsTurn() {
+  const p = state.player;
+  for (const s of state.ships) {
+    if (!s.alive) continue;
+    const dist = Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y));
+    if (dist === 1) {
+      const dmg = Math.max(1, s.atk + Math.floor(Math.random() * 3) - 1);
+      p.hull -= dmg;
+      spawnFloatText(p.x, p.y, '-' + dmg, 'dmg');
+      shakeScreen(); sfx('hit');
+      log(`${capitalize(s.name)} te cañonea (-${dmg} casco).`);
+      continue;
+    }
+    const ddx = Math.sign(p.x - s.x), ddy = Math.sign(p.y - s.y);
+    let nx = s.x, ny = s.y;
+    if (Math.random() < 0.5 && ddx !== 0) nx = s.x + ddx; else ny = s.y + ddy;
+    if (inBounds(nx, ny) && state.grid[ny][nx] !== '#' && !shipAt(nx, ny) && !(nx === p.x && ny === p.y)) { s.x = nx; s.y = ny; }
+  }
+  state.ships = state.ships.filter(s => s.alive);
+}
+
+function advanceTurn() {
+  if (state.over) { render(); showOverlay(); return; }
+  shipsTurn();
+  if (state.player.hull <= 0) { state.over = true; state.deathCause = 'hull'; sfx('death'); log('Tu casco cede. El barco se hunde en las profundidades...'); }
+  if (state.over) { render(); showOverlay(); return; }
+  render();
+}
+
+// --- Port shop ---
+function openPort() {
+  state.portOpen = true;
+  renderPort();
+  document.getElementById('portOverlay').classList.add('show');
+  log('Atracas en puerto seguro.');
+  render();
+}
+function closePort() { state.portOpen = false; document.getElementById('portOverlay').classList.remove('show'); }
+
+const PORT_OFFERS = [
+  { id: 'repair', label: 'Reparar casco', costFn: p => Math.max(0, Math.ceil((p.maxHull - p.hull) * 1)), canFn: p => p.hull < p.maxHull },
+  { id: 'ammo', label: '+5 munición', cost: 10 },
+  { id: 'crew', label: '+2 tripulación', cost: 12, canFn: p => p.crew < p.maxCrew },
+  { id: 'hull', label: 'Mejorar casco (+5 máx.)', cost: 25 },
+  { id: 'cannon', label: 'Mejorar cañones (+2 daño)', cost: 30 },
+];
+
+function portAction(id) {
+  const p = state.player;
+  const offer = PORT_OFFERS.find(o => o.id === id);
+  const cost = offer.costFn ? offer.costFn(p) : offer.cost;
+  if (p.oro < cost) { log('No tienes suficiente oro.'); renderPort(); return; }
+  p.oro -= cost;
+  if (id === 'repair') { p.hull = p.maxHull; log('Casco reparado por completo.'); }
+  else if (id === 'ammo') { p.municion += 5; log('Compras 5 balas de cañón.'); }
+  else if (id === 'crew') { p.crew = Math.min(p.maxCrew, p.crew + 2); log('Reclutas 2 marineros.'); }
+  else if (id === 'hull') { p.maxHull += 5; p.hull += 5; log('El astillero refuerza tu casco (+5 máx.).'); }
+  else if (id === 'cannon') { p.cannonDmg += 2; log('Tus cañones disparan más fuerte (+2 daño).'); }
+  sfx('shop');
+  renderPort();
+  render();
+}
+
+function renderPort() {
+  const p = state.player;
+  document.getElementById('portList').innerHTML = PORT_OFFERS.map(o => {
+    const cost = o.costFn ? o.costFn(p) : o.cost;
+    const can = (!o.canFn || o.canFn(p)) && p.oro >= cost && cost > 0;
+    return `<div class="inv-row"><span class="name">${o.label}<span class="qty">${cost} oro</span></span><button onclick="portAction('${o.id}')" ${can ? '' : 'disabled'}>Comprar</button></div>`;
+  }).join('');
+}
+
+// --- Render ---
+function showOverlay() {
+  const cause = state.deathCause === 'crew' ? 'Tu tripulación fue aniquilada en un abordaje.' : 'Tu casco no resistió el cañoneo.';
+  document.getElementById('overlayTitle').textContent = 'BARCO HUNDIDO';
+  document.getElementById('overlayText').textContent = `${cause} Llegaste a la zona ${state.zone} con ${state.player.oro} de oro acumulado.`;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function restart() {
+  document.getElementById('overlay').classList.remove('show');
+  const muted = state.muted;
+  state = freshState();
+  state.muted = muted;
+  newZone();
+  render();
+}
+
+function render() {
+  const p = state.player;
+  document.getElementById('zoneLabel').textContent = `AGUAS ${state.zone} (${state.world.w}x${state.world.h})`;
+  document.getElementById('oroLabel').textContent = `💰 ${p.oro}`;
+  document.getElementById('cannonLabel').textContent = `Cañones: ${p.cannonDmg} dmg · Balas: ${p.municion}`;
+
+  const hullPct = Math.max(0, Math.round((p.hull / p.maxHull) * 100));
+  const hullFill = document.getElementById('hullFill');
+  hullFill.style.width = hullPct + '%';
+  hullFill.className = 'bar-fill fill-hull' + (hullPct <= 30 ? ' low' : '');
+  document.getElementById('hullText').textContent = `${Math.max(0, Math.round(p.hull))}/${p.maxHull}`;
+
+  document.getElementById('crewFill').style.width = Math.max(0, Math.round((p.crew / p.maxCrew) * 100)) + '%';
+  document.getElementById('crewText').textContent = `${p.crew}/${p.maxCrew}`;
+
+  const gridEl = document.getElementById('grid');
+  gridEl.style.gridTemplateColumns = `repeat(${VIEWPORT_W}, 1ch)`;
+  gridEl.innerHTML = '';
+
+  const { camX, camY } = getCamera();
+  const px = p.x, py = p.y;
+
+  for (let vy = 0; vy < VIEWPORT_H; vy++) {
+    for (let vx = 0; vx < VIEWPORT_W; vx++) {
+      const wx = camX + vx, wy = camY + vy;
+      const span = document.createElement('span'); span.className = 'cell';
+      if (!inBounds(wx, wy)) { span.textContent = ' '; span.classList.add('c-hidden'); gridEl.appendChild(span); continue; }
+
+      const d = Math.hypot(wx - px, wy - py);
+      const visibleNow = d <= VIEW_RADIUS;
+      if (visibleNow) state.explored[wy][wx] = true;
+      const explored = state.explored[wy][wx];
+      if (!visibleNow && !explored) { span.textContent = ' '; span.classList.add('c-hidden'); gridEl.appendChild(span); continue; }
+
+      let ch = state.grid[wy][wx] === '#' ? '#' : '.';
+      let cls = state.grid[wy][wx] === '#' ? (visibleNow ? 'c-island' : 'c-island-dim') : (visibleNow ? 'c-water' : 'c-water-dim');
+
+      if (wx === state.exit.x && wy === state.exit.y) { ch = '>'; cls = visibleNow ? 'c-exit' : 'c-exit-dim'; }
+      if (state.port && wx === state.port.x && wy === state.port.y) { ch = 'P'; cls = visibleNow ? 'c-port' : 'c-port-dim'; }
+
+      if (visibleNow) {
+        const item = state.loot.find(it => it.x === wx && it.y === wy);
+        if (item) { ch = '$'; cls = 'c-loot'; }
+        const s = shipAt(wx, wy);
+        if (s) { ch = s.char; cls = s.cls; }
+      }
+
+      if (wx === px && wy === py) { ch = '@'; cls = 'c-player'; }
+      span.textContent = ch; span.classList.add(cls); gridEl.appendChild(span);
+    }
+  }
+
+  const fxEl = document.getElementById('fx');
+  fxEl.style.width = gridEl.offsetWidth + 'px'; fxEl.style.height = gridEl.offsetHeight + 'px';
+  document.getElementById('log').innerHTML = state.messages.map(m => `<div>${m}</div>`).join('');
+}
+
+document.addEventListener('keydown', (e) => {
+  const key = e.key.toLowerCase();
+  if (key === 'arrowup' || key === 'w') handleMove(0, -1);
+  else if (key === 'arrowdown' || key === 's') handleMove(0, 1);
+  else if (key === 'arrowleft' || key === 'a') handleMove(-1, 0);
+  else if (key === 'arrowright' || key === 'd') handleMove(1, 0);
+  else if (key === 'c') handleCannon();
+  else if (key === 'b') handleBoard();
+  else if (key === 'escape') closePort();
+});
+
+state = freshState();
+newZone();
+loadRecord();
+render();
+</script>
+</body>
+</html>

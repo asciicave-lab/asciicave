@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AsciiCave — 8 roguelikes ASCII gratis en el navegador</title>
+<meta name="description" content="AsciiCave es una cueva de mini-roguelikes de texto: mazmorras con 5 clases, un roguelike de cartas y duelos por reflejos. Mapas procedurales, sin descargas, gratis en el navegador.">
+<link rel="canonical" href="https://asciicave.com/">
+<link rel="icon" type="image/png" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AsciiCave — 8 roguelikes ASCII gratis en el navegador">
+<meta property="og:description" content="AsciiCave es una cueva de mini-roguelikes de texto: mazmorras con 5 clases, un roguelike de cartas y duelos por reflejos. Mapas procedurales, sin descargas, gratis en el navegador.">
+<meta property="og:url" content="https://asciicave.com/">
+<meta property="og:image" content="https://asciicave.com/cover.png">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AsciiCave — 8 roguelikes ASCII gratis en el navegador">
+<meta name="twitter:description" content="AsciiCave es una cueva de mini-roguelikes de texto: mazmorras con 5 clases, un roguelike de cartas y duelos por reflejos. Mapas procedurales, sin descargas, gratis en el navegador.">
+<meta name="twitter:image" content="https://asciicave.com/cover.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+
+  :root{
+    --bg: #07080a;
+    --panel: #0f1210;
+    --panel-edge: #262b24;
+    --amber: #ffb000;
+    --amber-dim: #7a5a1a;
+    --text: #c7d1c5;
+    --dim: #5f6a5c;
+    --zombie: #c94f3d;
+    --rpg: #7c8cff;
+    --locked: #454b45;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 28px 18px 60px; }
+
+  .boot { font-size: 12px; color: var(--dim); line-height: 1.7; white-space: pre-wrap; min-height: 90px; }
+  .boot .ok { color: var(--amber); }
+  .cursor { display: inline-block; width: 8px; height: 13px; background: var(--amber); vertical-align: -2px; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .banner {
+    color: var(--amber); font-size: 10px; line-height: 1.15; white-space: pre; font-weight: normal;
+    margin: 18px 0 6px; text-shadow: 0 0 12px rgba(255,176,0,0.35);
+    opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 1.6s;
+  }
+  .tagline { color: var(--dim); font-size: 11.5px; letter-spacing: 1.5px; margin-bottom: 30px;
+    opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 1.9s; }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .section-label {
+    font-size: 10.5px; letter-spacing: 2px; color: var(--dim); margin: 0 0 12px;
+    opacity: 0; animation: fadeIn 0.5s ease forwards; animation-delay: 2.1s;
+  }
+
+  .grid { display: flex; flex-direction: column; gap: 10px; opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 2.25s; }
+
+  .card {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px;
+    padding: 14px 16px; position: relative; transition: border-color 0.2s ease, transform 0.1s ease;
+  }
+  .card:hover { transform: translateX(2px); }
+  .card.zombie:hover { border-color: var(--zombie); }
+  .card.rpg:hover { border-color: var(--rpg); }
+
+  .card-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 5px; }
+  .card-name { font-size: 13.5px; font-weight: 800; letter-spacing: 0.5px; }
+  .card.zombie .card-name { color: var(--zombie); }
+  .card.rpg .card-name { color: var(--rpg); }
+  .card-tag { font-size: 9.5px; color: var(--dim); letter-spacing: 1px; }
+  .card-desc { font-size: 11.5px; color: var(--text); line-height: 1.5; }
+  .card-meta { margin-top: 8px; font-size: 10px; color: var(--dim); display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .card.locked { cursor: default; opacity: 0.55; }
+  .card.locked:hover { transform: none; border-color: var(--panel-edge); }
+  .card.locked .card-name { color: var(--locked); }
+  .card.locked .card-desc { color: var(--dim); }
+
+  .foot {
+    margin-top: 36px; font-size: 10px; color: var(--dim); text-align: center; letter-spacing: 0.5px;
+    opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 2.4s;
+  }
+  .foot span { color: var(--amber); }
+</style>
+  <script data-goatcounter="https://asciigames.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="boot" id="boot"></div>
+  <h1 class="banner" aria-label="AsciiCave">░█▀█░█▀▀░█▀▀░▀█▀░▀█▀░█▀▀░█▀█░█░█░█▀▀
+░█▀█░▀▀█░█░░░░█░░░█░░█░░░█▀█░▀▄▀░█▀▀
+░▀░▀░▀▀▀░▀▀▀░░▀░░▀▀▀░▀▀▀░▀░▀░░▀░░▀▀▀</h1>
+  <div class="tagline">una cueva de juegos de texto, roguelike por dentro y por fuera_</div>
+
+  <div class="section-label">MODOS DISPONIBLES</div>
+  <div class="grid">
+
+    <a class="card rpg" href="aventura_rpg.html">
+      <div class="card-top"><span class="card-name">⚔ AVENTURA RPG</span><span class="card-tag">MAZMORRA</span></div>
+      <div class="card-desc">Elige entre 5 clases —Guerrero, Mago, Pícaro, Clérigo o Nigromante— y desciende por una mazmorra procedural. Cada una con tres habilidades propias, reliquias y jefes variados.</div>
+      <div class="card-meta"><span>5 clases</span><span>Reliquias</span><span>Guardado de partida</span></div>
+    </a>
+
+    <a class="card" style="border-color:var(--panel-edge);" href="mazo_maldito.html" onmouseover="this.style.borderColor='#b98cf0'" onmouseout="this.style.borderColor='var(--panel-edge)'">
+      <div class="card-top"><span class="card-name" style="color:#b98cf0;">🃏 MAZO MALDITO</span><span class="card-tag">DECK-BUILDING</span></div>
+      <div class="card-desc">Explora una mazmorra y combate con cartas: ataque, bloqueo y energía por turno. Cada victoria te deja elegir una carta nueva — construye tu estrategia partida a partida.</div>
+      <div class="card-meta"><span>Mazo creciente</span><span>Intención enemiga visible</span><span>Jefes cada 5 pisos</span></div>
+    </a>
+
+    <a class="card" style="border-color:var(--panel-edge);" href="pueblo_fantasma.html" onmouseover="this.style.borderColor='#e8b84d'" onmouseout="this.style.borderColor='var(--panel-edge)'">
+      <div class="card-top"><span class="card-name" style="color:#e8b84d;">🤠 PUEBLO FANTASMA</span><span class="card-tag">DUELOS</span></div>
+      <div class="card-desc">Duelos de verdad: espera la señal y desenfunda lo más rápido posible. Desenfundar antes de tiempo te cuesta caro. Saloon para curarte, comprar munición y mejorar tus reflejos.</div>
+      <div class="card-meta"><span>Reacción en tiempo real</span><span>Economía de saloon</span><span>Forajidos legendarios</span></div>
+    </a>
+
+  </div>
+
+  <div class="foot">alojado desde tu propio dominio · <span>asciicave</span></div>
+</div>
+
+<script>
+const lines = [
+  { text: 'AsciiCave OS v1.0 — iniciando...', delay: 15 },
+  { text: 'cargando motor de mazmorras procedurales... [OK]', delay: 15, ok: true },
+  { text: 'comprobando conectividad del mapa... [OK]', delay: 15, ok: true },
+  { text: 'listo.', delay: 15, ok: true },
+];
+
+async function typeLine(el, text, speed) {
+  for (let i = 0; i <= text.length; i++) {
+    el.textContent = text.slice(0, i);
+    await new Promise(r => setTimeout(r, speed));
+  }
+}
+
+async function boot() {
+  const bootEl = document.getElementById('boot');
+  for (const line of lines) {
+    const row = document.createElement('div');
+    if (line.ok) row.classList.add('ok');
+    bootEl.appendChild(row);
+    await typeLine(row, line.text, line.delay);
+    await new Promise(r => setTimeout(r, 80));
+  }
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  bootEl.lastChild.appendChild(cursor);
+}
+boot();
+</script>
+</body>
+</html>
