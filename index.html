@@ -3,156 +3,1705 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AsciiCave — 8 roguelikes ASCII gratis en el navegador</title>
-<meta name="description" content="AsciiCave es una cueva de mini-roguelikes de texto: mazmorras con 5 clases, un roguelike de cartas y duelos por reflejos. Mapas procedurales, sin descargas, gratis en el navegador.">
+
+<!-- ============ SEO ============ -->
+<title>AsciiCave — Publica y lee novelas web en español, gratis</title>
+<meta name="description" content="AsciiCave es la plataforma de novelas web para el público hispanohablante. Publica tu historia por capítulos, gana lectores, recibe valoraciones por historia, estilo, gramática y personajes, y monetiza con Patreon.">
+<meta name="keywords" content="novelas web, publicar novela online, leer novelas gratis, fantasía, litrpg, romance, ficción en español, escribir online, alternativa a wattpad, alternativa a royal road">
 <link rel="canonical" href="https://asciicave.com/">
-<link rel="icon" type="image/png" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="alternate" hreflang="es" href="https://asciicave.com/">
+<link rel="alternate" hreflang="en" href="https://asciicave.com/en/">
+<link rel="alternate" hreflang="x-default" href="https://asciicave.com/">
+<meta name="theme-color" content="#0C1322">
+
+<!-- Open Graph (Facebook, WhatsApp, Discord…) -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="AsciiCave — 8 roguelikes ASCII gratis en el navegador">
-<meta property="og:description" content="AsciiCave es una cueva de mini-roguelikes de texto: mazmorras con 5 clases, un roguelike de cartas y duelos por reflejos. Mapas procedurales, sin descargas, gratis en el navegador.">
+<meta property="og:site_name" content="AsciiCave">
+<meta property="og:title" content="AsciiCave — Publica y lee novelas web en español">
+<meta property="og:description" content="Publica tu novela por capítulos, gana lectores y monetiza con Patreon. Lee gratis; con Premium, sin anuncios.">
 <meta property="og:url" content="https://asciicave.com/">
-<meta property="og:image" content="https://asciicave.com/cover.png">
+<meta property="og:image" content="https://asciicave.com/og-cover.png">
 <meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+
+<!-- Twitter / X -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="AsciiCave — 8 roguelikes ASCII gratis en el navegador">
-<meta name="twitter:description" content="AsciiCave es una cueva de mini-roguelikes de texto: mazmorras con 5 clases, un roguelike de cartas y duelos por reflejos. Mapas procedurales, sin descargas, gratis en el navegador.">
-<meta name="twitter:image" content="https://asciicave.com/cover.png">
+<meta name="twitter:title" content="AsciiCave — Novelas web en español">
+<meta name="twitter:description" content="Publica tu historia por capítulos y gana lectores. Lee gratis.">
+<meta name="twitter:image" content="https://asciicave.com/og-cover.png">
+
+<!-- Datos estructurados (Google) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://asciicave.com/#website",
+      "url": "https://asciicave.com/",
+      "name": "AsciiCave",
+      "description": "Plataforma de novelas web en español",
+      "inLanguage": ["es", "en"],
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": { "@type": "EntryPoint", "urlTemplate": "https://asciicave.com/buscar?q={search_term_string}" },
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://asciicave.com/#org",
+      "name": "AsciiCave",
+      "url": "https://asciicave.com/",
+      "logo": "https://asciicave.com/logo.png"
+    }
+  ]
+}
+</script>
+
+<!-- ============ Google AdSense ============ -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9510274133995629"
+     crossorigin="anonymous"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+:root{
+  --ink:#0C1322;--ink-2:#121B2F;--ink-3:#1A2540;
+  --paper:#EDE7D8;--muted:#8B94A8;
+  --gold:#E3B254;--gold-soft:rgba(227,178,84,.14);
+  --wax:#C8553D;--leaf:#6FA98C;
+  --line:rgba(237,231,216,.12);--radius:10px;
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-body:'IBM Plex Sans',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--paper);font-family:var(--font-body);font-size:16px;line-height:1.6;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+   radial-gradient(1px 1px at 12% 18%, rgba(237,231,216,.35) 50%, transparent 51%),
+   radial-gradient(1px 1px at 78% 9%, rgba(237,231,216,.25) 50%, transparent 51%),
+   radial-gradient(1.5px 1.5px at 55% 30%, rgba(227,178,84,.3) 50%, transparent 51%),
+   radial-gradient(1px 1px at 90% 55%, rgba(237,231,216,.2) 50%, transparent 51%),
+   radial-gradient(1px 1px at 30% 70%, rgba(237,231,216,.15) 50%, transparent 51%);
+}
+a{color:var(--gold);text-decoration:none}
+button{font-family:var(--font-body);cursor:pointer}
 
-  :root{
-    --bg: #07080a;
-    --panel: #0f1210;
-    --panel-edge: #262b24;
-    --amber: #ffb000;
-    --amber-dim: #7a5a1a;
-    --text: #c7d1c5;
-    --dim: #5f6a5c;
-    --zombie: #c94f3d;
-    --rpg: #7c8cff;
-    --locked: #454b45;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; background: var(--bg); color: var(--text);
-    font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
-    min-height: 100vh;
-  }
-  .wrap { max-width: 640px; margin: 0 auto; padding: 28px 18px 60px; }
+/* ---------- Cabecera ---------- */
+header{position:sticky;top:0;z-index:50;background:rgba(12,19,34,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav{max-width:1180px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;gap:16px}
+.logo{font-family:var(--font-mono);font-size:1.25rem;font-weight:600;letter-spacing:.5px;color:var(--paper);display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
+.logo .glyph{color:var(--gold);font-size:1.05rem;border:1px solid rgba(227,178,84,.5);border-radius:6px;padding:2px 7px;background:var(--gold-soft)}
+.nav-links{display:flex;gap:2px;flex:1;overflow-x:auto}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links button{background:none;border:none;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.92rem;white-space:nowrap}
+.nav-links button:hover{color:var(--paper);background:var(--ink-3)}
+.nav-links button.active{color:var(--gold);background:var(--gold-soft)}
+.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;position:relative}
+.lang-toggle{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.lang-toggle button{background:none;border:none;color:var(--muted);padding:5px 10px;font-size:.8rem;font-family:var(--font-mono)}
+.lang-toggle button.on{background:var(--gold);color:var(--ink);font-weight:600}
+.premium-pill{border:1px solid var(--gold);color:var(--gold);background:none;border-radius:20px;padding:5px 14px;font-size:.82rem;transition:.2s;white-space:nowrap}
+.premium-pill.on{background:var(--gold);color:var(--ink);font-weight:600}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--ink-3);border:1px solid var(--line);border-radius:20px;padding:5px 14px 5px 6px;color:var(--paper);font-size:.85rem}
+.user-chip .avatar{width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem}
+.user-chip .role{font-family:var(--font-mono);font-size:.65rem;color:var(--gold);letter-spacing:1px}
+.dropdown{position:absolute;top:52px;right:0;background:var(--ink-2);border:1px solid var(--line);border-radius:10px;min-width:200px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;z-index:60}
+.dropdown button{background:none;border:none;color:var(--paper);text-align:left;padding:10px 14px;border-radius:7px;font-size:.9rem}
+.dropdown button:hover{background:var(--ink-3)}
+.dropdown .badge{background:var(--gold);color:var(--ink);border-radius:10px;padding:0 7px;font-size:.72rem;font-weight:700;margin-left:6px}
+.login-btn{background:var(--gold);color:var(--ink);border:none;border-radius:20px;padding:6px 16px;font-size:.85rem;font-weight:600;white-space:nowrap}
 
-  .boot { font-size: 12px; color: var(--dim); line-height: 1.7; white-space: pre-wrap; min-height: 90px; }
-  .boot .ok { color: var(--amber); }
-  .cursor { display: inline-block; width: 8px; height: 13px; background: var(--amber); vertical-align: -2px; animation: blink 1s step-end infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
+main{max-width:1180px;margin:0 auto;padding:28px 20px 90px;position:relative;z-index:1}
 
-  .banner {
-    color: var(--amber); font-size: 10px; line-height: 1.15; white-space: pre; font-weight: normal;
-    margin: 18px 0 6px; text-shadow: 0 0 12px rgba(255,176,0,0.35);
-    opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 1.6s;
-  }
-  .tagline { color: var(--dim); font-size: 11.5px; letter-spacing: 1.5px; margin-bottom: 30px;
-    opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 1.9s; }
-  @keyframes fadeIn { to { opacity: 1; } }
+/* ---------- Hero ---------- */
+.hero{padding:54px 0 40px;display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center;border-bottom:1px solid var(--line);margin-bottom:36px}
+.hero h1{font-family:var(--font-display);font-size:clamp(2.4rem,5vw,3.8rem);font-weight:600;line-height:1.08}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero p{color:var(--muted);margin:18px 0 26px;max-width:520px;font-size:1.05rem}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.constellation{justify-self:center}
 
-  .section-label {
-    font-size: 10.5px; letter-spacing: 2px; color: var(--dim); margin: 0 0 12px;
-    opacity: 0; animation: fadeIn 0.5s ease forwards; animation-delay: 2.1s;
-  }
+/* ---------- Botones ---------- */
+.btn{border:none;border-radius:8px;padding:11px 22px;font-size:.95rem;font-weight:500;transition:.15s}
+.btn-gold{background:var(--gold);color:var(--ink);font-weight:600}
+.btn-gold:hover{filter:brightness(1.1)}
+.btn-ghost{background:none;border:1px solid var(--line);color:var(--paper)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn-wax{background:none;border:1px solid var(--wax);color:var(--wax)}
+.btn-wax:hover{background:var(--wax);color:var(--paper)}
+.btn-leaf{background:none;border:1px solid var(--leaf);color:var(--leaf)}
+.btn-leaf:hover{background:var(--leaf);color:var(--ink)}
+.btn-sm{padding:7px 14px;font-size:.85rem}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
 
-  .grid { display: flex; flex-direction: column; gap: 10px; opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 2.25s; }
+/* ---------- Secciones / tarjetas ---------- */
+.sec-title{font-family:var(--font-display);font-size:1.8rem;font-weight:600;margin:34px 0 6px}
+.sec-sub{color:var(--muted);font-size:.92rem;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:16px}
+.card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;transition:.15s;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.card:hover{border-color:rgba(227,178,84,.5);transform:translateY(-2px)}
+.card .cover-thumb{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.card h3{font-family:var(--font-display);font-size:1.3rem;font-weight:600;line-height:1.2}
+.card .author{color:var(--muted);font-size:.84rem}
+.card .syn{color:var(--muted);font-size:.86rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:.72rem;font-family:var(--font-mono);border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--muted)}
+.tag.g{border-color:rgba(227,178,84,.4);color:var(--gold)}
+.card-meta{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.stars-inline{color:var(--gold);letter-spacing:1px}
 
-  .card {
-    display: block; text-decoration: none; color: inherit;
-    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px;
-    padding: 14px 16px; position: relative; transition: border-color 0.2s ease, transform 0.1s ease;
-  }
-  .card:hover { transform: translateX(2px); }
-  .card.zombie:hover { border-color: var(--zombie); }
-  .card.rpg:hover { border-color: var(--rpg); }
+/* ---------- Estados vacíos ---------- */
+.empty{border:1px dashed var(--line);border-radius:14px;padding:56px 30px;text-align:center;margin:20px 0}
+.empty .e-glyph{font-family:var(--font-mono);font-size:1.6rem;color:var(--gold);letter-spacing:3px;display:block;margin-bottom:14px}
+.empty h3{font-family:var(--font-display);font-size:1.6rem;font-weight:600;margin-bottom:8px}
+.empty p{color:var(--muted);max-width:440px;margin:0 auto 20px;font-size:.92rem}
 
-  .card-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 5px; }
-  .card-name { font-size: 13.5px; font-weight: 800; letter-spacing: 0.5px; }
-  .card.zombie .card-name { color: var(--zombie); }
-  .card.rpg .card-name { color: var(--rpg); }
-  .card-tag { font-size: 9.5px; color: var(--dim); letter-spacing: 1px; }
-  .card-desc { font-size: 11.5px; color: var(--text); line-height: 1.5; }
-  .card-meta { margin-top: 8px; font-size: 10px; color: var(--dim); display: flex; gap: 12px; flex-wrap: wrap; }
+/* ---------- Publicidad ---------- */
+.ad{background:linear-gradient(135deg,#1A2540,#121B2F);border:1px dashed rgba(139,148,168,.4);border-radius:var(--radius);padding:16px 18px;display:flex;align-items:center;gap:16px;position:relative}
+.ad::before{content:attr(data-label);position:absolute;top:-9px;left:14px;background:var(--ink);color:var(--muted);font-size:.66rem;font-family:var(--font-mono);letter-spacing:1.5px;text-transform:uppercase;padding:0 8px}
+.ad .ad-ico{font-size:1.6rem}
+.ad .ad-body{flex:1}
+.ad .ad-body strong{display:block;font-size:.92rem}
+.ad .ad-body span{color:var(--muted);font-size:.8rem}
+.ad .ad-cta{font-size:.78rem;border:1px solid var(--muted);color:var(--muted);border-radius:6px;padding:5px 12px;background:none;white-space:nowrap}
+.ad-note{text-align:center;font-size:.72rem;color:var(--muted);margin-top:6px}
+.ad-note a{cursor:pointer}
 
-  .card.locked { cursor: default; opacity: 0.55; }
-  .card.locked:hover { transform: none; border-color: var(--panel-edge); }
-  .card.locked .card-name { color: var(--locked); }
-  .card.locked .card-desc { color: var(--dim); }
+/* ---------- Ficha de novela ---------- */
+.novel-head{display:grid;grid-template-columns:150px 1fr;gap:26px;margin-bottom:26px}
+.cover{width:150px;height:210px;border-radius:8px;display:flex;align-items:flex-end;padding:12px;font-family:var(--font-display);font-weight:600;font-size:1.05rem;line-height:1.15;color:var(--paper);text-shadow:0 1px 4px rgba(0,0,0,.5);border:1px solid var(--line);background-size:cover;background-position:center}
+.novel-head h1{font-family:var(--font-display);font-size:2.2rem;font-weight:600;line-height:1.1}
+.byline{color:var(--muted);margin:6px 0 12px}
+.stat-row{display:flex;gap:22px;flex-wrap:wrap;font-family:var(--font-mono);font-size:.82rem;color:var(--muted);margin:14px 0}
+.stat-row b{color:var(--paper);font-weight:500}
+.novel-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.rating-panel{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:20px;display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center;margin:22px 0}
+.big-score{text-align:center}
+.big-score .n{font-family:var(--font-display);font-size:3rem;font-weight:600;color:var(--gold);line-height:1}
+.big-score .v{font-size:.75rem;color:var(--muted);font-family:var(--font-mono)}
+.cat-bars{display:grid;gap:8px}
+.cat-bar{display:grid;grid-template-columns:110px 1fr 34px;gap:12px;align-items:center;font-size:.84rem}
+.cat-bar .track{height:6px;background:var(--ink-3);border-radius:3px;overflow:hidden}
+.cat-bar .fill{height:100%;background:var(--gold);border-radius:3px}
+.cat-bar .val{font-family:var(--font-mono);color:var(--muted);font-size:.78rem;text-align:right}
+.chap-list{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+.chap-item{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border:1px solid transparent;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
+.chap-item:hover{background:var(--ink-2);border-color:var(--line)}
+.chap-item .num{font-family:var(--font-mono);color:var(--gold);font-size:.8rem;margin-right:12px}
+.chap-item .read-mark{font-size:.72rem;color:var(--leaf);font-family:var(--font-mono)}
 
-  .foot {
-    margin-top: 36px; font-size: 10px; color: var(--dim); text-align: center; letter-spacing: 0.5px;
-    opacity: 0; animation: fadeIn 0.6s ease forwards; animation-delay: 2.4s;
-  }
-  .foot span { color: var(--amber); }
+/* ---------- Lector ---------- */
+.reader{max-width:720px;margin:0 auto}
+.reader-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;font-size:.85rem;color:var(--muted)}
+.reader h1{font-family:var(--font-display);font-size:2rem;font-weight:600;margin-bottom:4px}
+.reader .chap-of{font-family:var(--font-mono);font-size:.78rem;color:var(--muted);margin-bottom:26px}
+.reader-body{font-size:1.08rem;line-height:1.85}
+.reader-body p{margin-bottom:1.3em}
+.author-note{background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:14px 18px;margin:26px 0;font-size:.92rem}
+.author-note .an-label{font-family:var(--font-mono);font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px}
+.reader-nav{display:flex;justify-content:space-between;gap:12px;margin-top:40px;padding-top:22px;border-top:1px solid var(--line)}
+.rate-nudge{background:var(--ink-2);border:1px solid rgba(227,178,84,.4);border-radius:var(--radius);padding:18px;text-align:center;margin-top:30px}
+.patreon-box{background:linear-gradient(135deg,rgba(200,85,61,.15),transparent);border:1px solid rgba(200,85,61,.4);border-radius:var(--radius);padding:16px 18px;margin-top:26px;display:flex;align-items:center;gap:14px}
+.patreon-box .p-ico{font-size:1.5rem}
+.patreon-box small{color:var(--muted);display:block}
+
+/* ---------- Comentarios ---------- */
+.comments{margin-top:40px;border-top:1px solid var(--line);padding-top:26px}
+.comments h3{font-family:var(--font-display);font-size:1.5rem;margin-bottom:14px}
+.comment{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.comment .avatar{width:34px;height:34px;border-radius:50%;background:var(--ink-3);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.comment .c-head{font-size:.82rem;color:var(--muted);margin-bottom:3px}
+.comment .c-head b{color:var(--paper);font-weight:600}
+.comment p{font-size:.92rem}
+.comment-form{display:flex;gap:10px;margin-top:16px;align-items:flex-start}
+.comment-form textarea{min-height:70px}
+
+/* ---------- Formularios ---------- */
+.form{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.field label{display:block;font-size:.85rem;font-weight:500;margin-bottom:7px}
+.field .hint{font-size:.78rem;color:var(--muted);font-weight:400;margin-left:6px}
+input[type=text],input[type=url],input[type=email],input[type=password],textarea,select{width:100%;background:var(--ink-3);border:1px solid var(--line);border-radius:8px;color:var(--paper);padding:11px 14px;font-family:var(--font-body);font-size:.95rem}
+textarea{resize:vertical;min-height:110px;line-height:1.7}
+textarea.chap-body{min-height:260px}
+input:focus,textarea:focus{outline:none;border-color:var(--gold)}
+.pill-picker{display:flex;flex-wrap:wrap;gap:8px}
+.pill{border:1px solid var(--line);background:none;color:var(--muted);border-radius:20px;padding:6px 14px;font-size:.83rem;transition:.12s}
+.pill:hover{border-color:var(--gold);color:var(--paper)}
+.pill.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.pill[disabled]{opacity:.3;cursor:not-allowed}
+.counter{font-family:var(--font-mono);font-size:.75rem;color:var(--muted)}
+.counter.full{color:var(--wax)}
+.callout{background:var(--ink-2);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:14px 18px;font-size:.88rem;color:var(--muted)}
+.callout b{color:var(--paper)}
+.callout.warn{border-left-color:var(--wax)}
+
+/* ---------- Moderación / obras ---------- */
+.mod-card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:16px}
+.mod-card h3{font-family:var(--font-display);font-size:1.4rem;margin-bottom:4px}
+.mod-status{font-family:var(--font-mono);font-size:.72rem;letter-spacing:1px;text-transform:uppercase;border-radius:20px;padding:3px 12px;display:inline-block;margin-bottom:10px}
+.st-pendiente{border:1px solid var(--gold);color:var(--gold)}
+.st-aprobada{border:1px solid var(--leaf);color:var(--leaf)}
+.st-rechazada{border:1px solid var(--wax);color:var(--wax)}
+.mod-excerpt{background:var(--ink);border-radius:8px;padding:14px;font-size:.88rem;color:var(--muted);margin:12px 0;max-height:140px;overflow:auto}
+.mod-actions{display:flex;gap:10px;flex-wrap:wrap}
+.work-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.work-row h4{font-family:var(--font-display);font-size:1.15rem;font-weight:600}
+.work-row .w-meta{font-family:var(--font-mono);font-size:.75rem;color:var(--muted)}
+.reject-note{background:rgba(200,85,61,.1);border:1px solid rgba(200,85,61,.4);border-radius:8px;padding:10px 14px;font-size:.84rem;color:var(--wax);margin-top:8px;grid-column:1/-1}
+
+/* ---------- Ranking ---------- */
+.rank-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.rank-tabs button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:7px 16px;font-size:.85rem}
+.rank-tabs button.on{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.rank-row{display:grid;grid-template-columns:52px 1fr auto;gap:16px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
+.rank-row:hover{background:var(--ink-2)}
+.rank-pos{font-family:var(--font-display);font-size:1.9rem;font-weight:600;color:var(--muted);text-align:center}
+.rank-row:nth-child(-n+3) .rank-pos{color:var(--gold)}
+.rank-main h3{font-family:var(--font-display);font-size:1.25rem;font-weight:600}
+.rank-main span{color:var(--muted);font-size:.82rem}
+.rank-metric{font-family:var(--font-mono);font-size:.9rem;color:var(--gold);text-align:right;white-space:nowrap}
+.rank-metric small{display:block;color:var(--muted);font-size:.68rem;letter-spacing:1px;text-transform:uppercase}
+
+/* ---------- Perfil ---------- */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.panel h3{font-family:var(--font-display);font-size:1.3rem;margin-bottom:10px}
+.panel p{color:var(--muted);font-size:.88rem;margin-bottom:14px}
+.panel.wide{grid-column:1/-1}
+
+/* ---------- Modales ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(6,10,18,.82);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:30px;max-width:460px;width:100%;max-height:90vh;overflow:auto}
+.modal h2{font-family:var(--font-display);font-size:1.6rem;margin-bottom:4px}
+.modal .sub{color:var(--muted);font-size:.85rem;margin-bottom:20px}
+.rate-cat{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.rate-cat span{font-size:.92rem}
+.star-picker{display:flex;gap:4px}
+.star-picker button{background:none;border:none;font-size:1.35rem;color:var(--ink-3);transition:.1s;padding:0 2px}
+.star-picker button.lit{color:var(--gold)}
+.star-picker button:hover{transform:scale(1.15)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.avg-preview{text-align:center;font-family:var(--font-mono);color:var(--muted);font-size:.8rem;margin-top:16px}
+.avg-preview b{color:var(--gold);font-size:1rem}
+.login-tabs{display:flex;gap:8px;margin-bottom:20px}
+.login-tabs button{flex:1;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:9px;font-size:.85rem}
+.login-tabs button.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
+.provider-btn{display:flex;align-items:center;gap:12px;width:100%;background:var(--ink-3);border:1px solid var(--line);color:var(--paper);border-radius:9px;padding:12px 16px;font-size:.92rem;margin-bottom:9px;transition:.12s}
+.provider-btn:hover{border-color:var(--gold)}
+.provider-btn .p-mark{font-family:var(--font-mono);font-weight:700;width:22px;text-align:center}
+.login-err{color:var(--wax);font-size:.82rem;margin-top:8px}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--ink);font-weight:600;border-radius:10px;padding:12px 22px;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:pop .25s;max-width:90vw;text-align:center}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%)}}
+
+footer{border-top:1px solid var(--line);padding:26px 20px;text-align:center;color:var(--muted);font-size:.8rem;position:relative;z-index:1}
+footer .f-links{margin-top:6px;font-size:.75rem}
+
+/* ---------- Verificación de email ---------- */
+.verify-banner{background:rgba(200,85,61,.12);border:1px solid rgba(200,85,61,.4);border-radius:var(--radius);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;font-size:.85rem;flex-wrap:wrap}
+.verify-banner button{background:none;border:1px solid var(--wax);color:var(--wax);border-radius:6px;padding:6px 12px;font-size:.8rem;white-space:nowrap}
+
+/* ---------- Avatar / subida de imágenes ---------- */
+.avatar-fallback{background:#000;color:var(--paper);font-family:var(--font-mono);letter-spacing:.5px;text-align:center;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;border:1px solid var(--line)}
+.upload-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.file-btn{display:inline-block;background:var(--ink-3);border:1px solid var(--line);color:var(--paper);border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer}
+.file-btn input{display:none}
+
+/* ---------- Insignias ---------- */
+.adult-badge{font-family:var(--font-mono);font-size:.68rem;border:1px solid var(--wax);color:var(--wax);border-radius:20px;padding:1px 9px;letter-spacing:1px;font-weight:600}
+.rank-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gold-soft);border:1px solid rgba(227,178,84,.5);color:var(--gold);border-radius:20px;padding:6px 14px;font-family:var(--font-mono);font-size:.8rem}
+.points-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.85rem;color:var(--gold)}
+.coffee-btn{border:1px solid var(--wax);color:var(--wax);background:none;border-radius:20px;padding:5px 12px;font-size:.8rem;white-space:nowrap;display:inline-flex;align-items:center}
+.coffee-btn:hover{background:var(--wax);color:var(--paper)}
+
+/* ---------- Widgets de inicio ---------- */
+.widget-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:22px 0 8px}
+.widget-card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px;cursor:pointer;transition:.15s}
+.widget-card:hover{border-color:rgba(227,178,84,.5)}
+.widget-card .w-label{font-family:var(--font-mono);font-size:.66rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:8px}
+.widget-card h4{font-family:var(--font-display);font-size:1.15rem;margin-bottom:4px;line-height:1.2}
+.widget-card span{color:var(--muted);font-size:.8rem}
+
+/* ---------- Panel de autor ---------- */
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin:20px 0 30px}
+.dash-stat{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;text-align:center}
+.dash-stat .n{font-family:var(--font-display);font-size:2rem;font-weight:600;color:var(--gold)}
+.dash-stat .l{color:var(--muted);font-size:.74rem;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px}
+.dash-comment{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.dash-comment .d-meta{font-size:.78rem;color:var(--muted);margin-bottom:2px}
+
+/* ---------- Selector de tipo de cuenta / aviso +18 ---------- */
+.account-type-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.account-type-picker button{border:1px solid var(--line);background:none;color:var(--muted);border-radius:10px;padding:12px 8px;font-size:.85rem}
+.account-type-picker button.sel{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);font-weight:600}
+.checkbox-field{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.9rem}
+.checkbox-field input{width:auto}
+
+@media(max-width:820px){
+  .hero{grid-template-columns:1fr}
+  .constellation{display:none}
+  .novel-head{grid-template-columns:100px 1fr}
+  .cover{width:100px;height:140px;font-size:.8rem}
+  .profile-grid{grid-template-columns:1fr}
+  .rating-panel{grid-template-columns:1fr}
+  .user-chip .u-name{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-  <script data-goatcounter="https://asciigames.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-<div class="wrap">
-  <div class="boot" id="boot"></div>
-  <h1 class="banner" aria-label="AsciiCave">░█▀█░█▀▀░█▀▀░▀█▀░▀█▀░█▀▀░█▀█░█░█░█▀▀
-░█▀█░▀▀█░█░░░░█░░░█░░█░░░█▀█░▀▄▀░█▀▀
-░▀░▀░▀▀▀░▀▀▀░░▀░░▀▀▀░▀▀▀░▀░▀░░▀░░▀▀▀</h1>
-  <div class="tagline">una cueva de juegos de texto, roguelike por dentro y por fuera_</div>
-
-  <div class="section-label">MODOS DISPONIBLES</div>
-  <div class="grid">
-
-    <a class="card rpg" href="aventura_rpg.html">
-      <div class="card-top"><span class="card-name">⚔ AVENTURA RPG</span><span class="card-tag">MAZMORRA</span></div>
-      <div class="card-desc">Elige entre 5 clases —Guerrero, Mago, Pícaro, Clérigo o Nigromante— y desciende por una mazmorra procedural. Cada una con tres habilidades propias, reliquias y jefes variados.</div>
-      <div class="card-meta"><span>5 clases</span><span>Reliquias</span><span>Guardado de partida</span></div>
-    </a>
-
-    <a class="card" style="border-color:var(--panel-edge);" href="mazo_maldito.html" onmouseover="this.style.borderColor='#b98cf0'" onmouseout="this.style.borderColor='var(--panel-edge)'">
-      <div class="card-top"><span class="card-name" style="color:#b98cf0;">🃏 MAZO MALDITO</span><span class="card-tag">DECK-BUILDING</span></div>
-      <div class="card-desc">Explora una mazmorra y combate con cartas: ataque, bloqueo y energía por turno. Cada victoria te deja elegir una carta nueva — construye tu estrategia partida a partida.</div>
-      <div class="card-meta"><span>Mazo creciente</span><span>Intención enemiga visible</span><span>Jefes cada 5 pisos</span></div>
-    </a>
-
-    <a class="card" style="border-color:var(--panel-edge);" href="pueblo_fantasma.html" onmouseover="this.style.borderColor='#e8b84d'" onmouseout="this.style.borderColor='var(--panel-edge)'">
-      <div class="card-top"><span class="card-name" style="color:#e8b84d;">🤠 PUEBLO FANTASMA</span><span class="card-tag">DUELOS</span></div>
-      <div class="card-desc">Duelos de verdad: espera la señal y desenfunda lo más rápido posible. Desenfundar antes de tiempo te cuesta caro. Saloon para curarte, comprar munición y mejorar tus reflejos.</div>
-      <div class="card-meta"><span>Reacción en tiempo real</span><span>Economía de saloon</span><span>Forajidos legendarios</span></div>
-    </a>
-
+<header>
+  <div class="nav">
+    <div class="logo" onclick="go('home')"><span class="glyph">&gt;_</span> asciicave</div>
+    <nav class="nav-links" id="navLinks" aria-label="Navegación principal"></nav>
+    <div class="nav-right" id="navRight"></div>
   </div>
+</header>
+<main id="app"></main>
+<footer id="foot"></footer>
+<div id="modalRoot"></div>
 
-  <div class="foot">alojado desde tu propio dominio · <span>asciicave</span></div>
-</div>
+<!-- Cliente de Supabase (build UMD oficial) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const lines = [
-  { text: 'AsciiCave OS v1.0 — iniciando...', delay: 15 },
-  { text: 'cargando motor de mazmorras procedurales... [OK]', delay: 15, ok: true },
-  { text: 'comprobando conectividad del mapa... [OK]', delay: 15, ok: true },
-  { text: 'listo.', delay: 15, ok: true },
-];
+/* =============== CONFIGURACIÓN =============== */
 
-async function typeLine(el, text, speed) {
-  for (let i = 0; i <= text.length; i++) {
-    el.textContent = text.slice(0, i);
-    await new Promise(r => setTimeout(r, speed));
+/* ============ Supabase — base de datos y autenticación ============
+   1. Ve a https://supabase.com/dashboard/project/bqsntjnnpewwhgwulfzw
+   2. Abre "SQL Editor" → "New query", pega TODO el contenido de
+      supabase/schema.sql (junto a este archivo) y pulsa "Run". Eso crea
+      las tablas, la seguridad a nivel de fila, los buckets de imágenes
+      y los triggers que otorgan puntos automáticamente.
+   3. Authentication → Providers → "Email" ya viene activo con
+      verificación de correo obligatoria: no hace falta tocar nada para
+      que funcione el punto 1 (verificación de email).
+   4. (Opcional) Botón de Google: Authentication → Providers → Google →
+      actívalo con un Client ID/Secret de Google Cloud, y añade tu
+      dominio real en Authentication → URL Configuration. Mientras no lo
+      actives, el login por email funciona igual, también en local.
+   5. Para dar acceso de administrador a alguien: Table editor →
+      profiles → edita su fila → role = "admin". Ya no hay ninguna
+      contraseña de admin en este archivo: el rol vive solo en la base
+      de datos.
+*/
+const SUPABASE_URL="https://bqsntjnnpewwhgwulfzw.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_R0fpavnFI-BGMTpZIO40yw_z-3DdqRw";
+const{createClient}=window.supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+/* Google AdSense.
+   1. En AdSense: Anuncios → Por bloque de anuncios → "Anuncio de display" → crear.
+   2. Copia el número de data-ad-slot que te dé Google y pégalo abajo en slot:"".
+   Mientras slot esté vacío, se muestra un anuncio de demostración para que
+   la maqueta no se vea rota. Los anuncios reales SOLO cargan cuando la página
+   está publicada en asciicave.com (no al abrir el archivo en local). */
+const ADSENSE={client:"ca-pub-9510274133995629",slot:""};
+
+/* Buy Me a Coffee — botón de donación en la barra superior */
+const COFFEE_URL="https://buymeacoffee.com/Asciicave";
+
+/* =============== CATÁLOGOS =============== */
+const GENRES=[
+ {es:"Acción",en:"Action"},{es:"Aventura",en:"Adventure"},{es:"Comedia",en:"Comedy"},
+ {es:"Drama",en:"Drama"},{es:"Fantasía",en:"Fantasy"},{es:"Ciencia ficción",en:"Sci-Fi"},
+ {es:"Terror",en:"Horror"},{es:"Misterio",en:"Mystery"},{es:"Romance",en:"Romance"},
+ {es:"Psicológico",en:"Psychological"},{es:"Histórico",en:"Historical"},{es:"Deporte",en:"Sports"},
+ {es:"Recuentos de la vida",en:"Slice of Life"},{es:"Tragedia",en:"Tragedy"},{es:"LitRPG",en:"LitRPG"},
+ {es:"Wuxia / Cultivo",en:"Wuxia / Cultivation"},{es:"Sátira",en:"Satire"},{es:"Contemporáneo",en:"Contemporary"},
+ {es:"Yaoi (BL)",en:"Yaoi (BL)"},{es:"Yuri (GL)",en:"Yuri (GL)"},{es:"Harem",en:"Harem"},
+ {es:"Shounen",en:"Shounen"},{es:"Seinen",en:"Seinen"},{es:"Josei",en:"Josei"}
+];
+const SUBGENRES=[
+ {es:"Progresión",en:"Progression"},{es:"Antihéroe",en:"Anti-Hero"},{es:"Magia",en:"Magic"},
+ {es:"Artes marciales",en:"Martial Arts"},{es:"Reencarnación",en:"Reincarnation"},{es:"Isekai",en:"Isekai"},
+ {es:"Sistema",en:"System"},{es:"Mazmorras",en:"Dungeons"},{es:"Academia",en:"Academy"},
+ {es:"Realeza",en:"Royalty"},{es:"Mitología",en:"Mythology"},{es:"Protagonista femenina",en:"Female Lead"},
+ {es:"Villano protagonista",en:"Villain Lead"},{es:"Apocalipsis",en:"Apocalypse"},{es:"IA",en:"AI"},
+ {es:"Ópera espacial",en:"Space Opera"},{es:"Steampunk",en:"Steampunk"},{es:"Piratas",en:"Pirates"},
+ {es:"Detectives",en:"Detectives"},{es:"Supervivencia",en:"Survival"},{es:"Dragones",en:"Dragons"},
+ {es:"Vampiros",en:"Vampires"},{es:"Distopía",en:"Dystopia"},{es:"Viajes en el tiempo",en:"Time Travel"},
+ {es:"Superhéroes",en:"Superheroes"},{es:"No humano",en:"Non-Human"},{es:"Cocina",en:"Cooking"},
+ {es:"Guerra",en:"War"},{es:"Política",en:"Politics"},{es:"Slow burn",en:"Slow Burn"},
+ {es:"GameLit",en:"GameLit"},{es:"Ciberpunk",en:"Cyberpunk"},{es:"Postapocalíptico",en:"Post-Apocalyptic"},
+ {es:"Crimen organizado",en:"Organized Crime"},{es:"Segunda oportunidad",en:"Second Chance"},
+ {es:"Fantasmas",en:"Ghosts"},{es:"Cultivo demoníaco",en:"Demonic Cultivation"},
+ {es:"Harem inverso",en:"Reverse Harem"},{es:"Ecchi",en:"Ecchi"},{es:"Yandere",en:"Yandere"}
+];
+const COVERS=["linear-gradient(160deg,#2b3a67,#0e1526)","linear-gradient(160deg,#6b2d2d,#1a0e0e)","linear-gradient(160deg,#3d5a4c,#101c16)","linear-gradient(160deg,#5c4a1e,#1f1808)","linear-gradient(160deg,#4a2d5c,#150e1f)","linear-gradient(160deg,#2d5c5a,#0a1918)","linear-gradient(160deg,#5c3a2d,#1c110c)"];
+
+/* Caché local de datos (se rellena desde Supabase) */
+let NOVELS=[];         // novelas aprobadas
+let MY_NOVELS=[];      // obras propias (cualquier estado)
+const CHAPTERS_CACHE={};
+let LATEST_CHAPTERS=[],GROWING_NOVEL=null,BEST_CHAPTER=null,RECOMMENDED=[];
+</script>
+<script>
+/* =============== TRADUCCIONES =============== */
+const T={
+es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",library:"Mi biblioteca"},
+ premiumOff:"✦ Premium",premiumOn:"✦ Premium activo",
+ loginBtn:"Entrar / Registrarse",logout:"Cerrar sesión",myProfile:"Mi perfil",myWorks:"Mis obras",myDashboard:"Panel de autor",modArea:"Solicitudes",
+ heroTitle:'La cueva donde las historias en español <em>echan raíces</em>',
+ heroSub:"Publica tu novela por capítulos, gana lectores, recibe valoraciones por historia, estilo, gramática y personajes, y monetiza con Patreon. Lee gratis; con Premium, sin anuncios.",
+ heroCta1:"Empezar a leer",heroCta2:"Publicar mi novela",
+ emptyHomeT:"La cueva espera su primera historia",
+ emptyHomeP:"Aún no hay novelas publicadas. Regístrate, envía tu obra a revisión y estrena la portada de asciicave.com.",
+ emptyExploreT:"Nada por aquí todavía",emptyExploreP:"Cuando se aprueben las primeras novelas aparecerán en esta sección.",
+ emptyRankT:"El ranking está en blanco",emptyRankP:"Las novelas aprobadas competirán aquí por estrellas, seguidores, favoritos y lecturas.",
+ emptyLibT:"Tu biblioteca está vacía",emptyLibP:"Sigue una novela o márcala como favorita y aparecerá aquí, con tu progreso de lectura.",
+ emptyLibLogin:"Inicia sesión para guardar tu biblioteca de lectura.",
+ trending:"Tendencias",trendingSub:"Las novelas que la comunidad no puede soltar",
+ newArrivals:"Recién aprobadas",newSub:"Historias que acaban de pasar la revisión editorial",
+ chapters:"caps.",followers:"seguidores",favsW:"favoritos",views:"lecturas",votes:"votos",
+ readCh1:"Leer capítulo 1",follow:"Seguir",following:"✓ Siguiendo",fav:"☆ Favorito",faved:"★ En favoritos",
+ rate:"Valorar novela",rateLocked:"Lee el cap. 1 para valorar",yourRating:"Tu valoración enviada",alreadyRated:"Ya has valorado esta novela.",
+ ratingTitle:"Valoración por categorías",ratingSub:"media ponderada de la comunidad",
+ catHistoria:"Historia",catEstilo:"Estilo",catGramatica:"Gramática",catPersonajes:"Personajes",
+ tableOfCh:"Índice de capítulos",read:"leído",
+ supportPatreon:"Apoyar en Patreon",supportSub:"Ayuda al autor a seguir escribiendo",
+ anStart:"Nota del autor · inicio",anEnd:"Nota del autor · final",
+ prevCh:"← Anterior",nextCh:"Siguiente →",backToNovel:"↑ Índice",chapterOf:"Capítulo {a} de {b}",
+ rateNudge:"Ya has leído el primer capítulo. ¡Tu valoración ayuda al autor y al ranking!",rateNow:"Valorar ahora",
+ commentsT:"Comentarios del capítulo",commentPh:"Comparte tu teoría, tu reacción o tu apoyo al autor…",
+ commentSend:"Comentar",commentLogin:"Inicia sesión para comentar",noComments:"Sé el primero en comentar este capítulo.",
+ modalTitle:"Valora esta novela",modalSub:"Puntúa cada categoría de 1 a 5 estrellas. La media se suma a la valoración global.",
+ avgLabel:"Tu media",send:"Enviar valoración",cancel:"Cancelar",sent:"¡Valoración enviada! Gracias por profesionalizar la lectura. +10 puntos",
+ followed:"Ahora sigues esta novela",unfollowed:"Has dejado de seguir la novela",faving:"Añadida a favoritos",unfaving:"Quitada de favoritos",
+ loginTitle:"Bienvenido a asciicave",loginSub:"Crea una cuenta o entra para publicar, valorar, comentar y guardar tu biblioteca.",
+ yourName:"Tu nombre de usuario",yourNamePh:"Cómo te verán los lectores…",
+ contGoogle:"Continuar con Google",contEmail:"o con tu correo electrónico",
+ needName:"Escribe primero tu nombre de usuario.",
+ orEmail:"o con tu correo electrónico",
+ emailLbl:"Correo electrónico",passLbl:"Contraseña (mín. 6 caracteres)",
+ modeLogin:"Entrar",modeSignup:"Crear cuenta",
+ needEmailPass:"Escribe tu correo y contraseña.",
+ errEmailUse:"Ese correo ya tiene cuenta. Prueba a entrar.",
+ errWeakPass:"La contraseña debe tener al menos 6 caracteres.",
+ errBadLogin:"Correo o contraseña incorrectos.",
+ errGeneric:"No se pudo completar la acción. Inténtalo de nuevo.",
+ checkEmailToast:"Cuenta creada. Revisa tu correo para confirmarla antes de valorar, comentar o publicar.",
+ welcomeU:"¡Bienvenido, {n}!",loggedOut:"Sesión cerrada.",
+ needLoginRate:"Regístrate para valorar novelas.",needLoginFollow:"Regístrate para seguir novelas.",needLoginFav:"Regístrate para guardar favoritos.",
+ needVerified:"Verifica tu correo electrónico para hacer esto.",
+ verifyBanner:"Confirma tu correo electrónico para valorar, comentar y publicar.",
+ verifyResend:"Reenviar correo de verificación",verifySent:"Correo de verificación reenviado.",
+ accountTypeLbl:"¿Cómo quieres usar asciicave?",accountTypeReader:"Lector",accountTypeAuthor:"Autor",accountTypeBoth:"Ambos",
+ writeWallT:"Para publicar necesitas una cuenta",
+ writeWallP:"Regístrate gratis con Google o tu email. Tu nombre de usuario firmará tus obras y tus lectores podrán seguirte.",
+ writeWallBtn:"Crear cuenta / Entrar",
+ writeTitle:"Publicar una novela",
+ writeIntro:"<b>Cómo funciona la revisión:</b> al enviar tu novela, el equipo editorial la leerá y le dará el <b>visto bueno</b> (se publica) o el <b>visto malo</b> (se devuelve con motivo). Suele tardar 24–72 h.",
+ fTitle:"Título de la novela",fSyn:"Sinopsis",fSynPh:"Engancha en 2–4 frases. Es lo primero que verá el lector…",
+ fGenres:"Géneros",fGenresHint:"elige hasta 4",fSubs:"Subgéneros y etiquetas",fSubsHint:"elige hasta 8",
+ fChTitle:"Título del capítulo 1",fChBody:"Cuerpo del capítulo 1",fChBodyPh:"Escribe aquí tu primer capítulo…",
+ noteInfo:"Las <b>notas de autor</b> (al inicio y al final del capítulo) se desbloquean a partir del capítulo 2, para que el primer capítulo entre directo a la historia.",
+ fPatreon:"Tu Patreon (opcional)",fPatreonPh:"https://patreon.com/tuusuario",
+ fPatreonHint:"se mostrará en tus novelas y al final de tus capítulos",
+ coverLbl:"Portada",coverHint:"opcional — si no subes una, usamos un degradado automático",coverUpload:"Subir portada",
+ adultLbl:"Contenido para adultos (+18)",adultHint:"Marca esta casilla si tu obra incluye violencia gráfica, contenido sexual explícito u otro material solo para adultos.",
+ submitReview:"Enviar a revisión",
+ submitted:"¡Enviada! Tu novela está en la cola de revisión. Sigue su estado en «Mis obras».",
+ needField:"Completa título, sinopsis, al menos 1 género y el capítulo 1.",
+ addChTitle:"Añadir capítulo a una novela aprobada",
+ fChTitleN:"Título del capítulo",fChBodyN:"Cuerpo del capítulo",
+ fNoteStart:"Nota de autor al inicio (opcional)",fNoteEnd:"Nota de autor al final (opcional)",
+ publishCh:"Publicar capítulo",chPublished:"¡Capítulo publicado! +15 puntos",
+ modTitle:"Solicitudes de publicación",modSub:"Zona privada de administración. Da el visto bueno o el visto malo a las novelas enviadas: es el paso obligatorio antes de publicarse.",
+ modDeniedT:"Zona restringida",modDeniedP:"Solo el administrador de asciicave.com puede ver las solicitudes de los escritores. El rol de administrador se asigna manualmente en la base de datos.",
+ modDeniedBtn:"Entrar con mi cuenta",
+ approve:"✓ Visto bueno · Publicar",reject:"✗ Visto malo · Devolver",
+ rejectReason:"Motivo del rechazo (lo verá el autor en «Mis obras»):",
+ approved:"Novela aprobada y publicada",rejected:"Novela devuelta al autor con tu motivo",
+ emptyMod:"No hay solicitudes pendientes. Cuando un escritor envíe su novela, aparecerá aquí y verás un aviso en tu menú.",
+ readExcerpt:"Extracto del capítulo 1:",historyMod:"Historial de decisiones",
+ rankTitle:"Rankings",rankSub:"Actualizados en tiempo real con la actividad de la comunidad",
+ rkStars:"Media de estrellas",rkFollow:"Seguidores",rkFavs:"Favoritos",rkViews:"Lecturas",
+ rankPos:"Puesto #{n}",
+ libTitle:"Mi biblioteca",libSub:"Tus novelas seguidas y favoritas, con tu progreso",
+ libFollowing:"Siguiendo",libFavs:"Favoritas",progress:"progreso",
+ recommendedT:"Recomendado para ti",recommendedSub:"Según lo que sigues, valoras o escribes",
+ growingT:"Novela en crecimiento",growingSub:"La que más seguidores ha ganado esta semana",
+ bestChapterT:"Mejor capítulo de la semana",bestChapterSub:"El más comentado en los últimos 7 días",
+ latestChaptersT:"Últimos capítulos publicados",
+ profTitle:"Mi perfil",
+ accountT:"Cuenta",accountVia:"conectado con",roleReader:"Lector / Autor",roleAdmin:"Administrador",
+ profPremiumT:"Modo Premium",
+ premiumSoon:"✦ Premium — próximamente",
+ premiumSoonP:"Todavía no hay ningún cobro real activado en asciicave.com: estamos preparando un sistema de pago de verdad antes de ofrecer Premium sin anuncios. Mientras tanto, puedes apoyar el mantenimiento de la web invitándome a un café.",
+ premiumSoonBtn:"☕ Apoyar en Buy Me a Coffee",
+ profAdsT:"Sobre los anuncios",profAdsP:"asciicave.com se sostiene con publicidad de intensidad media: un anuncio entre secciones y uno por capítulo, nunca ventanas emergentes ni vídeo con sonido.",
+ profPatreonT:"Mi Patreon de autor",profPatreonP:"Enlaza tu Patreon para que tus lectores puedan apoyarte. Aparecerá en tus novelas y al final de cada capítulo.",
+ savePatreon:"Guardar enlace",patreonSaved:"Patreon guardado. Aparecerá en tus obras.",
+ saveProfile:"Guardar cambios",profileSaved:"Perfil actualizado.",usernameTaken:"Ese nombre de usuario ya está en uso.",
+ profLangT:"Idioma / Language",profLangP:"La interfaz está disponible en español e inglés. Las novelas se muestran en su idioma original.",
+ showAdultToggle:"Mostrar contenido +18 en explorar e inicio",
+ avatarUpload:"Subir foto",avatarRemove:"Quitar foto",
+ pointsLbl:"puntos",
+ myWorksSub:"Estado de tus solicitudes y obras publicadas",
+ resubmit:"Reenviar a revisión",resubmitted:"Obra reenviada a la cola de revisión.",
+ noWorks:"Todavía no has enviado ninguna obra.",
+ adLabel:"publicidad",adWhy:"¿Por qué veo esto?",adRemove:"Sobre los anuncios",
+ ads:[["📚","Editorial Faro Norte","Publica tu manuscrito en papel. Primera valoración gratuita.","Saber más"],
+      ["🖋️","Curso de escritura creativa","12 semanas con autores publicados. Plazas abiertas.","Inscríbete"],
+      ["☕","Café Central Cowork","Tu oficina de escritor por 6 €/día. Wifi y café infinito.","Ver local"],
+      ["🎧","AudioNovela+","Convierte tu novela en audiolibro con narradores profesionales.","Probar gratis"]],
+ statNovels:"novelas publicadas",statReaders:"lectores registrados",statChapters:"capítulos",
+ footer:"asciicave.com — plataforma de novelas web para el público hispanohablante.",
+ footLinks:"Términos · Privacidad · Contacto · Para autores",
+ coffeeBtn:"☕ Invítame un café",
+ adultBadge:"+18",
+ adultGateT:"Contenido para adultos",adultGateP:"Esta obra está marcada como +18 por su autor. Confirma que tienes la edad legal para acceder a este tipo de contenido.",
+ adultGateBtn:"Confirmar y continuar",adultGateCancel:"Volver",
+ onboardTitle:"Completa tu perfil",onboardSub:"Elige tu nombre de usuario y cómo quieres usar asciicave.",onboardSave:"Guardar y continuar",
+ dashTitle:"Panel de autor",dashSub:"Tus obras, tus estadísticas y lo último que te han comentado",
+ dashStatWorks:"obras publicadas",dashStatChapters:"capítulos totales",dashStatFollowers:"seguidores totales",dashStatPoints:"puntos",
+ dashLatestComments:"Últimos comentarios recibidos",dashNoComments:"Todavía no tienes comentarios en tus capítulos.",
+ dashAddNovel:"Publicar otra novela",
+ loading:"Cargando…",
+ status:{aprobada:"aprobada",pendiente:"pendiente",rechazada:"rechazada"}
+},
+en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My library"},
+ premiumOff:"✦ Premium",premiumOn:"✦ Premium active",
+ loginBtn:"Log in / Sign up",logout:"Log out",myProfile:"My profile",myWorks:"My works",myDashboard:"Author dashboard",modArea:"Submissions",
+ heroTitle:'The cave where Spanish-language stories <em>take root</em>',
+ heroSub:"Publish your novel chapter by chapter, grow your readership, get rated on story, style, grammar and characters, and monetize via Patreon. Read for free; go Premium for zero ads.",
+ heroCta1:"Start reading",heroCta2:"Publish my novel",
+ emptyHomeT:"The cave awaits its first story",
+ emptyHomeP:"No novels published yet. Sign up, submit your work for review and be the very first on asciicave.com.",
+ emptyExploreT:"Nothing here yet",emptyExploreP:"Once the first novels are approved they'll show up in this section.",
+ emptyRankT:"The ranking is blank",emptyRankP:"Approved novels will compete here for stars, followers, favorites and reads.",
+ emptyLibT:"Your library is empty",emptyLibP:"Follow a novel or mark it as favorite and it will appear here with your reading progress.",
+ emptyLibLogin:"Log in to save your reading library.",
+ trending:"Trending",trendingSub:"The novels the community can't put down",
+ newArrivals:"Freshly approved",newSub:"Stories that just passed editorial review",
+ chapters:"chs.",followers:"followers",favsW:"favorites",views:"reads",votes:"votes",
+ readCh1:"Read chapter 1",follow:"Follow",following:"✓ Following",fav:"☆ Favorite",faved:"★ Favorited",
+ rate:"Rate this novel",rateLocked:"Read ch. 1 to rate",yourRating:"Your rating submitted",alreadyRated:"You already rated this novel.",
+ ratingTitle:"Category ratings",ratingSub:"weighted community average",
+ catHistoria:"Story",catEstilo:"Style",catGramatica:"Grammar",catPersonajes:"Characters",
+ tableOfCh:"Table of chapters",read:"read",
+ supportPatreon:"Support on Patreon",supportSub:"Help the author keep writing",
+ anStart:"Author's note · start",anEnd:"Author's note · end",
+ prevCh:"← Previous",nextCh:"Next →",backToNovel:"↑ Index",chapterOf:"Chapter {a} of {b}",
+ rateNudge:"You've read the first chapter. Your rating helps the author and the rankings!",rateNow:"Rate now",
+ commentsT:"Chapter comments",commentPh:"Share your theory, your reaction or your support for the author…",
+ commentSend:"Comment",commentLogin:"Log in to comment",noComments:"Be the first to comment on this chapter.",
+ modalTitle:"Rate this novel",modalSub:"Score each category from 1 to 5 stars. Your average joins the global score.",
+ avgLabel:"Your average",send:"Submit rating",cancel:"Cancel",sent:"Rating submitted! Thanks for reading like a pro. +10 points",
+ followed:"Now following this novel",unfollowed:"Unfollowed",faving:"Added to favorites",unfaving:"Removed from favorites",
+ loginTitle:"Welcome to asciicave",loginSub:"Create an account or log in to publish, rate, comment and save your library.",
+ yourName:"Your username",yourNamePh:"How readers will see you…",
+ contGoogle:"Continue with Google",contEmail:"or with your email",
+ needName:"Write your username first.",
+ orEmail:"or with your email",
+ emailLbl:"Email address",passLbl:"Password (min. 6 characters)",
+ modeLogin:"Log in",modeSignup:"Create account",
+ needEmailPass:"Type your email and password.",
+ errEmailUse:"That email already has an account. Try logging in.",
+ errWeakPass:"Password must be at least 6 characters.",
+ errBadLogin:"Wrong email or password.",
+ errGeneric:"Couldn't complete this action. Please try again.",
+ checkEmailToast:"Account created. Check your email to confirm it before rating, commenting or publishing.",
+ welcomeU:"Welcome, {n}!",loggedOut:"Logged out.",
+ needLoginRate:"Sign up to rate novels.",needLoginFollow:"Sign up to follow novels.",needLoginFav:"Sign up to save favorites.",
+ needVerified:"Verify your email address to do this.",
+ verifyBanner:"Confirm your email address to rate, comment and publish.",
+ verifyResend:"Resend verification email",verifySent:"Verification email resent.",
+ accountTypeLbl:"How do you want to use asciicave?",accountTypeReader:"Reader",accountTypeAuthor:"Author",accountTypeBoth:"Both",
+ writeWallT:"You need an account to publish",
+ writeWallP:"Sign up for free with Google or your email. Your username will sign your works and readers will be able to follow you.",
+ writeWallBtn:"Create account / Log in",
+ writeTitle:"Publish a novel",
+ writeIntro:"<b>How review works:</b> when you submit, the editorial team reads it and gives a <b>thumbs up</b> (published) or a <b>thumbs down</b> (returned with a reason). Usually 24–72 h.",
+ fTitle:"Novel title",fSyn:"Synopsis",fSynPh:"Hook readers in 2–4 sentences. It's the first thing they'll see…",
+ fGenres:"Genres",fGenresHint:"pick up to 4",fSubs:"Subgenres & tags",fSubsHint:"pick up to 8",
+ fChTitle:"Chapter 1 title",fChBody:"Chapter 1 body",fChBodyPh:"Write your first chapter here…",
+ noteInfo:"<b>Author's notes</b> (at the start and end of a chapter) unlock from chapter 2 onward, so chapter 1 dives straight into the story.",
+ fPatreon:"Your Patreon (optional)",fPatreonPh:"https://patreon.com/yourname",
+ fPatreonHint:"shown on your novels and at the end of your chapters",
+ coverLbl:"Cover",coverHint:"optional — if you skip it we use an automatic gradient",coverUpload:"Upload cover",
+ adultLbl:"Adult content (18+)",adultHint:"Check this box if your work includes graphic violence, explicit sexual content or other adults-only material.",
+ submitReview:"Submit for review",
+ submitted:"Submitted! Your novel is in the review queue. Track it under “My works”.",
+ needField:"Fill in title, synopsis, at least 1 genre and chapter 1.",
+ addChTitle:"Add a chapter to an approved novel",
+ fChTitleN:"Chapter title",fChBodyN:"Chapter body",
+ fNoteStart:"Author's note at the start (optional)",fNoteEnd:"Author's note at the end (optional)",
+ publishCh:"Publish chapter",chPublished:"Chapter published! +15 points",
+ modTitle:"Publication submissions",modSub:"Private admin area. Approve or reject submitted novels — the mandatory step before publication.",
+ modDeniedT:"Restricted area",modDeniedP:"Only the asciicave.com administrator can see writers' submissions. The administrator role is assigned manually in the database.",
+ modDeniedBtn:"Log in with my account",
+ approve:"✓ Approve · Publish",reject:"✗ Reject · Return",
+ rejectReason:"Rejection reason (the author will see it under “My works”):",
+ approved:"Novel approved and published",rejected:"Novel returned to the author with your reason",
+ emptyMod:"No pending submissions. When a writer submits a novel it will appear here, with a badge in your menu.",
+ readExcerpt:"Excerpt from chapter 1:",historyMod:"Decision history",
+ rankTitle:"Rankings",rankSub:"Updated in real time with community activity",
+ rkStars:"Star average",rkFollow:"Followers",rkFavs:"Favorites",rkViews:"Reads",
+ rankPos:"Rank #{n}",
+ libTitle:"My library",libSub:"Your followed and favorited novels, with your progress",
+ libFollowing:"Following",libFavs:"Favorites",progress:"progress",
+ recommendedT:"Recommended for you",recommendedSub:"Based on what you follow, rate or write",
+ growingT:"Growing novel",growingSub:"Gained the most followers this week",
+ bestChapterT:"Best chapter of the week",bestChapterSub:"The most commented in the last 7 days",
+ latestChaptersT:"Latest published chapters",
+ profTitle:"My profile",
+ accountT:"Account",accountVia:"connected with",roleReader:"Reader / Author",roleAdmin:"Administrator",
+ profPremiumT:"Premium mode",
+ premiumSoon:"✦ Premium — coming soon",
+ premiumSoonP:"There's no real payment processor active on asciicave.com yet — a proper payment system is on the way before ad-free Premium ships. In the meantime you can support the site's upkeep by buying me a coffee.",
+ premiumSoonBtn:"☕ Support on Buy Me a Coffee",
+ profAdsT:"About the ads",profAdsP:"asciicave.com runs on medium-intensity advertising: one ad between sections and one per chapter — never pop-ups or autoplay video.",
+ profPatreonT:"My author Patreon",profPatreonP:"Link your Patreon so readers can support you. It shows on your novels and at the end of every chapter.",
+ savePatreon:"Save link",patreonSaved:"Patreon saved. It will appear on your works.",
+ saveProfile:"Save changes",profileSaved:"Profile updated.",usernameTaken:"That username is already taken.",
+ profLangT:"Idioma / Language",profLangP:"The interface is available in Spanish and English. Novels display in their original language.",
+ showAdultToggle:"Show 18+ content in browse and home",
+ avatarUpload:"Upload photo",avatarRemove:"Remove photo",
+ pointsLbl:"points",
+ myWorksSub:"Status of your submissions and published works",
+ resubmit:"Resubmit for review",resubmitted:"Work resubmitted to the review queue.",
+ noWorks:"You haven't submitted any work yet.",
+ adLabel:"advertisement",adWhy:"Why am I seeing this?",adRemove:"About the ads",
+ ads:[["📚","Faro Norte Publishing","Get your manuscript in print. Free first assessment.","Learn more"],
+      ["🖋️","Creative writing course","12 weeks with published authors. Enrollment open.","Enroll"],
+      ["☕","Café Central Cowork","Your writer's office for €6/day. Wifi & endless coffee.","See venue"],
+      ["🎧","AudioNovela+","Turn your novel into an audiobook with pro narrators.","Try free"]],
+ statNovels:"published novels",statReaders:"registered readers",statChapters:"chapters",
+ footer:"asciicave.com — a web-novel platform for the Spanish-speaking world.",
+ footLinks:"Terms · Privacy · Contact · For authors",
+ coffeeBtn:"☕ Buy me a coffee",
+ adultBadge:"18+",
+ adultGateT:"Adult content",adultGateP:"This work is flagged 18+ by its author. Confirm you're of legal age to access this kind of content.",
+ adultGateBtn:"Confirm and continue",adultGateCancel:"Go back",
+ onboardTitle:"Complete your profile",onboardSub:"Pick your username and how you want to use asciicave.",onboardSave:"Save and continue",
+ dashTitle:"Author dashboard",dashSub:"Your works, your stats, and your latest comments",
+ dashStatWorks:"published works",dashStatChapters:"total chapters",dashStatFollowers:"total followers",dashStatPoints:"points",
+ dashLatestComments:"Latest comments received",dashNoComments:"No comments on your chapters yet.",
+ dashAddNovel:"Publish another novel",
+ loading:"Loading…",
+ status:{aprobada:"approved",pendiente:"pending",rechazada:"rejected"}
+}};
+</script>
+<script>
+/* =============== ESTADO =============== */
+const state={lang:'es',premium:false,view:'home',params:{},booting:true,detailLoading:false,
+  user:null,               // {id,email,username,accountType,role,avatarUrl,patreon,points,showAdult,emailConfirmed,onboarded}
+  read:{},follows:new Set(),favs:new Set(),ratedIds:new Set(),adultConfirmed:new Set(),
+  registeredUsers:0,menuOpen:false,pendingCount:0,
+  modPending:[],modHistory:[],dashComments:[]
+};
+const t=()=>T[state.lang];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const fmt=n=>n>=1000?(n/1000).toFixed(1).replace('.0','')+'k':String(n||0);
+const gName=es=>{const g=GENRES.find(x=>x.es===es)||SUBGENRES.find(x=>x.es===es);return g?(state.lang==='es'?g.es:g.en):es;};
+const avgOf=n=>{const r=n.r;const a=(Number(r.historia)+Number(r.estilo)+Number(r.gramatica)+Number(r.personajes))/4;return n.votes?a:0;};
+const starsTxt=a=>{const f=Math.round(a);return '★'.repeat(f)+'☆'.repeat(5-f);};
+const approved=()=>NOVELS.filter(n=>n.status==='aprobada');
+const isAdmin=()=>state.user&&state.user.role==='admin';
+const myNovels=()=>MY_NOVELS;
+const trendScore=n=>avgOf(n)*Math.log(n.followers+2);
+const accountTypeLabel=v=>({lector:t().accountTypeReader,autor:t().accountTypeAuthor,ambos:t().accountTypeBoth}[v]||v);
+
+function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2800);}
+function setLang(l){state.lang=l;render();}
+function toggleMenu(){state.menuOpen=!state.menuOpen;render();}
+function loadingHtml(){return `<div class="empty"><span class="e-glyph">&gt;_ ▌</span><h3>${t().loading}</h3></div>`;}
+
+let activeChannel=null;
+function teardownChannel(){if(activeChannel){sb.removeChannel(activeChannel);activeChannel=null;}}
+
+async function go(view,params={}){
+  state.view=view;state.params=params;state.menuOpen=false;
+  teardownChannel();
+  window.scrollTo({top:0});
+  if(view==='novel'||view==='reader'){
+    state.detailLoading=true;render();
+    await ensureChapters(params.id);
+    if(view==='novel')await refreshNovelLive(params.id);
+    if(view==='reader'){
+      const chs=CHAPTERS_CACHE[params.id]||[];
+      if(chs[params.ch]&&!chs[params.ch]._comments)await loadComments(params.id,params.ch);
+      await registerView(params.id,params.ch);
+    }
+    state.detailLoading=false;
+  }else if(view==='mod'){
+    state.detailLoading=true;render();
+    await loadModQueue();
+    state.detailLoading=false;
+  }else if(view==='dashboard'){
+    state.detailLoading=true;render();
+    await loadDashboardData();
+    state.detailLoading=false;
   }
+  render();
 }
 
-async function boot() {
-  const bootEl = document.getElementById('boot');
-  for (const line of lines) {
-    const row = document.createElement('div');
-    if (line.ok) row.classList.add('ok');
-    bootEl.appendChild(row);
-    await typeLine(row, line.text, line.delay);
-    await new Promise(r => setTimeout(r, 80));
+/* =============== AUTENTICACIÓN =============== */
+let loginTab='login'; // 'login' | 'signup'
+let signupAccountType='lector';
+function openLogin(mode='login'){loginTab=mode;renderLogin();}
+function setSignupAccountType(v){signupAccountType=v;renderLogin();}
+
+function renderLogin(){
+  $('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()">
+   <div class="modal">
+    <h2>${t().loginTitle}</h2><p class="sub">${t().loginSub}</p>
+    <div class="login-tabs">
+      <button class="${loginTab==='login'?'on':''}" onclick="openLogin('login')">${t().modeLogin}</button>
+      <button class="${loginTab==='signup'?'on':''}" onclick="openLogin('signup')">${t().modeSignup}</button>
+    </div>
+    <button class="provider-btn" onclick="oauthGoogle()"><span class="p-mark" style="color:#E8710A">G</span>${t().contGoogle}</button>
+    <div style="text-align:center;color:var(--muted);font-size:.78rem;margin:14px 0;font-family:var(--font-mono)">— ${t().orEmail} —</div>
+    ${loginTab==='signup'?`
+      <div class="field" style="margin-bottom:12px"><label>${t().yourName}</label>
+        <input type="text" id="regName" placeholder="${t().yourNamePh}" maxlength="24"></div>
+      <div class="field" style="margin-bottom:16px"><label>${t().accountTypeLbl}</label>
+        <div class="account-type-picker">
+          <button type="button" class="${signupAccountType==='lector'?'sel':''}" onclick="setSignupAccountType('lector')">${t().accountTypeReader}</button>
+          <button type="button" class="${signupAccountType==='autor'?'sel':''}" onclick="setSignupAccountType('autor')">${t().accountTypeAuthor}</button>
+          <button type="button" class="${signupAccountType==='ambos'?'sel':''}" onclick="setSignupAccountType('ambos')">${t().accountTypeBoth}</button>
+        </div>
+      </div>`:''}
+    <div class="field" style="margin-bottom:12px"><label>${t().emailLbl}</label><input type="email" id="fbEmail" autocomplete="email"></div>
+    <div class="field" style="margin-bottom:14px"><label>${t().passLbl}</label><input type="password" id="fbPass" autocomplete="${loginTab==='signup'?'new-password':'current-password'}"></div>
+    <button class="btn btn-gold" style="width:100%" onclick="emailAuth()">${loginTab==='signup'?t().modeSignup:t().modeLogin}</button>
+    <div class="login-err" id="loginErr"></div>
+   </div></div>`;
+}
+async function oauthGoogle(){
+  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
+  if(error&&$('loginErr'))$('loginErr').textContent=t().errGeneric;
+}
+async function emailAuth(){
+  const email=($('fbEmail').value||'').trim(),pass=$('fbPass').value||'';
+  if(!email||!pass){$('loginErr').textContent=t().needEmailPass;return;}
+  if(loginTab==='signup'){
+    const name=($('regName').value||'').trim();
+    if(!name){$('loginErr').textContent=t().needName;return;}
+    const{error}=await sb.auth.signUp({email,password:pass,options:{data:{username:name,account_type:signupAccountType}}});
+    if(error){showLoginErr(error);return;}
+    closeModal();toast(t().checkEmailToast);
+  }else{
+    const{error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error){showLoginErr(error);return;}
+    closeModal();
   }
-  const cursor = document.createElement('span');
-  cursor.className = 'cursor';
-  bootEl.lastChild.appendChild(cursor);
+}
+function showLoginErr(error){
+  const code=error.code||'';
+  const map={user_already_exists:t().errEmailUse,weak_password:t().errWeakPass,
+    invalid_credentials:t().errBadLogin,email_not_confirmed:t().needVerified};
+  const el=$('loginErr');if(el)el.textContent=map[code]||t().errGeneric;
+}
+async function logout(){await sb.auth.signOut();state.menuOpen=false;toast(t().loggedOut);go('home');}
+
+/* Onboarding: solo aparece si el perfil no tiene aún nombre/tipo elegido
+   (típico tras registrarse con Google) */
+let onboardName='',onboardType='lector';
+function openOnboardModal(){
+  if(!state.user||state.user.onboarded)return;
+  onboardName=state.user.username||'';onboardType=state.user.accountType||'lector';
+  renderOnboardModal();
+}
+function renderOnboardModal(){
+  if(!state.user||state.user.onboarded)return;
+  $('modalRoot').innerHTML=`<div class="modal-bg">
+    <div class="modal">
+      <h2>${t().onboardTitle}</h2><p class="sub">${t().onboardSub}</p>
+      <div class="field" style="margin-bottom:14px"><label>${t().yourName}</label>
+        <input type="text" value="${esc(onboardName)}" maxlength="24" oninput="onboardName=this.value"></div>
+      <div class="field" style="margin-bottom:16px"><label>${t().accountTypeLbl}</label>
+        <div class="account-type-picker">
+          <button type="button" class="${onboardType==='lector'?'sel':''}" onclick="onboardType='lector';renderOnboardModal()">${t().accountTypeReader}</button>
+          <button type="button" class="${onboardType==='autor'?'sel':''}" onclick="onboardType='autor';renderOnboardModal()">${t().accountTypeAuthor}</button>
+          <button type="button" class="${onboardType==='ambos'?'sel':''}" onclick="onboardType='ambos';renderOnboardModal()">${t().accountTypeBoth}</button>
+        </div>
+      </div>
+      <button class="btn btn-gold" style="width:100%" onclick="saveOnboard()">${t().onboardSave}</button>
+    </div></div>`;
+}
+async function saveOnboard(){
+  if(!onboardName.trim())return;
+  const{error}=await sb.from('profiles').update({username:onboardName.trim(),account_type:onboardType,onboarded:true}).eq('id',state.user.id);
+  if(error){toast(t().errGeneric);return;}
+  state.user.username=onboardName.trim();state.user.accountType=onboardType;state.user.onboarded=true;
+  closeModal();render();
+}
+</script>
+<script>
+/* =============== CAPA DE DATOS (Supabase) =============== */
+function mapNovel(row){
+  return{
+    id:row.id,title:row.title,syn:row.synopsis,
+    author:row.profiles?.username||'—',ownerId:row.owner_id,
+    authorAvatar:row.profiles?.avatar_url||null,
+    patreon:row.patreon_url||row.profiles?.patreon_url||'',
+    genres:row.genres||[],subs:row.subgenres||[],
+    isAdult:!!row.is_adult,status:row.status,rejectReason:row.reject_reason,
+    followers:row.followers_count||0,favs:row.favs_count||0,views:row.views_count||0,votes:row.votes_count||0,
+    chaptersCount:row.chapters_count||0,
+    r:{historia:+row.rating_historia||0,estilo:+row.rating_estilo||0,gramatica:+row.rating_gramatica||0,personajes:+row.rating_personajes||0},
+    cover:row.cover_gradient,coverUrl:row.cover_url,
+    createdAt:row.created_at,reviewedAt:row.reviewed_at
+  };
+}
+function mapNovelLive(row){
+  return{followers:row.followers_count||0,favs:row.favs_count||0,views:row.views_count||0,votes:row.votes_count||0,
+    chaptersCount:row.chapters_count||0,status:row.status,
+    r:{historia:+row.rating_historia||0,estilo:+row.rating_estilo||0,gramatica:+row.rating_gramatica||0,personajes:+row.rating_personajes||0}};
+}
+async function loadHomeNovels(){
+  const{data}=await sb.from('novels').select('*, profiles(username,avatar_url,patreon_url)').eq('status','aprobada').order('created_at',{ascending:false});
+  NOVELS=(data||[]).map(mapNovel);
+}
+async function loadStats(){
+  const{count}=await sb.from('profiles').select('id',{count:'exact',head:true});
+  state.registeredUsers=count||0;
+}
+async function loadHomeExtras(){
+  const sevenDaysAgo=new Date(Date.now()-7*864e5).toISOString();
+  const{data:latest}=await sb.from('chapters').select('id,title,idx,novel_id,created_at,novels(title,status)').order('created_at',{ascending:false}).limit(20);
+  LATEST_CHAPTERS=(latest||[]).filter(c=>c.novels&&c.novels.status==='aprobada').slice(0,1);
+
+  const{data:growth}=await sb.from('follows').select('novel_id').gte('created_at',sevenDaysAgo);
+  GROWING_NOVEL=null;
+  if(growth&&growth.length){
+    const tally={};growth.forEach(f=>tally[f.novel_id]=(tally[f.novel_id]||0)+1);
+    const topId=Object.entries(tally).sort((a,b)=>b[1]-a[1])[0][0];
+    GROWING_NOVEL=NOVELS.find(n=>n.id===+topId)||null;
+  }
+
+  const{data:comm}=await sb.from('comments').select('chapter_id,chapters(id,title,idx,novel_id,novels(title,status))').gte('created_at',sevenDaysAgo);
+  BEST_CHAPTER=null;
+  if(comm&&comm.length){
+    const tally={};comm.forEach(c=>{if(c.chapters&&c.chapters.novels&&c.chapters.novels.status==='aprobada')tally[c.chapter_id]=(tally[c.chapter_id]||0)+1;});
+    const entries=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+    if(entries.length){
+      const topChId=entries[0][0];
+      const found=comm.find(c=>String(c.chapter_id)===topChId);
+      if(found)BEST_CHAPTER={chapterTitle:found.chapters.title,chapterIdx:found.chapters.idx,novelId:found.chapters.novel_id,novelTitle:found.chapters.novels.title};
+    }
+  }
+}
+function loadRecommendations(){
+  RECOMMENDED=[];
+  if(!state.user)return;
+  const seedIds=new Set([...state.follows,...state.favs,...state.ratedIds]);
+  const seedNovels=NOVELS.filter(n=>seedIds.has(n.id)).concat(myNovels());
+  const tally={};
+  seedNovels.forEach(n=>[...n.genres,...n.subs].forEach(g=>tally[g]=(tally[g]||0)+1));
+  const ranked=Object.entries(tally).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  if(!ranked.length)return;
+  RECOMMENDED=NOVELS.filter(n=>!seedIds.has(n.id)&&n.ownerId!==state.user.id&&
+      [...n.genres,...n.subs].some(g=>ranked.includes(g)))
+    .sort((a,b)=>avgOf(b)-avgOf(a)).slice(0,6);
+}
+async function ensureChapters(novelId){
+  if(CHAPTERS_CACHE[novelId])return CHAPTERS_CACHE[novelId];
+  const{data}=await sb.from('chapters').select('*').eq('novel_id',novelId).order('idx');
+  CHAPTERS_CACHE[novelId]=data||[];
+  return CHAPTERS_CACHE[novelId];
+}
+function invalidateChapters(novelId){delete CHAPTERS_CACHE[novelId];}
+async function loadComments(novelId,chIdx){
+  const ch=CHAPTERS_CACHE[novelId][chIdx];if(!ch)return;
+  const{data}=await sb.from('comments').select('id,text,created_at,profiles(username,avatar_url)').eq('chapter_id',ch.id).order('created_at');
+  ch._comments=data||[];
+}
+async function refreshNovelLive(id){
+  const{data}=await sb.from('novels').select('*, profiles(username,avatar_url,patreon_url)').eq('id',id).maybeSingle();
+  if(!data)return;
+  const mapped=mapNovel(data);
+  const idx=NOVELS.findIndex(n=>n.id===id);
+  if(idx>-1)NOVELS[idx]=mapped;else NOVELS.push(mapped);
+  activeChannel=sb.channel('novel-'+id)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'novels',filter:'id=eq.'+id},payload=>{
+      const i=NOVELS.findIndex(n=>n.id===id);
+      if(i>-1)NOVELS[i]={...NOVELS[i],...mapNovelLive(payload.new)};
+      render();
+    }).subscribe();
+}
+function rankOf(novelId){
+  const list=approved().slice().sort((a,b)=>trendScore(b)-trendScore(a));
+  const i=list.findIndex(n=>n.id===novelId);
+  return i>-1?i+1:null;
+}
+async function loadMyNovels(){
+  if(!state.user){MY_NOVELS=[];return;}
+  const{data}=await sb.from('novels').select('*, profiles(username,avatar_url,patreon_url)').eq('owner_id',state.user.id).order('created_at',{ascending:false});
+  MY_NOVELS=(data||[]).map(mapNovel);
+}
+async function loadInteractionSets(){
+  if(!state.user){state.follows=new Set();state.favs=new Set();state.ratedIds=new Set();state.read={};return;}
+  const[fr,fv,rt,rp]=await Promise.all([
+    sb.from('follows').select('novel_id').eq('user_id',state.user.id),
+    sb.from('favorites').select('novel_id').eq('user_id',state.user.id),
+    sb.from('ratings').select('novel_id').eq('user_id',state.user.id),
+    sb.from('reading_progress').select('novel_id,read_chapters').eq('user_id',state.user.id)
+  ]);
+  state.follows=new Set((fr.data||[]).map(x=>x.novel_id));
+  state.favs=new Set((fv.data||[]).map(x=>x.novel_id));
+  state.ratedIds=new Set((rt.data||[]).map(x=>x.novel_id));
+  state.read={};(rp.data||[]).forEach(x=>state.read[x.novel_id]=new Set(x.read_chapters||[]));
+}
+async function refreshPendingCount(){
+  if(!isAdmin()){state.pendingCount=0;return;}
+  const{count}=await sb.from('novels').select('id',{count:'exact',head:true}).eq('status','pendiente');
+  state.pendingCount=count||0;
+}
+async function loadModQueue(){
+  if(!isAdmin())return;
+  const[{data:pending},{data:history}]=await Promise.all([
+    sb.from('novels').select('*, profiles(username)').eq('status','pendiente').order('created_at'),
+    sb.from('novels').select('*, profiles(username)').neq('status','pendiente').not('reviewed_at','is',null).order('reviewed_at',{ascending:false}).limit(30)
+  ]);
+  state.modPending=(pending||[]).map(mapNovel);
+  state.modHistory=(history||[]).map(mapNovel);
+  for(const n of state.modPending)await ensureChapters(n.id);
+  state.pendingCount=state.modPending.length;
+}
+async function loadDashboardData(){
+  await loadHomeNovels();
+  await loadMyNovels();
+  const mine=myNovels().filter(n=>n.status==='aprobada').map(n=>n.id);
+  let comments=[];
+  if(mine.length){
+    const chIds=[];
+    for(const nid of mine){const chs=await ensureChapters(nid);chs.forEach(c=>chIds.push(c.id));}
+    if(chIds.length){
+      const{data}=await sb.from('comments').select('id,text,created_at,profiles(username,avatar_url)').in('chapter_id',chIds).order('created_at',{ascending:false}).limit(10);
+      comments=data||[];
+    }
+  }
+  state.dashComments=comments;
+}
+async function uploadImage(bucket,file){
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+  const path=`${state.user.id}/${Date.now()}.${ext}`;
+  const{error}=await sb.storage.from(bucket).upload(path,file,{upsert:true});
+  if(error)return null;
+  const{data}=sb.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
+}
+</script>
+<script>
+/* =============== COMPONENTES =============== */
+let adSeed=0;
+function adBlock(){
+  if(state.premium)return'';
+  if(ADSENSE.slot){
+    return `<div style="position:relative;min-height:90px">
+      <ins class="adsbygoogle" style="display:block"
+        data-ad-client="${ADSENSE.client}"
+        data-ad-slot="${ADSENSE.slot}"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
+    <div class="ad-note">${t().adWhy} · <a onclick="go('profile')">${t().adRemove}</a></div>`;
+  }
+  const a=t().ads[(adSeed++)%t().ads.length];
+  return `<div class="ad" data-label="${t().adLabel}">
+    <div class="ad-ico">${a[0]}</div>
+    <div class="ad-body"><strong>${a[1]}</strong><span>${a[2]}</span></div>
+    <button class="ad-cta">${a[3]}</button>
+  </div>
+  <div class="ad-note">${t().adWhy} · <a onclick="go('profile')">${t().adRemove}</a></div>`;
+}
+function activateAds(){
+  if(!ADSENSE.slot)return;
+  document.querySelectorAll('ins.adsbygoogle:not([data-init])').forEach(el=>{
+    el.setAttribute('data-init','1');
+    try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
+  });
+}
+function avatarHTML(user,size){
+  size=size||24;
+  if(user&&user.avatarUrl)return `<img src="${esc(user.avatarUrl)}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0">`;
+  return `<div class="avatar-fallback" style="width:${size}px;height:${size}px;font-size:${Math.max(6,Math.round(size*0.16))}px">asciicave</div>`;
+}
+function novelCard(n){
+  const a=avgOf(n);
+  return `<div class="card" onclick="go('novel',{id:${n.id}})">
+    ${n.coverUrl?`<img class="cover-thumb" src="${esc(n.coverUrl)}" alt="" loading="lazy">`:''}
+    <div class="tags">${n.isAdult?`<span class="adult-badge">${t().adultBadge}</span>`:''}${n.genres.slice(0,3).map(g=>`<span class="tag g">${esc(gName(g))}</span>`).join('')}</div>
+    <h3>${esc(n.title)}</h3>
+    <div class="author">${esc(n.author)}</div>
+    <div class="syn">${esc(n.syn)}</div>
+    <div class="card-meta">
+      <span class="stars-inline">${starsTxt(a)} ${a?a.toFixed(1):'—'}</span>
+      <span>${fmt(n.followers)} ♥ · ${n.chaptersCount} ${t().chapters}</span>
+    </div>
+  </div>`;
+}
+function emptyState(titulo,texto,btnLabel,btnAction){
+  return `<div class="empty">
+    <span class="e-glyph">&gt;_ ▌</span>
+    <h3>${titulo}</h3><p>${texto}</p>
+    ${btnLabel?`<button class="btn btn-gold" onclick="${btnAction}">${btnLabel}</button>`:''}
+  </div>`;
+}
+function constellationSVG(){
+  return `<svg class="constellation" width="300" height="300" viewBox="0 0 300 300" aria-hidden="true">
+   <defs><radialGradient id="glow"><stop offset="0%" stop-color="#E3B254" stop-opacity=".9"/><stop offset="100%" stop-color="#E3B254" stop-opacity="0"/></radialGradient></defs>
+   <polygon points="150,40 260,150 150,260 40,150" fill="none" stroke="rgba(227,178,84,.35)" stroke-width="1" stroke-dasharray="3 5"/>
+   ${[[150,40,t().catHistoria],[260,150,t().catEstilo],[150,260,t().catGramatica],[40,150,t().catPersonajes]].map(([x,y,l],i)=>`
+    <circle cx="${x}" cy="${y}" r="14" fill="url(#glow)"/>
+    <text x="${x}" y="${y+5}" text-anchor="middle" font-size="15" fill="#E3B254">★</text>
+    <text x="${x}" y="${y+(i===0?-22:i===2?32:5)}" ${i===1?'dx="24" text-anchor="start"':i===3?'dx="-24" text-anchor="end"':'text-anchor="middle"'} font-size="11" fill="#8B94A8" font-family="IBM Plex Mono">${l}</text>`).join('')}
+   <circle cx="150" cy="150" r="3" fill="#EDE7D8"/>
+  </svg>`;
+}
+function verifyBanner(){
+  return `<div class="verify-banner"><span>${t().verifyBanner}</span><button onclick="resendVerification()">${t().verifyResend}</button></div>`;
+}
+async function resendVerification(){
+  await sb.auth.resend({type:'signup',email:state.user.email});
+  toast(t().verifySent);
+}
+function homeWidgets(){
+  const cards=[];
+  if(LATEST_CHAPTERS[0]){const c=LATEST_CHAPTERS[0];cards.push(`<div class="widget-card" onclick="go('reader',{id:${c.novel_id},ch:${c.idx}})">
+    <span class="w-label">${t().latestChaptersT}</span><h4>${esc(c.title)}</h4><span>${esc(c.novels&&c.novels.title||'')}</span></div>`);}
+  if(GROWING_NOVEL){cards.push(`<div class="widget-card" onclick="go('novel',{id:${GROWING_NOVEL.id}})">
+    <span class="w-label">${t().growingT}</span><h4>${esc(GROWING_NOVEL.title)}</h4><span>${t().growingSub}</span></div>`);}
+  if(BEST_CHAPTER){cards.push(`<div class="widget-card" onclick="go('reader',{id:${BEST_CHAPTER.novelId},ch:${BEST_CHAPTER.chapterIdx}})">
+    <span class="w-label">${t().bestChapterT}</span><h4>${esc(BEST_CHAPTER.chapterTitle)}</h4><span>${esc(BEST_CHAPTER.novelTitle)}</span></div>`);}
+  return cards.length?`<div class="widget-row">${cards.join('')}</div>`:'';
+}
+</script>
+<script>
+/* =============== VISTAS =============== */
+function vHome(){
+  adSeed=0;
+  if(state.booting)return loadingHtml();
+  const list=approved();
+  const totCh=list.reduce((s,n)=>s+n.chaptersCount,0);
+  const top=list.slice().sort((a,b)=>trendScore(b)-trendScore(a));
+  loadRecommendations();
+  return `
+  <section class="hero">
+    <div>
+      <h1>${t().heroTitle}</h1>
+      <p>${t().heroSub}</p>
+      <div class="hero-actions">
+        <button class="btn btn-gold" onclick="go('explore')">${t().heroCta1}</button>
+        <button class="btn btn-ghost" onclick="go('write')">${t().heroCta2}</button>
+      </div>
+      <div class="stat-row" style="margin-top:26px">
+        <span><b>${list.length}</b> ${t().statNovels}</span>
+        <span><b>${state.registeredUsers}</b> ${t().statReaders}</span>
+        <span><b>${totCh}</b> ${t().statChapters}</span>
+      </div>
+    </div>
+    ${constellationSVG()}
+  </section>
+  ${!list.length?emptyState(t().emptyHomeT,t().emptyHomeP,t().heroCta2,"go('write')"):`
+    ${homeWidgets()}
+    <h2 class="sec-title">${t().trending}</h2>
+    <p class="sec-sub">${t().trendingSub}</p>
+    <div class="grid">${top.slice(0,3).map(novelCard).join('')}</div>
+    ${top.length>3?`<div style="margin:26px 0">${adBlock()}</div>
+    <h2 class="sec-title">${t().newArrivals}</h2>
+    <p class="sec-sub">${t().newSub}</p>
+    <div class="grid">${top.slice(3).map(novelCard).join('')}</div>`:''}
+    ${RECOMMENDED.length?`<h2 class="sec-title">${t().recommendedT}</h2><p class="sec-sub">${t().recommendedSub}</p><div class="grid">${RECOMMENDED.map(novelCard).join('')}</div>`:''}
+  `}`;
+}
+
+function vExplore(){
+  adSeed=1;
+  if(state.booting)return loadingHtml();
+  const f=state.params.genre||'';
+  const showAdult=state.user&&state.user.showAdult;
+  const list=approved().filter(n=>(!f||n.genres.includes(f))&&(showAdult||!n.isAdult));
+  let cards='';
+  list.forEach((n,i)=>{cards+=novelCard(n);if(i===2)cards+=`<div style="grid-column:1/-1">${adBlock()}</div>`;});
+  return `
+  <h2 class="sec-title">${t().nav.explore}</h2>
+  <p class="sec-sub">${list.length} ${t().statNovels}</p>
+  <div class="pill-picker" style="margin-bottom:22px">
+    <button class="pill ${!f?'sel':''}" onclick="go('explore')">${state.lang==='es'?'Todos':'All'}</button>
+    ${GENRES.map(g=>`<button class="pill ${f===g.es?'sel':''}" onclick="go('explore',{genre:'${g.es}'})">${state.lang==='es'?g.es:g.en}</button>`).join('')}
+  </div>
+  ${list.length?`<div class="grid">${cards}</div>`:emptyState(t().emptyExploreT,t().emptyExploreP,t().heroCta2,"go('write')")}`;
+}
+
+function vNovel(){
+  adSeed=2;
+  if(state.detailLoading)return loadingHtml();
+  const n=NOVELS.find(x=>x.id===state.params.id)||MY_NOVELS.find(x=>x.id===state.params.id);
+  if(!n)return vHome();
+  if(n.status!=='aprobada'&&!isAdmin()&&(!state.user||n.ownerId!==state.user.id))return vHome();
+  if(n.isAdult&&!(state.user&&state.user.showAdult)&&!state.adultConfirmed.has(n.id)){
+    return `<div class="empty"><span class="e-glyph">${t().adultBadge}</span>
+      <h3>${t().adultGateT}</h3><p>${t().adultGateP}</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="go('home')">${t().adultGateCancel}</button>
+        <button class="btn btn-wax" onclick="confirmAdult(${n.id})">${t().adultGateBtn}</button>
+      </div></div>`;
+  }
+  const chs=CHAPTERS_CACHE[n.id]||[];
+  const readSet=state.read[n.id]||new Set();
+  const canRate=readSet.has(0)&&state.user&&state.user.emailConfirmed&&!state.ratedIds.has(n.id);
+  const rated=state.ratedIds.has(n.id);
+  const cats=[['historia',t().catHistoria],['estilo',t().catEstilo],['gramatica',t().catGramatica],['personajes',t().catPersonajes]];
+  const rank=n.status==='aprobada'?rankOf(n.id):null;
+  return `
+  ${n.status!=='aprobada'&&(isAdmin()||(state.user&&n.ownerId===state.user.id))?`<div class="callout" style="margin-bottom:16px"><b>${t().status[n.status]}</b>${n.rejectReason?' — '+esc(n.rejectReason):''}</div>`:''}
+  <div class="novel-head">
+    <div class="cover" style="${n.coverUrl?`background-image:url('${esc(n.coverUrl)}')`:`background:${n.cover}`}">${n.coverUrl?'':esc(n.title)}</div>
+    <div>
+      <div class="tags" style="margin-bottom:8px">${n.isAdult?`<span class="adult-badge">${t().adultBadge}</span>`:''}${n.genres.map(g=>`<span class="tag g">${esc(gName(g))}</span>`).join('')}${n.subs.map(s=>`<span class="tag">${esc(gName(s))}</span>`).join('')}</div>
+      <h1>${esc(n.title)}</h1>
+      <div class="byline">${esc(n.author)}${n.patreon?` · <a href="${esc(n.patreon)}" target="_blank" rel="noopener">Patreon ↗</a>`:''}</div>
+      <p style="color:var(--muted);font-size:.95rem">${esc(n.syn)}</p>
+      <div class="stat-row">
+        <span><b>${fmt(n.followers)}</b> ${t().followers}</span>
+        <span><b>${fmt(n.favs)}</b> ${t().favsW}</span>
+        <span><b>${fmt(n.views)}</b> ${t().views}</span>
+        <span><b>${n.chaptersCount}</b> ${t().chapters}</span>
+      </div>
+      <div class="novel-actions">
+        <button class="btn btn-gold" onclick="go('reader',{id:${n.id},ch:0})">${t().readCh1}</button>
+        <button class="btn btn-ghost" onclick="toggleFollow(${n.id})">${state.follows.has(n.id)?t().following:t().follow}</button>
+        <button class="btn btn-ghost" onclick="toggleFav(${n.id})">${state.favs.has(n.id)?t().faved:t().fav}</button>
+        <button class="btn ${canRate?'btn-gold':'btn-ghost'}" ${canRate?'':'disabled'} onclick="openRating(${n.id})">${rated?t().yourRating:(readSet.has(0)?t().rate:t().rateLocked)}</button>
+        ${rank?`<span class="rank-badge">🏆 ${t().rankPos.replace('{n}',rank)}</span>`:''}
+      </div>
+    </div>
+  </div>
+  <div class="rating-panel">
+    <div class="big-score"><div class="n">${avgOf(n)?avgOf(n).toFixed(1):'—'}</div><div class="stars-inline">${starsTxt(avgOf(n))}</div><div class="v">${fmt(n.votes)} ${t().votes}</div></div>
+    <div class="cat-bars">
+      ${cats.map(([k,l])=>`<div class="cat-bar"><span>${l}</span><div class="track"><div class="fill" style="width:${n.r[k]/5*100}%"></div></div><span class="val">${n.r[k]?n.r[k].toFixed(1):'—'}</span></div>`).join('')}
+      <div style="font-size:.72rem;color:var(--muted);font-family:var(--font-mono)">${t().ratingSub}</div>
+    </div>
+  </div>
+  ${n.patreon?`<div class="patreon-box"><div class="p-ico">🤝</div><div style="flex:1"><strong>${t().supportPatreon}</strong><small>${t().supportSub}</small></div><a class="btn btn-wax btn-sm" href="${esc(n.patreon)}" target="_blank" rel="noopener">Patreon ↗</a></div>`:''}
+  <h2 class="sec-title">${t().tableOfCh}</h2>
+  <div class="chap-list">
+    ${chs.map((c,i)=>`<div class="chap-item" onclick="go('reader',{id:${n.id},ch:${i}})">
+      <span><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</span>
+      ${readSet.has(i)?`<span class="read-mark">✓ ${t().read}</span>`:''}
+    </div>`).join('')}
+  </div>
+  <div style="margin-top:26px">${adBlock()}</div>`;
+}
+function confirmAdult(id){state.adultConfirmed.add(id);render();}
+
+function vReader(){
+  adSeed=3;
+  if(state.detailLoading)return loadingHtml();
+  const n=NOVELS.find(x=>x.id===state.params.id)||MY_NOVELS.find(x=>x.id===state.params.id);
+  if(!n)return vHome();
+  const chs=CHAPTERS_CACHE[n.id]||[];
+  const i=state.params.ch,c=chs[i];if(!c)return vNovel();
+  const canRate=(state.read[n.id]||new Set()).has(0)&&state.user&&state.user.emailConfirmed&&!state.ratedIds.has(n.id);
+  const comments=c._comments||[];
+  return `<div class="reader">
+    <div class="reader-top">
+      <a onclick="go('novel',{id:${n.id}})" style="cursor:pointer">${t().backToNovel} · ${esc(n.title)}</a>
+      <span>${esc(n.author)}</span>
+    </div>
+    <h1>${esc(c.title)}</h1>
+    <div class="chap-of">${t().chapterOf.replace('{a}',i+1).replace('{b}',chs.length)}</div>
+    ${i>0&&c.note_start?`<div class="author-note"><span class="an-label">${t().anStart}</span>${esc(c.note_start)}</div>`:''}
+    <div class="reader-body">${c.body.split(/\n+/).filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+    ${i>0&&c.note_end?`<div class="author-note"><span class="an-label">${t().anEnd}</span>${esc(c.note_end)}</div>`:''}
+    <div style="margin-top:30px">${adBlock()}</div>
+    ${n.patreon?`<div class="patreon-box"><div class="p-ico">🤝</div><div style="flex:1"><strong>${t().supportPatreon}</strong><small>${t().supportSub}</small></div><a class="btn btn-wax btn-sm" href="${esc(n.patreon)}" target="_blank" rel="noopener">Patreon ↗</a></div>`:''}
+    ${canRate?`<div class="rate-nudge"><p style="margin-bottom:12px">${t().rateNudge}</p><button class="btn btn-gold btn-sm" onclick="openRating(${n.id})">${t().rateNow}</button></div>`:''}
+    <div class="comments">
+      <h3>${t().commentsT} (${comments.length})</h3>
+      ${comments.length?comments.map(cm=>`<div class="comment">
+        ${avatarHTML({avatarUrl:cm.profiles&&cm.profiles.avatar_url},34)}
+        <div><div class="c-head"><b>${esc(cm.profiles&&cm.profiles.username||'—')}</b> · ${new Date(cm.created_at).toLocaleDateString(state.lang==='es'?'es-ES':'en-US')}</div><p>${esc(cm.text)}</p></div>
+      </div>`).join(''):`<p style="color:var(--muted);font-size:.88rem">${t().noComments}</p>`}
+      ${state.user?(state.user.emailConfirmed?`<div class="comment-form">
+        ${avatarHTML(state.user,34)}
+        <div style="flex:1"><textarea id="cText" placeholder="${t().commentPh}"></textarea>
+        <button class="btn btn-gold btn-sm" style="margin-top:8px" onclick="addComment(${n.id},${i})">${t().commentSend}</button></div>
+      </div>`:verifyBanner()):`<button class="btn btn-ghost btn-sm" style="margin-top:14px" onclick="openLogin()">${t().commentLogin}</button>`}
+    </div>
+    <div class="reader-nav">
+      <button class="btn btn-ghost" ${i===0?'disabled':''} onclick="go('reader',{id:${n.id},ch:${i-1}})">${t().prevCh}</button>
+      <button class="btn btn-ghost" onclick="go('novel',{id:${n.id}})">${t().backToNovel}</button>
+      <button class="btn btn-gold" ${i>=chs.length-1?'disabled':''} onclick="go('reader',{id:${n.id},ch:${i+1}})">${t().nextCh}</button>
+    </div>
+  </div>`;
+}
+async function addComment(novelId,chIdx){
+  const txt=($('cText').value||'').trim();if(!txt)return;
+  const ch=CHAPTERS_CACHE[novelId][chIdx];
+  const{error}=await sb.from('comments').insert({chapter_id:ch.id,user_id:state.user.id,text:txt});
+  if(!error){await loadComments(novelId,chIdx);render();}
+}
+async function registerView(novelId,chIdx){
+  if(!state.read[novelId])state.read[novelId]=new Set();
+  if(state.read[novelId].has(chIdx))return;
+  state.read[novelId].add(chIdx);
+  const ch=(CHAPTERS_CACHE[novelId]||[])[chIdx];
+  if(!ch)return;
+  await sb.rpc('fn_register_view',{p_chapter_id:ch.id});
+  if(state.user){
+    await sb.from('reading_progress').upsert({user_id:state.user.id,novel_id:novelId,
+      read_chapters:[...state.read[novelId]],updated_at:new Date().toISOString()});
+  }
+}
+</script>
+<script>
+/* =============== ESCRIBIR (requiere cuenta verificada) =============== */
+const draft={genres:new Set(),subs:new Set(),isAdult:false,coverFile:null,coverPreview:''};
+function toggleDraft(kind,name,max){
+  const set=draft[kind];
+  if(set.has(name))set.delete(name);
+  else if(set.size<max)set.add(name);
+  render();
+}
+function onCoverChange(e){
+  const file=e.target.files[0];if(!file)return;
+  draft.coverFile=file;draft.coverPreview=URL.createObjectURL(file);render();
+}
+function vWrite(){
+  if(!state.user){
+    return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
+  }
+  const myApproved=myNovels().filter(n=>n.status==='aprobada');
+  return `<div class="form">
+    <div>
+      <h2 class="sec-title" style="margin-top:0">${t().writeTitle}</h2>
+      ${!state.user.emailConfirmed?verifyBanner():''}
+      <div class="callout">${t().writeIntro}</div>
+    </div>
+    <div class="field"><label>${t().fTitle}</label><input type="text" value="${esc(draft.title||'')}" oninput="draft.title=this.value"></div>
+    <div class="field"><label>${t().fSyn}</label><textarea placeholder="${t().fSynPh}" oninput="draft.syn=this.value">${esc(draft.syn||'')}</textarea></div>
+    <div class="field">
+      <label>${t().coverLbl}<span class="hint">${t().coverHint}</span></label>
+      <div class="upload-row">
+        <label class="file-btn">${t().coverUpload}<input type="file" accept="image/*" onchange="onCoverChange(event)"></label>
+        ${draft.coverPreview?`<img src="${draft.coverPreview}" style="width:84px;height:118px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">`:''}
+      </div>
+    </div>
+    <div class="field">
+      <label>${t().fGenres}<span class="hint">— ${t().fGenresHint}</span> <span class="counter ${draft.genres.size>=4?'full':''}">${draft.genres.size}/4</span></label>
+      <div class="pill-picker">${GENRES.map(g=>{
+        const sel=draft.genres.has(g.es),dis=!sel&&draft.genres.size>=4;
+        return `<button class="pill ${sel?'sel':''}" ${dis?'disabled':''} onclick="toggleDraft('genres','${g.es}',4)">${state.lang==='es'?g.es:g.en}</button>`;}).join('')}</div>
+    </div>
+    <div class="field">
+      <label>${t().fSubs}<span class="hint">— ${t().fSubsHint}</span> <span class="counter ${draft.subs.size>=8?'full':''}">${draft.subs.size}/8</span></label>
+      <div class="pill-picker">${SUBGENRES.map(g=>{
+        const sel=draft.subs.has(g.es),dis=!sel&&draft.subs.size>=8;
+        return `<button class="pill ${sel?'sel':''}" ${dis?'disabled':''} onclick="toggleDraft('subs','${g.es}',8)">${state.lang==='es'?g.es:g.en}</button>`;}).join('')}</div>
+    </div>
+    <div class="field"><label class="checkbox-field"><input type="checkbox" ${draft.isAdult?'checked':''} onchange="draft.isAdult=this.checked">${t().adultLbl}</label>
+      <div class="hint" style="margin-left:0;display:block;margin-top:4px">${t().adultHint}</div></div>
+    <div class="field"><label>${t().fChTitle}</label><input type="text" value="${esc(draft.chTitle||'')}" oninput="draft.chTitle=this.value"></div>
+    <div class="field"><label>${t().fChBody}</label><textarea class="chap-body" placeholder="${t().fChBodyPh}" oninput="draft.chBody=this.value">${esc(draft.chBody||'')}</textarea></div>
+    <div class="callout">${t().noteInfo}</div>
+    <div class="field"><label>${t().fPatreon}<span class="hint">— ${t().fPatreonHint}</span></label><input type="url" placeholder="${t().fPatreonPh}" value="${esc(draft.patreon||state.user.patreon||'')}" oninput="draft.patreon=this.value"></div>
+    <div><button class="btn btn-gold" ${state.user.emailConfirmed?'':'disabled'} onclick="submitNovel()">${t().submitReview}</button></div>
+    ${myApproved.length?`
+    <div style="border-top:1px solid var(--line);padding-top:26px">
+      <h2 class="sec-title" style="margin-top:0;font-size:1.5rem">${t().addChTitle}</h2>
+      <div class="field"><select id="chNovel">${myApproved.map(n=>`<option value="${n.id}">${esc(n.title)}</option>`).join('')}</select></div>
+      <div class="field" style="margin-top:14px"><label>${t().fChTitleN}</label><input type="text" id="chT"></div>
+      <div class="field" style="margin-top:14px"><label>${t().fNoteStart}</label><textarea id="chNS" style="min-height:70px"></textarea></div>
+      <div class="field" style="margin-top:14px"><label>${t().fChBodyN}</label><textarea class="chap-body" id="chB"></textarea></div>
+      <div class="field" style="margin-top:14px"><label>${t().fNoteEnd}</label><textarea id="chNE" style="min-height:70px"></textarea></div>
+      <button class="btn btn-gold" style="margin-top:14px" onclick="addChapter()">${t().publishCh}</button>
+    </div>`:''}
+  </div>`;
+}
+async function submitNovel(){
+  if(!state.user){openLogin();return;}
+  if(!state.user.emailConfirmed){toast(t().needVerified);return;}
+  if(!draft.title||!draft.syn||!draft.chTitle||!draft.chBody||draft.genres.size===0){toast(t().needField);return;}
+  let coverUrl=null;
+  if(draft.coverFile)coverUrl=await uploadImage('covers',draft.coverFile);
+  const{data:novel,error}=await sb.from('novels').insert({
+    owner_id:state.user.id,title:draft.title,synopsis:draft.syn,
+    genres:[...draft.genres],subgenres:[...draft.subs],
+    is_adult:!!draft.isAdult,cover_url:coverUrl,
+    cover_gradient:COVERS[Math.floor(Math.random()*COVERS.length)],
+    patreon_url:draft.patreon||state.user.patreon||null
+  }).select().single();
+  if(error||!novel){toast(t().errGeneric);return;}
+  await sb.from('chapters').insert({novel_id:novel.id,idx:0,title:draft.chTitle,body:draft.chBody});
+  if(draft.patreon){await sb.from('profiles').update({patreon_url:draft.patreon}).eq('id',state.user.id);state.user.patreon=draft.patreon;}
+  Object.assign(draft,{title:'',syn:'',chTitle:'',chBody:'',patreon:'',coverFile:null,coverPreview:'',isAdult:false});draft.genres.clear();draft.subs.clear();
+  toast(t().submitted);await loadMyNovels();go('profile');
+}
+async function addChapter(){
+  const novelId=+$('chNovel').value;
+  if(!novelId||!$('chT').value||!$('chB').value){toast(t().needField);return;}
+  const chs=await ensureChapters(novelId);
+  const{error}=await sb.from('chapters').insert({novel_id:novelId,idx:chs.length,title:$('chT').value,body:$('chB').value,note_start:$('chNS').value||null,note_end:$('chNE').value||null});
+  if(error){toast(t().errGeneric);return;}
+  invalidateChapters(novelId);
+  toast(t().chPublished);await loadMyNovels();await loadHomeNovels();go('novel',{id:novelId});
+}
+
+/* =============== MODERACIÓN (solo admin) =============== */
+function vMod(){
+  if(!isAdmin()){
+    return emptyState(t().modDeniedT,t().modDeniedP,t().modDeniedBtn,"openLogin()");
+  }
+  if(state.detailLoading)return loadingHtml();
+  const pending=state.modPending,history=state.modHistory;
+  return `
+  <h2 class="sec-title">${t().modTitle}</h2>
+  <p class="sec-sub">${t().modSub}</p>
+  ${pending.length?pending.map(n=>`
+    <div class="mod-card">
+      <span class="mod-status st-pendiente">${t().status[n.status]}</span>
+      <h3>${esc(n.title)}</h3>
+      <div style="color:var(--muted);font-size:.85rem">${esc(n.author)}</div>
+      <div class="tags" style="margin:10px 0">${n.genres.map(g=>`<span class="tag g">${esc(gName(g))}</span>`).join('')}${n.subs.map(s=>`<span class="tag">${esc(gName(s))}</span>`).join('')}</div>
+      <p style="color:var(--muted);font-size:.9rem">${esc(n.syn)}</p>
+      <div style="font-size:.75rem;font-family:var(--font-mono);color:var(--muted);margin-top:10px">${t().readExcerpt}</div>
+      <div class="mod-excerpt">${((CHAPTERS_CACHE[n.id]||[])[0]?.body||'').split(/\n+/).filter(Boolean).map(p=>`<p style="margin-bottom:8px">${esc(p)}</p>`).join('')}</div>
+      <div class="mod-actions">
+        <button class="btn btn-leaf btn-sm" onclick="approveNovel(${n.id})">${t().approve}</button>
+        <button class="btn btn-wax btn-sm" onclick="rejectNovel(${n.id})">${t().reject}</button>
+      </div>
+    </div>`).join(''):`<div class="callout">${t().emptyMod}</div>`}
+  ${history.length?`<h2 class="sec-title" style="font-size:1.4rem">${t().historyMod}</h2>
+    ${history.map(n=>`<div class="work-row">
+      <div><h4>${esc(n.title)}</h4><div class="w-meta">${esc(n.author)} · ${n.reviewedAt?new Date(n.reviewedAt).toLocaleDateString('es-ES'):''}</div></div>
+      <span class="mod-status st-${n.status}">${t().status[n.status]}</span>
+      ${n.status==='rechazada'&&n.rejectReason?`<div class="reject-note">✗ ${esc(n.rejectReason)}</div>`:''}
+    </div>`).join('')}`:''}`;
+}
+async function approveNovel(id){
+  const{error}=await sb.rpc('fn_review_novel',{p_novel_id:id,p_decision:'aprobada'});
+  if(error){toast(t().errGeneric);return;}
+  toast(t().approved);await loadModQueue();await loadHomeNovels();render();
+}
+async function rejectNovel(id){
+  const reason=prompt(t().rejectReason);
+  if(reason===null)return;
+  const{error}=await sb.rpc('fn_review_novel',{p_novel_id:id,p_decision:'rechazada',p_reason:reason});
+  if(error){toast(t().errGeneric);return;}
+  toast(t().rejected);await loadModQueue();render();
+}
+
+/* =============== RANKINGS =============== */
+function vRank(){
+  if(state.booting)return loadingHtml();
+  const mode=state.params.mode||'stars';
+  const defs={stars:{l:t().rkStars,v:n=>avgOf(n),f:n=>avgOf(n).toFixed(2)+' ★'},
+    follow:{l:t().rkFollow,v:n=>n.followers,f:n=>fmt(n.followers)},
+    favs:{l:t().rkFavs,v:n=>n.favs,f:n=>fmt(n.favs)},
+    views:{l:t().rkViews,v:n=>n.views,f:n=>fmt(n.views)}};
+  const d=defs[mode];
+  const list=approved().slice().sort((a,b)=>d.v(b)-d.v(a));
+  return `
+  <h2 class="sec-title">${t().rankTitle}</h2>
+  <p class="sec-sub">${t().rankSub}</p>
+  <div class="rank-tabs">${Object.entries(defs).map(([k,x])=>`<button class="${mode===k?'on':''}" onclick="go('rank',{mode:'${k}'})">${x.l}</button>`).join('')}</div>
+  ${list.length?`<div>${list.map((n,i)=>`
+    <div class="rank-row" onclick="go('novel',{id:${n.id}})">
+      <div class="rank-pos">${i+1}</div>
+      <div class="rank-main"><h3>${esc(n.title)}</h3><span>${esc(n.author)} · ${n.genres.map(gName).join(', ')}</span></div>
+      <div class="rank-metric">${d.f(n)}<small>${d.l}</small></div>
+    </div>`).join('')}</div>`
+  :emptyState(t().emptyRankT,t().emptyRankP,t().heroCta2,"go('write')")}`;
+}
+
+/* =============== MI BIBLIOTECA =============== */
+function vLibrary(){
+  if(state.booting)return loadingHtml();
+  if(!state.user)return emptyState(t().emptyLibT,t().emptyLibLogin,t().loginBtn,"openLogin()");
+  const followed=approved().filter(n=>state.follows.has(n.id));
+  const faved=approved().filter(n=>state.favs.has(n.id));
+  if(!followed.length&&!faved.length)return `
+    <h2 class="sec-title">${t().libTitle}</h2><p class="sec-sub">${t().libSub}</p>
+    ${emptyState(t().emptyLibT,t().emptyLibP,t().heroCta1,"go('explore')")}`;
+  const row=n=>{const readN=(state.read[n.id]||new Set()).size;
+    return `<div class="work-row" style="cursor:pointer" onclick="go('novel',{id:${n.id}})">
+      <div><h4>${esc(n.title)}</h4><div class="w-meta">${esc(n.author)} · ${readN}/${n.chaptersCount} ${t().chapters} · ${n.chaptersCount?Math.round(readN/n.chaptersCount*100):0}% ${t().progress}</div></div>
+      <span class="stars-inline">${starsTxt(avgOf(n))}</span>
+    </div>`;};
+  return `
+  <h2 class="sec-title">${t().libTitle}</h2><p class="sec-sub">${t().libSub}</p>
+  ${followed.length?`<h3 style="font-family:var(--font-display);font-size:1.3rem;margin-top:20px">♥ ${t().libFollowing}</h3>${followed.map(row).join('')}`:''}
+  ${faved.length?`<h3 style="font-family:var(--font-display);font-size:1.3rem;margin-top:26px">★ ${t().libFavs}</h3>${faved.map(row).join('')}`:''}`;
+}
+
+/* =============== PANEL DE AUTOR =============== */
+function vDashboard(){
+  if(!state.user)return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
+  if(state.detailLoading)return loadingHtml();
+  const works=myNovels();
+  const totalFollowers=works.reduce((s,n)=>s+n.followers,0);
+  const totalChapters=works.reduce((s,n)=>s+n.chaptersCount,0);
+  return `
+  <h2 class="sec-title">${t().dashTitle}</h2><p class="sec-sub">${t().dashSub}</p>
+  <div class="dash-stats">
+    <div class="dash-stat"><div class="n">${works.length}</div><div class="l">${t().dashStatWorks}</div></div>
+    <div class="dash-stat"><div class="n">${totalChapters}</div><div class="l">${t().dashStatChapters}</div></div>
+    <div class="dash-stat"><div class="n">${fmt(totalFollowers)}</div><div class="l">${t().dashStatFollowers}</div></div>
+    <div class="dash-stat"><div class="n">${state.user.points}</div><div class="l">${t().dashStatPoints}</div></div>
+  </div>
+  <button class="btn btn-gold" onclick="go('write')" style="margin-bottom:24px">${t().dashAddNovel}</button>
+  ${works.length?works.map(n=>{
+    const rank=n.status==='aprobada'?rankOf(n.id):null;
+    return `<div class="work-row">
+      <div><h4 style="cursor:pointer" onclick="go('novel',{id:${n.id}})">${esc(n.title)}${n.isAdult?` <span class="adult-badge">${t().adultBadge}</span>`:''}</h4>
+      <div class="w-meta">${n.chaptersCount} ${t().chapters} · ${fmt(n.followers)} ${t().followers} · ${avgOf(n)?avgOf(n).toFixed(1)+' ★':'— ★'}${rank?` · ${t().rankPos.replace('{n}',rank)}`:''}</div></div>
+      <span class="mod-status st-${n.status}" style="margin:0">${t().status[n.status]}</span>
+    </div>`;
+  }).join(''):`<p style="color:var(--muted)">${t().noWorks}</p>`}
+  <h3 style="font-family:var(--font-display);font-size:1.3rem;margin:30px 0 10px">${t().dashLatestComments}</h3>
+  ${(state.dashComments||[]).length?state.dashComments.map(c=>`<div class="dash-comment">
+    ${avatarHTML({avatarUrl:c.profiles&&c.profiles.avatar_url},34)}
+    <div><div class="d-meta"><b style="color:var(--paper)">${esc(c.profiles&&c.profiles.username||'—')}</b> · ${new Date(c.created_at).toLocaleDateString(state.lang==='es'?'es-ES':'en-US')}</div><p style="font-size:.9rem">${esc(c.text)}</p></div>
+  </div>`).join(''):`<p style="color:var(--muted);font-size:.88rem">${t().dashNoComments}</p>`}`;
+}
+
+/* =============== PERFIL =============== */
+function vProfile(){
+  if(!state.user)return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
+  const works=myNovels();
+  return `
+  <h2 class="sec-title">${t().profTitle}</h2>
+  ${!state.user.emailConfirmed?verifyBanner():''}
+  <div class="profile-grid" style="margin-top:20px">
+    <div class="panel">
+      <h3>${t().accountT}</h3>
+      <div class="upload-row" style="margin-bottom:14px">
+        ${avatarHTML(state.user,72)}
+        <div>
+          <label class="file-btn">${t().avatarUpload}<input type="file" accept="image/*" onchange="onAvatarChange(event)"></label>
+          ${state.user.avatarUrl?`<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="removeAvatar()">${t().avatarRemove}</button>`:''}
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:12px"><label>${t().yourName}</label>
+        <input type="text" id="pUsername" maxlength="24" value="${esc(state.user.username)}"></div>
+      ${!isAdmin()?`<div class="field" style="margin-bottom:12px"><label>${t().accountTypeLbl}</label>
+        <div class="account-type-picker">
+          <button type="button" class="${profileAccountType()==='lector'?'sel':''}" onclick="setProfileAccountType('lector')">${t().accountTypeReader}</button>
+          <button type="button" class="${profileAccountType()==='autor'?'sel':''}" onclick="setProfileAccountType('autor')">${t().accountTypeAuthor}</button>
+          <button type="button" class="${profileAccountType()==='ambos'?'sel':''}" onclick="setProfileAccountType('ambos')">${t().accountTypeBoth}</button>
+        </div></div>`:`<span style="font-family:var(--font-mono);font-size:.75rem;color:var(--gold);display:block;margin-bottom:12px">${t().roleAdmin}</span>`}
+      <button class="btn btn-wax btn-sm" onclick="saveProfileBasics()">${t().saveProfile}</button>
+      <div class="points-badge" style="margin:12px 0 0">✦ ${state.user.points} ${t().pointsLbl}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="logout()">${t().logout}</button>
+    </div>
+    <div class="panel">
+      <h3>${t().profPremiumT}</h3><p>${t().premiumSoonP}</p>
+      <a class="btn btn-wax" href="${COFFEE_URL}" target="_blank" rel="noopener">${t().premiumSoonBtn}</a>
+    </div>
+    <div class="panel">
+      <h3>${t().profPatreonT}</h3><p>${t().profPatreonP}</p>
+      <input type="url" id="pPatreon" placeholder="${t().fPatreonPh}" value="${esc(state.user.patreon||'')}">
+      <button class="btn btn-wax btn-sm" style="margin-top:12px" onclick="savePatreon()">${t().savePatreon}</button>
+    </div>
+    <div class="panel">
+      <h3>${t().profAdsT}</h3><p>${t().profAdsP}</p>
+      <label class="checkbox-field" style="margin-top:14px"><input type="checkbox" ${state.user.showAdult?'checked':''} onchange="toggleShowAdult(this.checked)">${t().showAdultToggle}</label>
+      <h3 style="margin-top:16px">${t().profLangT}</h3>
+      <div class="lang-toggle" style="display:inline-flex">
+        <button class="${state.lang==='es'?'on':''}" onclick="setLang('es')" style="padding:8px 18px">Español</button>
+        <button class="${state.lang==='en'?'on':''}" onclick="setLang('en')" style="padding:8px 18px">English</button>
+      </div>
+    </div>
+    <div class="panel wide">
+      <h3>${t().myWorks}</h3><p>${t().myWorksSub}</p>
+      ${works.length?works.map(n=>`<div class="work-row">
+        <div><h4 style="cursor:pointer" onclick="go('novel',{id:${n.id}})">${esc(n.title)}</h4>
+        <div class="w-meta">${n.chaptersCount} ${t().chapters} · ${fmt(n.followers)} ${t().followers} · ${fmt(n.views)} ${t().views} · ${avgOf(n)?avgOf(n).toFixed(1)+' ★':'— ★'}</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="mod-status st-${n.status}" style="margin:0">${t().status[n.status]}</span>
+          ${n.status==='rechazada'?`<button class="btn btn-ghost btn-sm" onclick="resubmit(${n.id})">${t().resubmit}</button>`:''}
+        </div>
+        ${n.status==='rechazada'&&n.rejectReason?`<div class="reject-note">✗ ${esc(n.rejectReason)}</div>`:''}
+      </div>`).join(''):`<p style="color:var(--muted)">${t().noWorks}</p>`}
+    </div>
+  </div>`;
+}
+let profileAccountTypeTmp=null;
+function profileAccountType(){return profileAccountTypeTmp!==null?profileAccountTypeTmp:(state.user&&state.user.accountType);}
+function setProfileAccountType(v){profileAccountTypeTmp=v;render();}
+async function saveProfileBasics(){
+  const name=($('pUsername').value||'').trim();
+  if(!name)return;
+  const accountType=profileAccountType();
+  const{error}=await sb.from('profiles').update({username:name,account_type:accountType}).eq('id',state.user.id);
+  if(error){toast(error.code==='23505'?t().usernameTaken:t().errGeneric);return;}
+  state.user.username=name;state.user.accountType=accountType;profileAccountTypeTmp=null;
+  await loadMyNovels();
+  toast(t().profileSaved);render();
+}
+async function savePatreon(){
+  const url=$('pPatreon').value;
+  await sb.from('profiles').update({patreon_url:url}).eq('id',state.user.id);
+  state.user.patreon=url;
+  await sb.from('novels').update({patreon_url:url}).eq('owner_id',state.user.id).eq('status','aprobada');
+  await loadMyNovels();
+  toast(t().patreonSaved);render();
+}
+async function resubmit(id){
+  await sb.rpc('fn_resubmit_novel',{p_novel_id:id});
+  toast(t().resubmitted);await loadMyNovels();render();
+}
+async function onAvatarChange(e){
+  const file=e.target.files[0];if(!file)return;
+  const url=await uploadImage('avatars',file);
+  if(url){await sb.from('profiles').update({avatar_url:url}).eq('id',state.user.id);state.user.avatarUrl=url;render();}
+}
+async function removeAvatar(){
+  await sb.from('profiles').update({avatar_url:null}).eq('id',state.user.id);
+  state.user.avatarUrl=null;render();
+}
+async function toggleShowAdult(v){
+  await sb.from('profiles').update({show_adult:v}).eq('id',state.user.id);
+  state.user.showAdult=v;render();
+}
+
+/* =============== INTERACCIONES (requieren cuenta) =============== */
+async function toggleFollow(id){
+  if(!state.user){toast(t().needLoginFollow);openLogin();return;}
+  if(state.follows.has(id)){
+    await sb.from('follows').delete().eq('user_id',state.user.id).eq('novel_id',id);
+    state.follows.delete(id);toast(t().unfollowed);
+  }else{
+    await sb.from('follows').insert({user_id:state.user.id,novel_id:id});
+    state.follows.add(id);toast(t().followed);
+  }
+  await refreshNovelLive(id);render();
+}
+async function toggleFav(id){
+  if(!state.user){toast(t().needLoginFav);openLogin();return;}
+  if(state.favs.has(id)){
+    await sb.from('favorites').delete().eq('user_id',state.user.id).eq('novel_id',id);
+    state.favs.delete(id);toast(t().unfaving);
+  }else{
+    await sb.from('favorites').insert({user_id:state.user.id,novel_id:id});
+    state.favs.add(id);toast(t().faving);
+  }
+  await refreshNovelLive(id);render();
+}
+
+/* =============== MODAL DE VALORACIÓN =============== */
+const rateTmp={};
+function openRating(id){
+  if(!state.user){toast(t().needLoginRate);openLogin();return;}
+  if(!state.user.emailConfirmed){toast(t().needVerified);return;}
+  if(state.ratedIds.has(id)){toast(t().alreadyRated);return;}
+  Object.assign(rateTmp,{id,historia:0,estilo:0,gramatica:0,personajes:0});
+  renderRateModal();
+}
+function setStar(cat,v){rateTmp[cat]=v;renderRateModal();}
+function renderRateModal(){
+  const cats=[['historia',t().catHistoria],['estilo',t().catEstilo],['gramatica',t().catGramatica],['personajes',t().catPersonajes]];
+  const done=cats.every(([k])=>rateTmp[k]>0);
+  const avg=done?(cats.reduce((s,[k])=>s+rateTmp[k],0)/4):null;
+  $('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>${t().modalTitle}</h2><p class="sub">${t().modalSub}</p>
+      ${cats.map(([k,l])=>`<div class="rate-cat"><span>${l}</span>
+        <div class="star-picker">${[1,2,3,4,5].map(v=>`<button class="${rateTmp[k]>=v?'lit':''}" onclick="setStar('${k}',${v})">★</button>`).join('')}</div>
+      </div>`).join('')}
+      <div class="avg-preview">${t().avgLabel}: <b>${avg?avg.toFixed(2)+' ★':'—'}</b></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">${t().cancel}</button>
+        <button class="btn btn-gold btn-sm" ${avg?'':'disabled'} onclick="submitRating()">${t().send}</button>
+      </div>
+    </div></div>`;
+}
+function closeModal(){$('modalRoot').innerHTML='';}
+async function submitRating(){
+  const novelId=rateTmp.id;
+  const{error}=await sb.from('ratings').insert({user_id:state.user.id,novel_id:novelId,
+    historia:rateTmp.historia,estilo:rateTmp.estilo,gramatica:rateTmp.gramatica,personajes:rateTmp.personajes});
+  if(error){closeModal();toast(error.code==='23505'?t().alreadyRated:t().errGeneric);return;}
+  state.ratedIds.add(novelId);
+  if(state.user)state.user.points=(state.user.points||0)+10;
+  closeModal();toast(t().sent);
+  await refreshNovelLive(novelId);render();
+}
+</script>
+<script>
+/* =============== RENDER GLOBAL =============== */
+function render(){
+  const views={home:vHome,explore:vExplore,novel:vNovel,reader:vReader,write:vWrite,mod:vMod,rank:vRank,library:vLibrary,profile:vProfile,dashboard:vDashboard};
+
+  $('navLinks').innerHTML=Object.entries(t().nav).map(([k,l])=>
+    `<button class="${state.view===k?'active':''}" onclick="go('${k}')">${l}</button>`).join('');
+
+  const badge=isAdmin()&&state.pendingCount?`<span class="badge">${state.pendingCount}</span>`:'';
+  $('navRight').innerHTML=`
+    <a class="coffee-btn" href="${COFFEE_URL}" target="_blank" rel="noopener">${t().coffeeBtn}</a>
+    <button class="premium-pill" onclick="go('profile')">${t().premiumSoon}</button>
+    <div class="lang-toggle">
+      <button class="${state.lang==='es'?'on':''}" onclick="setLang('es')">ES</button>
+      <button class="${state.lang==='en'?'on':''}" onclick="setLang('en')">EN</button>
+    </div>
+    ${state.user?`
+      <button class="user-chip" onclick="toggleMenu()">
+        ${avatarHTML(state.user,24)}
+        <span class="u-name">${esc(state.user.username)}</span>
+        ${isAdmin()?`<span class="role">ADMIN</span>`:''}${badge}
+      </button>
+      ${state.menuOpen?`<div class="dropdown">
+        <button onclick="go('profile')">${t().myProfile}</button>
+        <button onclick="go('dashboard')">${t().myDashboard}</button>
+        ${isAdmin()?`<button onclick="go('mod')">${t().modArea}${badge}</button>`:''}
+        <button onclick="logout()">${t().logout}</button>
+      </div>`:''}
+    `:`<button class="login-btn" onclick="openLogin()">${t().loginBtn}</button>`}`;
+
+  $('app').innerHTML=(views[state.view]||vHome)();
+  $('foot').innerHTML=`${t().footer}<div class="f-links">${t().footLinks}</div>`;
+  activateAds();
+}
+
+/* =============== ARRANQUE =============== */
+let bootedOnce=false;
+async function boot(){
+  await Promise.all([loadHomeNovels(),loadStats()]);
+  await loadHomeExtras();
+  render();
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    if(session&&session.user){
+      await loadProfile(session.user);
+    }else{
+      state.user=null;
+      await loadInteractionSets();
+    }
+    if(!bootedOnce){bootedOnce=true;state.booting=false;}
+    render();
+  });
+}
+async function loadProfile(authUser){
+  let{data}=await sb.from('profiles').select('*').eq('id',authUser.id).maybeSingle();
+  if(!data){await new Promise(r=>setTimeout(r,600));({data}=await sb.from('profiles').select('*').eq('id',authUser.id).maybeSingle());}
+  state.user={
+    id:authUser.id,email:authUser.email,
+    emailConfirmed:!!authUser.email_confirmed_at,
+    username:(data&&data.username)||authUser.email.split('@')[0],
+    accountType:(data&&data.account_type)||'lector',
+    role:(data&&data.role)||'user',
+    avatarUrl:(data&&data.avatar_url)||null,
+    patreon:(data&&data.patreon_url)||'',
+    points:(data&&data.points)||0,
+    showAdult:(data&&data.show_adult)||false,
+    onboarded:data?data.onboarded:true
+  };
+  await loadInteractionSets();
+  await loadMyNovels();
+  if(isAdmin())await refreshPendingCount();
+  if(!state.user.onboarded)queueMicrotask(openOnboardModal);
 }
 boot();
 </script>

@@ -1,4 +1,17 @@
+# robots.txt — asciicave.com
 User-agent: *
 Allow: /
+
+# Zonas privadas: nunca indexar
+Disallow: /admin/
+Disallow: /moderacion/
+Disallow: /perfil/
+Disallow: /api/
+Disallow: /login
+Disallow: /registro
+
+# Evitar contenido duplicado por parámetros de ordenación/filtrado
+Disallow: /*?orden=
+Disallow: /*?pagina=
 
 Sitemap: https://asciicave.com/sitemap.xml
