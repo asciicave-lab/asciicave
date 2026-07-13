@@ -859,7 +859,7 @@ function mapNovelLive(row){
     r:{historia:+row.rating_historia||0,estilo:+row.rating_estilo||0,gramatica:+row.rating_gramatica||0,personajes:+row.rating_personajes||0}};
 }
 async function loadHomeNovels(){
-  const{data}=await sb.from('novels').select('*, profiles(username,avatar_url,patreon_url)').eq('status','aprobada').order('created_at',{ascending:false});
+  const{data}=await sb.from('novels').select('*, profiles!novels_owner_id_fkey(username,avatar_url,patreon_url)').eq('status','aprobada').order('created_at',{ascending:false});
   NOVELS=(data||[]).map(mapNovel);
 }
 async function loadStats(){
@@ -917,7 +917,7 @@ async function loadComments(novelId,chIdx){
   ch._comments=data||[];
 }
 async function refreshNovelLive(id){
-  const{data}=await sb.from('novels').select('*, profiles(username,avatar_url,patreon_url)').eq('id',id).maybeSingle();
+  const{data}=await sb.from('novels').select('*, profiles!novels_owner_id_fkey(username,avatar_url,patreon_url)').eq('id',id).maybeSingle();
   if(!data)return;
   const mapped=mapNovel(data);
   const idx=NOVELS.findIndex(n=>n.id===id);
@@ -936,7 +936,7 @@ function rankOf(novelId){
 }
 async function loadMyNovels(){
   if(!state.user){MY_NOVELS=[];return;}
-  const{data}=await sb.from('novels').select('*, profiles(username,avatar_url,patreon_url)').eq('owner_id',state.user.id).order('created_at',{ascending:false});
+  const{data}=await sb.from('novels').select('*, profiles!novels_owner_id_fkey(username,avatar_url,patreon_url)').eq('owner_id',state.user.id).order('created_at',{ascending:false});
   MY_NOVELS=(data||[]).map(mapNovel);
 }
 async function loadInteractionSets(){
@@ -960,8 +960,8 @@ async function refreshPendingCount(){
 async function loadModQueue(){
   if(!isAdmin())return;
   const[{data:pending},{data:history}]=await Promise.all([
-    sb.from('novels').select('*, profiles(username)').eq('status','pendiente').order('created_at'),
-    sb.from('novels').select('*, profiles(username)').neq('status','pendiente').not('reviewed_at','is',null).order('reviewed_at',{ascending:false}).limit(30)
+    sb.from('novels').select('*, profiles!novels_owner_id_fkey(username)').eq('status','pendiente').order('created_at'),
+    sb.from('novels').select('*, profiles!novels_owner_id_fkey(username)').neq('status','pendiente').not('reviewed_at','is',null).order('reviewed_at',{ascending:false}).limit(30)
   ]);
   state.modPending=(pending||[]).map(mapNovel);
   state.modHistory=(history||[]).map(mapNovel);
