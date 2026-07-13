@@ -235,8 +235,11 @@ main{max-width:1180px;margin:0 auto;padding:28px 20px 90px;position:relative;z-i
 .field .hint{font-size:.78rem;color:var(--muted);font-weight:400;margin-left:6px}
 input[type=text],input[type=url],input[type=email],input[type=password],textarea,select{width:100%;background:var(--ink-3);border:1px solid var(--line);border-radius:8px;color:var(--paper);padding:11px 14px;font-family:var(--font-body);font-size:.95rem}
 textarea{resize:vertical;min-height:110px;line-height:1.7}
-textarea.chap-body{min-height:260px}
+textarea.chap-body{min-height:260px;line-height:1.8}
 input:focus,textarea:focus{outline:none;border-color:var(--gold)}
+.editor-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.editor-toolbar select{width:auto;background:var(--ink-3);border:1px solid var(--line);border-radius:6px;color:var(--paper);padding:6px 10px;font-size:.8rem}
+.editor-toolbar .word-count{margin-left:auto;font-family:var(--font-mono);font-size:.74rem;color:var(--muted);white-space:nowrap}
 .pill-picker{display:flex;flex-wrap:wrap;gap:8px}
 .pill{border:1px solid var(--line);background:none;color:var(--muted);border-radius:20px;padding:6px 14px;font-size:.83rem;transition:.12s}
 .pill:hover{border-color:var(--gold);color:var(--paper)}
@@ -342,6 +345,17 @@ footer .f-links{margin-top:6px;font-size:.75rem}
 .dash-stat .l{color:var(--muted);font-size:.74rem;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px}
 .dash-comment{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
 .dash-comment .d-meta{font-size:.78rem;color:var(--muted);margin-bottom:2px}
+.author-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin:20px 0 34px}
+.author-card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:8px}
+.author-card-cover{position:relative;width:100%;aspect-ratio:2/3;border-radius:8px;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:8px;font-family:var(--font-display);font-weight:600;font-size:.92rem;line-height:1.15;color:var(--paper);text-shadow:0 1px 4px rgba(0,0,0,.6);border:1px solid var(--line)}
+.author-card-cover .a-status{position:absolute;top:7px;left:7px;margin:0;font-size:.6rem;padding:2px 8px}
+.author-card h4{font-family:var(--font-display);font-size:1rem;font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.author-card-meta{font-family:var(--font-mono);font-size:.68rem;color:var(--muted)}
+.author-card-actions{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.author-card-actions .btn{width:100%;padding:6px 10px;font-size:.76rem}
+.author-card-add{align-items:center;justify-content:center;border:1px dashed var(--line);cursor:pointer;min-height:230px;color:var(--muted);text-align:center;gap:6px}
+.author-card-add:hover{border-color:var(--gold);color:var(--gold)}
+.author-card-add .add-ico{font-size:2.2rem;font-family:var(--font-display);line-height:1}
 
 /* ---------- Selector de tipo de cuenta / aviso +18 ---------- */
 .account-type-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -512,6 +526,8 @@ es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",libra
  fPatreon:"Tu Patreon (opcional)",fPatreonPh:"https://patreon.com/tuusuario",
  fPatreonHint:"se mostrará en tus novelas y al final de tus capítulos",
  coverLbl:"Portada",coverHint:"opcional — si no subes una, usamos un degradado automático",coverUpload:"Subir portada",
+ wordsLbl:"palabras",minRead:"min de lectura",
+ sizeSmall:"Pequeño",sizeMedium:"Normal",sizeLarge:"Grande",sizeXLarge:"Muy grande",
  adultLbl:"Contenido para adultos (+18)",adultHint:"Marca esta casilla si tu obra incluye violencia gráfica, contenido sexual explícito u otro material solo para adultos.",
  submitReview:"Enviar a revisión",
  submitted:"¡Enviada! Tu novela está en la cola de revisión. Sigue su estado en «Mis obras».",
@@ -574,8 +590,10 @@ es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",libra
  onboardTitle:"Completa tu perfil",onboardSub:"Elige tu nombre de usuario y cómo quieres usar asciicave.",onboardSave:"Guardar y continuar",
  dashTitle:"Panel de autor",dashSub:"Tus obras, tus estadísticas y lo último que te han comentado",
  dashStatWorks:"obras publicadas",dashStatChapters:"capítulos totales",dashStatFollowers:"seguidores totales",dashStatPoints:"puntos",
+ dashStatRank:"Mejor puesto",dashStatWords:"palabras totales",dashStatReviews:"valoraciones recibidas",
  dashLatestComments:"Últimos comentarios recibidos",dashNoComments:"Todavía no tienes comentarios en tus capítulos.",
- dashAddNovel:"Publicar otra novela",
+ dashAddNovel:"Añadir obra",goToDashboard:"→ Ir al panel de autor",
+ viewPage:"Ver página",addChapterBtn:"+ Capítulo",
  loading:"Cargando…",
  status:{aprobada:"aprobada",pendiente:"pendiente",rechazada:"rechazada"}
 },
@@ -639,6 +657,8 @@ en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My 
  fPatreon:"Your Patreon (optional)",fPatreonPh:"https://patreon.com/yourname",
  fPatreonHint:"shown on your novels and at the end of your chapters",
  coverLbl:"Cover",coverHint:"optional — if you skip it we use an automatic gradient",coverUpload:"Upload cover",
+ wordsLbl:"words",minRead:"min read",
+ sizeSmall:"Small",sizeMedium:"Medium",sizeLarge:"Large",sizeXLarge:"Extra large",
  adultLbl:"Adult content (18+)",adultHint:"Check this box if your work includes graphic violence, explicit sexual content or other adults-only material.",
  submitReview:"Submit for review",
  submitted:"Submitted! Your novel is in the review queue. Track it under “My works”.",
@@ -701,8 +721,10 @@ en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My 
  onboardTitle:"Complete your profile",onboardSub:"Pick your username and how you want to use asciicave.",onboardSave:"Save and continue",
  dashTitle:"Author dashboard",dashSub:"Your works, your stats, and your latest comments",
  dashStatWorks:"published works",dashStatChapters:"total chapters",dashStatFollowers:"total followers",dashStatPoints:"points",
+ dashStatRank:"Best rank",dashStatWords:"total words",dashStatReviews:"reviews received",
  dashLatestComments:"Latest comments received",dashNoComments:"No comments on your chapters yet.",
- dashAddNovel:"Publish another novel",
+ dashAddNovel:"Add work",goToDashboard:"→ Go to author dashboard",
+ viewPage:"View page",addChapterBtn:"+ Chapter",
  loading:"Loading…",
  status:{aprobada:"approved",pendiente:"pending",rechazada:"rejected"}
 }};
@@ -744,6 +766,7 @@ function gcPath(view,params){
     case 'reader':return `/novela/${params.id}/capitulo/${(params.ch||0)+1}`;
     case 'editnovel':return `/novela/${params.id}/editar`;
     case 'editchapter':return `/novela/${params.id}/capitulo/${(params.ch||0)+1}/editar`;
+    case 'newchapter':return `/novela/${params.id}/nuevo-capitulo`;
     case 'write':return '/escribir';
     case 'mod':return '/moderacion';
     case 'rank':return `/rankings/${params.mode||'stars'}`;
@@ -771,6 +794,7 @@ function parsePath(pathname){
       return{view:'reader',params:{id,ch}};
     }
     if(p[2]==='editar')return{view:'editnovel',params:{id}};
+    if(p[2]==='nuevo-capitulo')return{view:'newchapter',params:{id}};
     return{view:'novel',params:{id}};
   }
   if(p[0]==='escribir')return{view:'write',params:{}};
@@ -1337,6 +1361,28 @@ async function registerView(novelId,chIdx){
 }
 </script>
 <script>
+/* =============== EDITOR DE TEXTO (fuente, tamaño, contador) =============== */
+const WRITER_FONTS=[['var(--font-body)','Sans'],['var(--font-display)','Serif'],['Georgia, serif','Georgia'],['var(--font-mono)','Mono'],['Arial, sans-serif','Arial']];
+const WRITER_SIZES=[['14px','sizeSmall'],['16px','sizeMedium'],['19px','sizeLarge'],['23px','sizeXLarge']];
+function getWriterFont(){return localStorage.getItem('acWriterFont')||WRITER_FONTS[0][0];}
+function getWriterSize(){return localStorage.getItem('acWriterSize')||WRITER_SIZES[1][0];}
+function applyWriterFont(sel){localStorage.setItem('acWriterFont',sel.value);const el=$(sel.dataset.target);if(el)el.style.fontFamily=sel.value;}
+function applyWriterSize(sel){localStorage.setItem('acWriterSize',sel.value);const el=$(sel.dataset.target);if(el)el.style.fontSize=sel.value;}
+function wordStats(text){
+  const words=((text||'').match(/\S+/g)||[]).length;
+  return `${fmt(words)} ${t().wordsLbl} · ~${Math.max(1,Math.round(words/200))} ${t().minRead}`;
+}
+function updateWordCount(el){const wc=$('wc-'+el.id);if(wc)wc.textContent=wordStats(el.value);}
+function editorToolbar(textareaId,text){
+  const font=getWriterFont(),size=getWriterSize();
+  return `<div class="editor-toolbar">
+    <select data-target="${textareaId}" onchange="applyWriterFont(this)">${WRITER_FONTS.map(([v,l])=>`<option value="${v}" ${font===v?'selected':''}>${l}</option>`).join('')}</select>
+    <select data-target="${textareaId}" onchange="applyWriterSize(this)">${WRITER_SIZES.map(([v,k])=>`<option value="${v}" ${size===v?'selected':''}>${t()[k]}</option>`).join('')}</select>
+    <span class="word-count" id="wc-${textareaId}">${wordStats(text)}</span>
+  </div>`;
+}
+function writerStyle(){return `font-family:${getWriterFont()};font-size:${getWriterSize()}`;}
+
 /* =============== ESCRIBIR (requiere cuenta verificada) =============== */
 const draft={genres:new Set(),subs:new Set(),isAdult:false,coverFile:null,coverPreview:''};
 function toggleDraft(kind,name,max){
@@ -1353,10 +1399,10 @@ function vWrite(){
   if(!state.user){
     return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
   }
-  const myApproved=myNovels().filter(n=>n.status==='aprobada');
   return `<div class="form">
     <div>
       <h2 class="sec-title" style="margin-top:0">${t().writeTitle}</h2>
+      ${myNovels().length?`<a style="cursor:pointer;font-size:.85rem" onclick="go('dashboard')">${t().goToDashboard}</a>`:''}
       ${!state.user.emailConfirmed?verifyBanner():''}
       <div class="callout">${t().writeIntro}</div>
     </div>
@@ -1384,20 +1430,12 @@ function vWrite(){
     <div class="field"><label class="checkbox-field"><input type="checkbox" ${draft.isAdult?'checked':''} onchange="draft.isAdult=this.checked">${t().adultLbl}</label>
       <div class="hint" style="margin-left:0;display:block;margin-top:4px">${t().adultHint}</div></div>
     <div class="field"><label>${t().fChTitle}</label><input type="text" value="${esc(draft.chTitle||'')}" oninput="draft.chTitle=this.value"></div>
-    <div class="field"><label>${t().fChBody}</label><textarea class="chap-body" placeholder="${t().fChBodyPh}" oninput="draft.chBody=this.value">${esc(draft.chBody||'')}</textarea></div>
+    <div class="field"><label>${t().fChBody}</label>
+      ${editorToolbar('fChBody',draft.chBody||'')}
+      <textarea class="chap-body" id="fChBody" style="${writerStyle()}" placeholder="${t().fChBodyPh}" oninput="draft.chBody=this.value;updateWordCount(this)">${esc(draft.chBody||'')}</textarea></div>
     <div class="callout">${t().noteInfo}</div>
     <div class="field"><label>${t().fPatreon}<span class="hint">— ${t().fPatreonHint}</span></label><input type="url" placeholder="${t().fPatreonPh}" value="${esc(draft.patreon||state.user.patreon||'')}" oninput="draft.patreon=this.value"></div>
     <div><button class="btn btn-gold" ${state.user.emailConfirmed?'':'disabled'} onclick="submitNovel()">${t().submitReview}</button></div>
-    ${myApproved.length?`
-    <div style="border-top:1px solid var(--line);padding-top:26px">
-      <h2 class="sec-title" style="margin-top:0;font-size:1.5rem">${t().addChTitle}</h2>
-      <div class="field"><select id="chNovel">${myApproved.map(n=>`<option value="${n.id}">${esc(n.title)}</option>`).join('')}</select></div>
-      <div class="field" style="margin-top:14px"><label>${t().fChTitleN}</label><input type="text" id="chT"></div>
-      <div class="field" style="margin-top:14px"><label>${t().fNoteStart}</label><textarea id="chNS" style="min-height:70px"></textarea></div>
-      <div class="field" style="margin-top:14px"><label>${t().fChBodyN}</label><textarea class="chap-body" id="chB"></textarea></div>
-      <div class="field" style="margin-top:14px"><label>${t().fNoteEnd}</label><textarea id="chNE" style="min-height:70px"></textarea></div>
-      <button class="btn btn-gold" style="margin-top:14px" onclick="addChapter()">${t().publishCh}</button>
-    </div>`:''}
   </div>`;
 }
 async function submitNovel(){
@@ -1419,13 +1457,38 @@ async function submitNovel(){
   Object.assign(draft,{title:'',syn:'',chTitle:'',chBody:'',patreon:'',coverFile:null,coverPreview:'',isAdult:false});draft.genres.clear();draft.subs.clear();
   toast(t().submitted);await loadMyNovels();go('profile');
 }
-async function addChapter(){
-  const novelId=+$('chNovel').value;
-  if(!novelId||!$('chT').value||!$('chB').value){toast(t().needField);return;}
+let newChapterDraft=null;
+function vNewChapter(){
+  if(!state.user)return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
+  const n=myNovels().find(x=>x.id===state.params.id&&x.status==='aprobada');
+  if(!n)return vHome();
+  if(!newChapterDraft||newChapterDraft.novelId!==n.id){
+    newChapterDraft={novelId:n.id,title:'',noteStart:'',body:'',noteEnd:''};
+  }
+  return `<div class="form">
+    <h2 class="sec-title" style="margin-top:0">${t().addChTitle}</h2>
+    <p class="sec-sub" style="margin-top:-14px">${esc(n.title)}</p>
+    ${!state.user.emailConfirmed?verifyBanner():''}
+    <div class="field"><label>${t().fChTitleN}</label><input type="text" value="${esc(newChapterDraft.title)}" oninput="newChapterDraft.title=this.value"></div>
+    <div class="field"><label>${t().fNoteStart}</label><textarea style="min-height:70px" oninput="newChapterDraft.noteStart=this.value">${esc(newChapterDraft.noteStart)}</textarea></div>
+    <div class="field"><label>${t().fChBodyN}</label>
+      ${editorToolbar('newChBody',newChapterDraft.body)}
+      <textarea class="chap-body" id="newChBody" style="${writerStyle()}" oninput="newChapterDraft.body=this.value;updateWordCount(this)">${esc(newChapterDraft.body)}</textarea></div>
+    <div class="field"><label>${t().fNoteEnd}</label><textarea style="min-height:70px" oninput="newChapterDraft.noteEnd=this.value">${esc(newChapterDraft.noteEnd)}</textarea></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" ${state.user.emailConfirmed?'':'disabled'} onclick="publishNewChapter()">${t().publishCh}</button>
+      <button class="btn btn-ghost" onclick="newChapterDraft=null;go('dashboard')">${t().cancel}</button>
+    </div>
+  </div>`;
+}
+async function publishNewChapter(){
+  if(!newChapterDraft.title.trim()||!newChapterDraft.body.trim()){toast(t().needField);return;}
+  const novelId=newChapterDraft.novelId;
   const chs=await ensureChapters(novelId);
-  const{error}=await sb.from('chapters').insert({novel_id:novelId,idx:chs.length,title:$('chT').value,body:$('chB').value,note_start:$('chNS').value||null,note_end:$('chNE').value||null});
+  const{error}=await sb.from('chapters').insert({novel_id:novelId,idx:chs.length,title:newChapterDraft.title.trim(),
+    body:newChapterDraft.body,note_start:newChapterDraft.noteStart||null,note_end:newChapterDraft.noteEnd||null});
   if(error){toast(t().errGeneric);return;}
-  invalidateChapters(novelId);
+  invalidateChapters(novelId);newChapterDraft=null;
   toast(t().chPublished);await loadMyNovels();await loadHomeNovels();go('novel',{id:novelId});
 }
 
@@ -1512,7 +1575,9 @@ function vEditChapter(){
     <h2 class="sec-title" style="margin-top:0">${t().editChTitle}</h2>
     <div class="field"><label>${t().fChTitleN}</label><input type="text" value="${esc(editChapterDraft.title)}" oninput="editChapterDraft.title=this.value"></div>
     ${i>0?`<div class="field"><label>${t().fNoteStart}</label><textarea style="min-height:70px" oninput="editChapterDraft.noteStart=this.value">${esc(editChapterDraft.noteStart)}</textarea></div>`:''}
-    <div class="field"><label>${t().fChBodyN}</label><textarea class="chap-body" oninput="editChapterDraft.body=this.value">${esc(editChapterDraft.body)}</textarea></div>
+    <div class="field"><label>${t().fChBodyN}</label>
+      ${editorToolbar('editChBody',editChapterDraft.body)}
+      <textarea class="chap-body" id="editChBody" style="${writerStyle()}" oninput="editChapterDraft.body=this.value;updateWordCount(this)">${esc(editChapterDraft.body)}</textarea></div>
     ${i>0?`<div class="field"><label>${t().fNoteEnd}</label><textarea style="min-height:70px" oninput="editChapterDraft.noteEnd=this.value">${esc(editChapterDraft.noteEnd)}</textarea></div>`:''}
     <div style="display:flex;gap:10px">
       <button class="btn btn-gold" onclick="saveEditChapter()">${t().saveProfile}</button>
@@ -1622,29 +1687,49 @@ function vLibrary(){
 }
 
 /* =============== PANEL DE AUTOR =============== */
+function wordCount(text){return ((text||'').match(/\S+/g)||[]).length;}
+function authorNovelCard(n){
+  const rank=n.status==='aprobada'?rankOf(n.id):null;
+  return `<div class="author-card">
+    <div class="author-card-cover" style="${n.coverUrl?`background-image:url('${esc(n.coverUrl)}')`:`background:${n.cover}`}">
+      ${n.status!=='aprobada'?`<span class="mod-status st-${n.status} a-status">${t().status[n.status]}</span>`:''}
+      ${n.coverUrl?'':esc(n.title)}
+    </div>
+    <h4 title="${esc(n.title)}">${esc(n.title)}</h4>
+    <div class="author-card-meta">${fmt(n.followers)} ${t().followers} · ${n.chaptersCount} ${t().chapters}${rank?` · ${t().rankPos.replace('{n}',rank)}`:''}</div>
+    <div class="author-card-actions">
+      <button class="btn btn-ghost" onclick="go('novel',{id:${n.id}})">${t().viewPage}</button>
+      <button class="btn btn-ghost" onclick="go('editnovel',{id:${n.id}})">${t().editNovelBtn}</button>
+      ${n.status==='aprobada'?`<button class="btn btn-gold" onclick="go('newchapter',{id:${n.id}})">${t().addChapterBtn}</button>`:''}
+    </div>
+  </div>`;
+}
 function vDashboard(){
   if(!state.user)return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
   if(state.detailLoading)return loadingHtml();
   const works=myNovels();
+  const approvedWorks=works.filter(n=>n.status==='aprobada');
   const totalFollowers=works.reduce((s,n)=>s+n.followers,0);
   const totalChapters=works.reduce((s,n)=>s+n.chaptersCount,0);
+  const totalReviews=works.reduce((s,n)=>s+n.votes,0);
+  const totalWords=works.reduce((s,n)=>s+(CHAPTERS_CACHE[n.id]||[]).reduce((s2,c)=>s2+wordCount(c.body),0),0);
+  const ranks=approvedWorks.map(n=>rankOf(n.id)).filter(r=>r!==null);
+  const bestRank=ranks.length?Math.min(...ranks):null;
   return `
   <h2 class="sec-title">${t().dashTitle}</h2><p class="sec-sub">${t().dashSub}</p>
   <div class="dash-stats">
+    <div class="dash-stat"><div class="n">${bestRank?'#'+bestRank:'—'}</div><div class="l">${t().dashStatRank}</div></div>
     <div class="dash-stat"><div class="n">${works.length}</div><div class="l">${t().dashStatWorks}</div></div>
     <div class="dash-stat"><div class="n">${totalChapters}</div><div class="l">${t().dashStatChapters}</div></div>
+    <div class="dash-stat"><div class="n">${fmt(totalWords)}</div><div class="l">${t().dashStatWords}</div></div>
+    <div class="dash-stat"><div class="n">${fmt(totalReviews)}</div><div class="l">${t().dashStatReviews}</div></div>
     <div class="dash-stat"><div class="n">${fmt(totalFollowers)}</div><div class="l">${t().dashStatFollowers}</div></div>
     <div class="dash-stat"><div class="n">${state.user.points}</div><div class="l">${t().dashStatPoints}</div></div>
   </div>
-  <button class="btn btn-gold" onclick="go('write')" style="margin-bottom:24px">${t().dashAddNovel}</button>
-  ${works.length?works.map(n=>{
-    const rank=n.status==='aprobada'?rankOf(n.id):null;
-    return `<div class="work-row">
-      <div><h4 style="cursor:pointer" onclick="go('novel',{id:${n.id}})">${esc(n.title)}${n.isAdult?` <span class="adult-badge">${t().adultBadge}</span>`:''}</h4>
-      <div class="w-meta">${n.chaptersCount} ${t().chapters} · ${fmt(n.followers)} ${t().followers} · ${avgOf(n)?avgOf(n).toFixed(1)+' ★':'— ★'}${rank?` · ${t().rankPos.replace('{n}',rank)}`:''}</div></div>
-      <span class="mod-status st-${n.status}" style="margin:0">${t().status[n.status]}</span>
-    </div>`;
-  }).join(''):`<p style="color:var(--muted)">${t().noWorks}</p>`}
+  <div class="author-grid">
+    ${works.map(authorNovelCard).join('')}
+    <div class="author-card author-card-add" onclick="go('write')"><span class="add-ico">+</span><span>${t().dashAddNovel}</span></div>
+  </div>
   <h3 style="font-family:var(--font-display);font-size:1.3rem;margin:30px 0 10px">${t().dashLatestComments}</h3>
   ${(state.dashComments||[]).length?state.dashComments.map(c=>`<div class="dash-comment">
     ${avatarHTML({avatarUrl:c.profiles&&c.profiles.avatar_url},34)}
@@ -1829,7 +1914,7 @@ async function submitRating(){
 <script>
 /* =============== RENDER GLOBAL =============== */
 function render(){
-  const views={home:vHome,explore:vExplore,novel:vNovel,reader:vReader,write:vWrite,mod:vMod,rank:vRank,library:vLibrary,profile:vProfile,dashboard:vDashboard,editnovel:vEditNovel,editchapter:vEditChapter};
+  const views={home:vHome,explore:vExplore,novel:vNovel,reader:vReader,write:vWrite,mod:vMod,rank:vRank,library:vLibrary,profile:vProfile,dashboard:vDashboard,editnovel:vEditNovel,editchapter:vEditChapter,newchapter:vNewChapter};
 
   $('navLinks').innerHTML=Object.entries(t().nav).map(([k,l])=>
     `<button class="${state.view===k?'active':''}" onclick="go('${k}')">${l}</button>`).join('');
