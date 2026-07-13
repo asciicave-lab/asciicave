@@ -46,6 +46,8 @@ exports.handler = async function () {
   xml += urlEntry(`${SITE_URL}/explorar`, null, "daily", "0.9");
   xml += urlEntry(`${SITE_URL}/rankings`, null, "daily", "0.8");
   xml += urlEntry(`${SITE_URL}/escribir`, null, "monthly", "0.6");
+  xml += urlEntry(`${SITE_URL}/terminos.html`, null, "yearly", "0.3");
+  xml += urlEntry(`${SITE_URL}/privacidad.html`, null, "yearly", "0.3");
   GENRES.forEach((g) => {
     xml += urlEntry(`${SITE_URL}/explorar/${encodeURIComponent(g)}`, null, "daily", "0.7");
   });

@@ -503,6 +503,13 @@ es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",libra
  orEmail:"o con tu correo electrónico",
  emailLbl:"Correo electrónico",passLbl:"Contraseña (mín. 6 caracteres)",
  modeLogin:"Entrar",modeSignup:"Crear cuenta",
+ forgotPassword:"¿Olvidaste tu contraseña?",forgotPasswordSub:"Escribe tu correo y te mandamos un enlace para restablecerla.",
+ sendResetLink:"Enviar enlace de recuperación",resetLinkSent:"Te hemos enviado un correo con el enlace para restablecer tu contraseña.",
+ backToLogin:"← Volver a iniciar sesión",
+ newPasswordTitle:"Elige tu nueva contraseña",newPasswordSub:"Ya puedes establecer una contraseña nueva para tu cuenta.",
+ newPasswordLbl:"Nueva contraseña (mín. 6 caracteres)",confirmNewPasswordLbl:"Confirma la nueva contraseña",
+ passwordsDontMatch:"Las contraseñas no coinciden.",passwordUpdated:"Contraseña actualizada. Ya puedes usarla para entrar.",
+ saveNewPassword:"Guardar nueva contraseña",
  needEmailPass:"Escribe tu correo y contraseña.",
  errEmailUse:"Ese correo ya tiene cuenta. Prueba a entrar.",
  errWeakPass:"La contraseña debe tener al menos 6 caracteres.",
@@ -583,7 +590,7 @@ es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",libra
       ["🎧","AudioNovela+","Convierte tu novela en audiolibro con narradores profesionales.","Probar gratis"]],
  statNovels:"novelas publicadas",statReaders:"lectores registrados",statChapters:"capítulos",
  footer:"asciicave.com — plataforma de novelas web para el público hispanohablante.",
- footLinks:"Términos · Privacidad · Contacto · Para autores",
+ footTerms:"Términos",footPrivacy:"Privacidad",footContact:"Contacto",footAuthors:"Para autores",
  coffeeBtn:"☕ Invítame un café",
  adultBadge:"+18",
  adultGateT:"Contenido para adultos",adultGateP:"Esta obra está marcada como +18 por su autor. Confirma que tienes la edad legal para acceder a este tipo de contenido.",
@@ -634,6 +641,13 @@ en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My 
  orEmail:"or with your email",
  emailLbl:"Email address",passLbl:"Password (min. 6 characters)",
  modeLogin:"Log in",modeSignup:"Create account",
+ forgotPassword:"Forgot your password?",forgotPasswordSub:"Type your email and we'll send you a link to reset it.",
+ sendResetLink:"Send reset link",resetLinkSent:"We've sent you an email with a link to reset your password.",
+ backToLogin:"← Back to login",
+ newPasswordTitle:"Choose your new password",newPasswordSub:"You can now set a new password for your account.",
+ newPasswordLbl:"New password (min. 6 characters)",confirmNewPasswordLbl:"Confirm new password",
+ passwordsDontMatch:"Passwords don't match.",passwordUpdated:"Password updated. You can now use it to log in.",
+ saveNewPassword:"Save new password",
  needEmailPass:"Type your email and password.",
  errEmailUse:"That email already has an account. Try logging in.",
  errWeakPass:"Password must be at least 6 characters.",
@@ -714,7 +728,7 @@ en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My 
       ["🎧","AudioNovela+","Turn your novel into an audiobook with pro narrators.","Try free"]],
  statNovels:"published novels",statReaders:"registered readers",statChapters:"chapters",
  footer:"asciicave.com — a web-novel platform for the Spanish-speaking world.",
- footLinks:"Terms · Privacy · Contact · For authors",
+ footTerms:"Terms",footPrivacy:"Privacy",footContact:"Contact",footAuthors:"For authors",
  coffeeBtn:"☕ Buy me a coffee",
  adultBadge:"18+",
  adultGateT:"Adult content",adultGateP:"This work is flagged 18+ by its author. Confirm you're of legal age to access this kind of content.",
@@ -912,6 +926,7 @@ function openLogin(mode='login'){loginTab=mode;renderLogin();}
 function setSignupAccountType(v){signupAccountType=v;renderLogin();}
 
 function renderLogin(){
+  if(loginTab==='forgot')return renderForgotPassword();
   $('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()">
    <div class="modal">
     <h2>${t().loginTitle}</h2><p class="sub">${t().loginSub}</p>
@@ -934,8 +949,44 @@ function renderLogin(){
     <div class="field" style="margin-bottom:12px"><label>${t().emailLbl}</label><input type="email" id="fbEmail" autocomplete="email"></div>
     <div class="field" style="margin-bottom:14px"><label>${t().passLbl}</label><input type="password" id="fbPass" autocomplete="${loginTab==='signup'?'new-password':'current-password'}"></div>
     <button class="btn btn-gold" style="width:100%" onclick="emailAuth()">${loginTab==='signup'?t().modeSignup:t().modeLogin}</button>
+    ${loginTab==='login'?`<div style="text-align:right;margin-top:10px"><a style="cursor:pointer;font-size:.8rem" onclick="openLogin('forgot')">${t().forgotPassword}</a></div>`:''}
     <div class="login-err" id="loginErr"></div>
    </div></div>`;
+}
+function renderForgotPassword(){
+  $('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()">
+   <div class="modal">
+    <h2>${t().forgotPassword}</h2><p class="sub">${t().forgotPasswordSub}</p>
+    <div class="field" style="margin-bottom:14px"><label>${t().emailLbl}</label><input type="email" id="fpEmail" autocomplete="email"></div>
+    <button class="btn btn-gold" style="width:100%" onclick="sendPasswordReset()">${t().sendResetLink}</button>
+    <div class="login-err" id="loginErr"></div>
+    <div style="text-align:center;margin-top:14px;font-size:.82rem"><a style="cursor:pointer" onclick="openLogin('login')">${t().backToLogin}</a></div>
+   </div></div>`;
+}
+async function sendPasswordReset(){
+  const email=($('fpEmail').value||'').trim();
+  if(!email){$('loginErr').textContent=t().needEmailPass;return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
+  if(error){$('loginErr').textContent=t().errGeneric;return;}
+  closeModal();toast(t().resetLinkSent);
+}
+function renderNewPasswordModal(){
+  $('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()">
+   <div class="modal">
+    <h2>${t().newPasswordTitle}</h2><p class="sub">${t().newPasswordSub}</p>
+    <div class="field" style="margin-bottom:14px"><label>${t().newPasswordLbl}</label><input type="password" id="npPass1" autocomplete="new-password"></div>
+    <div class="field" style="margin-bottom:14px"><label>${t().confirmNewPasswordLbl}</label><input type="password" id="npPass2" autocomplete="new-password"></div>
+    <button class="btn btn-gold" style="width:100%" onclick="saveNewPassword()">${t().saveNewPassword}</button>
+    <div class="login-err" id="loginErr"></div>
+   </div></div>`;
+}
+async function saveNewPassword(){
+  const p1=$('npPass1').value,p2=$('npPass2').value;
+  if(!p1||p1.length<6){$('loginErr').textContent=t().errWeakPass;return;}
+  if(p1!==p2){$('loginErr').textContent=t().passwordsDontMatch;return;}
+  const{error}=await sb.auth.updateUser({password:p1});
+  if(error){$('loginErr').textContent=t().errGeneric;return;}
+  closeModal();toast(t().passwordUpdated);
 }
 async function oauthGoogle(){
   const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
@@ -2004,7 +2055,9 @@ function render(){
     `:`<button class="login-btn" onclick="openLogin()">${t().loginBtn}</button>`}`;
 
   $('app').innerHTML=(views[state.view]||vHome)();
-  $('foot').innerHTML=`${t().footer}<div class="f-links">${t().footLinks}</div>`;
+  $('foot').innerHTML=`${t().footer}<div class="f-links">
+    <a href="/terminos.html">${t().footTerms}</a> · <a href="/privacidad.html">${t().footPrivacy}</a> · <a href="mailto:chriswynlive@gmail.com">${t().footContact}</a> · <a href="/escribir" onclick="return navClick(event,'write',{})">${t().footAuthors}</a>
+  </div>`;
   activateAds();
 }
 
@@ -2017,6 +2070,7 @@ async function boot(){
   history.replaceState({view:initial.view,params:initial.params},'',gcPath(initial.view,initial.params));
   await go(initial.view,initial.params,{skipHistory:true});
   sb.auth.onAuthStateChange(async(event,session)=>{
+    if(event==='PASSWORD_RECOVERY')renderNewPasswordModal();
     if(session&&session.user){
       await loadProfile(session.user);
     }else{
