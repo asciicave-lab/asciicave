@@ -545,6 +545,8 @@ es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",libra
  pointsLbl:"puntos",
  myWorksSub:"Estado de tus solicitudes y obras publicadas",
  resubmit:"Reenviar a revisión",resubmitted:"Obra reenviada a la cola de revisión.",
+ deleteNovel:"Eliminar novela",novelDeleted:"Novela eliminada.",
+ confirmDeleteNovel:"¿Seguro que quieres eliminar esta novela? Se borrarán también sus capítulos, comentarios, valoraciones, seguidores y favoritos. Esta acción no se puede deshacer.",
  noWorks:"Todavía no has enviado ninguna obra.",
  adLabel:"publicidad",adWhy:"¿Por qué veo esto?",adRemove:"Sobre los anuncios",
  ads:[["📚","Editorial Faro Norte","Publica tu manuscrito en papel. Primera valoración gratuita.","Saber más"],
@@ -667,6 +669,8 @@ en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My 
  pointsLbl:"points",
  myWorksSub:"Status of your submissions and published works",
  resubmit:"Resubmit for review",resubmitted:"Work resubmitted to the review queue.",
+ deleteNovel:"Delete novel",novelDeleted:"Novel deleted.",
+ confirmDeleteNovel:"Are you sure you want to delete this novel? Its chapters, comments, ratings, followers and favorites will also be deleted. This action cannot be undone.",
  noWorks:"You haven't submitted any work yet.",
  adLabel:"advertisement",adWhy:"Why am I seeing this?",adRemove:"About the ads",
  ads:[["📚","Faro Norte Publishing","Get your manuscript in print. Free first assessment.","Learn more"],
@@ -1175,6 +1179,7 @@ function vNovel(){
         <button class="btn btn-ghost" onclick="toggleFav(${n.id})">${state.favs.has(n.id)?t().faved:t().fav}</button>
         <button class="btn ${canRate?'btn-gold':'btn-ghost'}" ${canRate?'':'disabled'} onclick="openRating(${n.id})">${rated?t().yourRating:(readSet.has(0)?t().rate:t().rateLocked)}</button>
         ${rank?`<span class="rank-badge">🏆 ${t().rankPos.replace('{n}',rank)}</span>`:''}
+        ${isAdmin()?`<button class="btn btn-wax" onclick="deleteNovel(${n.id})">${t().deleteNovel}</button>`:''}
       </div>
     </div>
   </div>
@@ -1377,7 +1382,10 @@ function vMod(){
   ${history.length?`<h2 class="sec-title" style="font-size:1.4rem">${t().historyMod}</h2>
     ${history.map(n=>`<div class="work-row">
       <div><h4>${esc(n.title)}</h4><div class="w-meta">${esc(n.author)} · ${n.reviewedAt?new Date(n.reviewedAt).toLocaleDateString('es-ES'):''}</div></div>
-      <span class="mod-status st-${n.status}">${t().status[n.status]}</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="mod-status st-${n.status}" style="margin:0">${t().status[n.status]}</span>
+        <button class="btn btn-wax btn-sm" onclick="deleteNovel(${n.id})">${t().deleteNovel}</button>
+      </div>
       ${n.status==='rechazada'&&n.rejectReason?`<div class="reject-note">✗ ${esc(n.rejectReason)}</div>`:''}
     </div>`).join('')}`:''}`;
 }
@@ -1553,6 +1561,16 @@ async function savePatreon(){
 async function resubmit(id){
   await sb.rpc('fn_resubmit_novel',{p_novel_id:id});
   toast(t().resubmitted);await loadMyNovels();render();
+}
+async function deleteNovel(id){
+  if(!isAdmin())return;
+  if(!confirm(t().confirmDeleteNovel))return;
+  const{error}=await sb.rpc('fn_delete_novel',{p_novel_id:id});
+  if(error){toast(t().errGeneric);return;}
+  invalidateChapters(id);
+  toast(t().novelDeleted);
+  await Promise.all([loadHomeNovels(),loadModQueue()]);
+  if(state.view==='novel'&&state.params.id===id)go('mod');else render();
 }
 async function onAvatarChange(e){
   const file=e.target.files[0];if(!file)return;

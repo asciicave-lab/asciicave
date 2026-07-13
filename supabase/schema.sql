@@ -360,6 +360,21 @@ end;
 $$;
 grant execute on function public.fn_resubmit_novel(bigint) to authenticated;
 
+-- Borra una novela por completo (solo admin). Al borrar la fila de
+-- novels, el "on delete cascade" de las foreign keys se encarga de
+-- borrar también sus capítulos, comentarios, valoraciones, seguidores
+-- y favoritos asociados.
+create or replace function public.fn_delete_novel(p_novel_id bigint)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not authorized';
+  end if;
+  delete from public.novels where id = p_novel_id;
+end;
+$$;
+grant execute on function public.fn_delete_novel(bigint) to authenticated;
+
 -- Registra una lectura: cuenta la vista del capítulo y de la novela.
 -- Se puede llamar sin sesión (lectura anónima cuenta igual que en el
 -- prototipo original), por eso también se concede a "anon".
