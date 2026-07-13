@@ -750,11 +750,33 @@ function gcTrack(view,params){
     window.goatcounter.count({path:gcPath(view,params||{})});
   }
 }
+function parsePath(pathname){
+  const p=pathname.split('/').filter(Boolean).map(s=>{try{return decodeURIComponent(s);}catch(e){return s;}});
+  if(!p.length)return{view:'home',params:{}};
+  if(p[0]==='explorar')return{view:'explore',params:p[1]?{genre:p[1]}:{}};
+  if(p[0]==='novela'&&p[1]){
+    const id=+p[1];
+    if(!Number.isFinite(id))return{view:'home',params:{}};
+    if(p[2]==='capitulo'&&p[3])return{view:'reader',params:{id,ch:Math.max(0,(+p[3]||1)-1)}};
+    return{view:'novel',params:{id}};
+  }
+  if(p[0]==='escribir')return{view:'write',params:{}};
+  if(p[0]==='moderacion')return{view:'mod',params:{}};
+  if(p[0]==='rankings')return{view:'rank',params:p[1]?{mode:p[1]}:{}};
+  if(p[0]==='biblioteca')return{view:'library',params:{}};
+  if(p[0]==='perfil')return{view:'profile',params:{}};
+  if(p[0]==='panel-autor')return{view:'dashboard',params:{}};
+  return{view:'home',params:{}};
+}
 
-async function go(view,params={}){
+async function go(view,params={},opts={}){
   state.view=view;state.params=params;state.menuOpen=false;
   teardownChannel();
   window.scrollTo({top:0});
+  if(!opts.skipHistory){
+    const path=gcPath(view,params);
+    if(location.pathname!==path)history.pushState({view,params},'',path);
+  }
   if(view==='novel'||view==='reader'){
     state.detailLoading=true;render();
     await ensureChapters(params.id);
@@ -777,6 +799,10 @@ async function go(view,params={}){
   render();
   gcTrack(view,params);
 }
+window.addEventListener('popstate',e=>{
+  const st=e.state||parsePath(location.pathname);
+  go(st.view,st.params||{},{skipHistory:true});
+});
 
 /* =============== AUTENTICACIÓN =============== */
 let loginTab='login'; // 'login' | 'signup'
@@ -1719,8 +1745,9 @@ let bootedOnce=false;
 async function boot(){
   await Promise.all([loadHomeNovels(),loadStats()]);
   await loadHomeExtras();
-  render();
-  gcTrack('home',{});
+  const initial=parsePath(location.pathname);
+  history.replaceState({view:initial.view,params:initial.params},'',gcPath(initial.view,initial.params));
+  await go(initial.view,initial.params,{skipHistory:true});
   sb.auth.onAuthStateChange(async(event,session)=>{
     if(session&&session.user){
       await loadProfile(session.user);
@@ -1729,7 +1756,7 @@ async function boot(){
       await loadInteractionSets();
     }
     if(!bootedOnce){bootedOnce=true;state.booting=false;}
-    render();
+    await go(state.view,state.params,{skipHistory:true});
   });
 }
 async function loadProfile(authUser){
