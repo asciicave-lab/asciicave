@@ -97,6 +97,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
    radial-gradient(1px 1px at 30% 70%, rgba(237,231,216,.15) 50%, transparent 51%);
 }
 a{color:var(--gold);text-decoration:none}
+a.card,a.rank-row,a.widget-card{color:var(--paper)}
 button{font-family:var(--font-body);cursor:pointer}
 
 /* ---------- Cabecera ---------- */
@@ -781,6 +782,66 @@ function gcTrack(view,params){
     window.goatcounter.count({path:gcPath(view,params||{})});
   }
 }
+
+/* =============== SEO: título, descripción, canonical y Open Graph por página =============== */
+const SITE_URL='https://asciicave.com';
+const DEFAULT_TITLE='AsciiCave — Publica y lee novelas web en español, gratis';
+const DEFAULT_DESC='AsciiCave es la plataforma de novelas web para el público hispanohablante. Publica tu historia por capítulos, gana lectores, recibe valoraciones por historia, estilo, gramática y personajes, y monetiza con Patreon.';
+const DEFAULT_IMG=SITE_URL+'/og-cover.png';
+const PRIVATE_VIEWS=new Set(['write','mod','library','profile','dashboard','editnovel','editchapter','newchapter']);
+function truncateForMeta(s,n){
+  s=String(s||'').replace(/\s+/g,' ').trim();
+  return s.length>n?s.slice(0,n-1).trimEnd()+'…':s;
+}
+function setMetaTag(sel,content){
+  const el=document.querySelector(sel);
+  if(el)el.setAttribute('content',content);
+}
+function updateMetaTags(view,params){
+  let title=DEFAULT_TITLE,desc=DEFAULT_DESC,img=DEFAULT_IMG;
+  const url=SITE_URL+gcPath(view,params||{});
+  if((view==='novel'||view==='reader'||view==='editnovel')&&params.id!=null){
+    const n=NOVELS.find(x=>x.id===params.id)||MY_NOVELS.find(x=>x.id===params.id);
+    if(n){
+      if(view==='reader'){
+        const c=(CHAPTERS_CACHE[n.id]||[])[params.ch];
+        title=c?`${c.title} — ${n.title} | AsciiCave`:`${n.title} | AsciiCave`;
+        desc=truncateForMeta(c?c.body:n.syn,155);
+      }else{
+        title=`${n.title} — ${n.author} | AsciiCave`;
+        desc=truncateForMeta(n.syn,155);
+      }
+      if(n.coverUrl)img=n.coverUrl;
+    }
+  }else if(view==='explore'){
+    title=params.genre?`Novelas de ${params.genre} en español — AsciiCave`:'Explorar novelas web en español — AsciiCave';
+    desc=params.genre?`Descubre novelas web de ${params.genre} en español, gratis y por capítulos en AsciiCave.`:'Explora novelas web en español por género: fantasía, LitRPG, romance, terror y muchos más.';
+  }else if(view==='rank'){
+    title='Rankings de novelas web en español — AsciiCave';
+    desc='Las novelas web en español mejor valoradas, con más seguidores y más leídas en AsciiCave.';
+  }
+  document.title=title;
+  setMetaTag('meta[name="description"]',desc);
+  setMetaTag('meta[name="robots"]',PRIVATE_VIEWS.has(view)?'noindex, nofollow':'index, follow, max-image-preview:large');
+  setMetaTag('meta[property="og:title"]',title);
+  setMetaTag('meta[property="og:description"]',desc);
+  setMetaTag('meta[property="og:url"]',url);
+  setMetaTag('meta[property="og:image"]',img);
+  setMetaTag('meta[name="twitter:title"]',title);
+  setMetaTag('meta[name="twitter:description"]',desc);
+  setMetaTag('meta[name="twitter:image"]',img);
+  const canon=document.querySelector('link[rel="canonical"]');
+  if(canon)canon.setAttribute('href',url);
+}
+/* Navegación por enlaces <a href> reales (rastreables) que además funcionan
+   como SPA: clic normal intercepta y usa go(); Ctrl/Cmd/clic central abre
+   en pestaña nueva como cualquier enlace normal. */
+function navClick(e,view,params){
+  if(e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button===1)return true;
+  e.preventDefault();
+  go(view,params);
+  return false;
+}
 function parsePath(pathname){
   const p=pathname.split('/').filter(Boolean).map(s=>{try{return decodeURIComponent(s);}catch(e){return s;}});
   if(!p.length)return{view:'home',params:{}};
@@ -835,6 +896,7 @@ async function go(view,params={},opts={}){
   }else if(view==='write'){
     if(state.user)await loadMyNovels();
   }
+  updateMetaTags(view,params);
   render();
   gcTrack(view,params);
 }
@@ -1128,7 +1190,7 @@ function avatarHTML(user,size){
 }
 function novelCard(n){
   const a=avgOf(n);
-  return `<div class="card" onclick="go('novel',{id:${n.id}})">
+  return `<a class="card" href="/novela/${n.id}" onclick="return navClick(event,'novel',{id:${n.id}})">
     ${n.coverUrl?`<img class="cover-thumb" src="${esc(n.coverUrl)}" alt="" loading="lazy">`:''}
     <div class="tags">${n.isAdult?`<span class="adult-badge">${t().adultBadge}</span>`:''}${n.genres.slice(0,3).map(g=>`<span class="tag g">${esc(gName(g))}</span>`).join('')}</div>
     <h3>${esc(n.title)}</h3>
@@ -1138,7 +1200,7 @@ function novelCard(n){
       <span class="stars-inline">${starsTxt(a)} ${a?a.toFixed(1):'—'}</span>
       <span>${fmt(n.followers)} ♥ · ${n.chaptersCount} ${t().chapters}</span>
     </div>
-  </div>`;
+  </a>`;
 }
 function emptyState(titulo,texto,btnLabel,btnAction){
   return `<div class="empty">
@@ -1167,12 +1229,12 @@ async function resendVerification(){
 }
 function homeWidgets(){
   const cards=[];
-  if(LATEST_CHAPTERS[0]){const c=LATEST_CHAPTERS[0];cards.push(`<div class="widget-card" onclick="go('reader',{id:${c.novel_id},ch:${c.idx}})">
-    <span class="w-label">${t().latestChaptersT}</span><h4>${esc(c.title)}</h4><span>${esc(c.novels&&c.novels.title||'')}</span></div>`);}
-  if(GROWING_NOVEL){cards.push(`<div class="widget-card" onclick="go('novel',{id:${GROWING_NOVEL.id}})">
-    <span class="w-label">${t().growingT}</span><h4>${esc(GROWING_NOVEL.title)}</h4><span>${t().growingSub}</span></div>`);}
-  if(BEST_CHAPTER){cards.push(`<div class="widget-card" onclick="go('reader',{id:${BEST_CHAPTER.novelId},ch:${BEST_CHAPTER.chapterIdx}})">
-    <span class="w-label">${t().bestChapterT}</span><h4>${esc(BEST_CHAPTER.chapterTitle)}</h4><span>${esc(BEST_CHAPTER.novelTitle)}</span></div>`);}
+  if(LATEST_CHAPTERS[0]){const c=LATEST_CHAPTERS[0];cards.push(`<a class="widget-card" href="/novela/${c.novel_id}/capitulo/${c.idx+1}" onclick="return navClick(event,'reader',{id:${c.novel_id},ch:${c.idx}})">
+    <span class="w-label">${t().latestChaptersT}</span><h4>${esc(c.title)}</h4><span>${esc(c.novels&&c.novels.title||'')}</span></a>`);}
+  if(GROWING_NOVEL){cards.push(`<a class="widget-card" href="/novela/${GROWING_NOVEL.id}" onclick="return navClick(event,'novel',{id:${GROWING_NOVEL.id}})">
+    <span class="w-label">${t().growingT}</span><h4>${esc(GROWING_NOVEL.title)}</h4><span>${t().growingSub}</span></a>`);}
+  if(BEST_CHAPTER){cards.push(`<a class="widget-card" href="/novela/${BEST_CHAPTER.novelId}/capitulo/${BEST_CHAPTER.chapterIdx+1}" onclick="return navClick(event,'reader',{id:${BEST_CHAPTER.novelId},ch:${BEST_CHAPTER.chapterIdx}})">
+    <span class="w-label">${t().bestChapterT}</span><h4>${esc(BEST_CHAPTER.chapterTitle)}</h4><span>${esc(BEST_CHAPTER.novelTitle)}</span></a>`);}
   return cards.length?`<div class="widget-row">${cards.join('')}</div>`:'';
 }
 </script>
@@ -1291,7 +1353,7 @@ function vNovel(){
   <h2 class="sec-title">${t().tableOfCh}</h2>
   <div class="chap-list">
     ${chs.map((c,i)=>`<div class="chap-item">
-      <span style="cursor:pointer;flex:1" onclick="go('reader',{id:${n.id},ch:${i}})"><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</span>
+      <a href="/novela/${n.id}/capitulo/${i+1}" onclick="return navClick(event,'reader',{id:${n.id},ch:${i}})" style="flex:1;color:inherit;text-decoration:none"><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</a>
       ${readSet.has(i)?`<span class="read-mark">✓ ${t().read}</span>`:''}
       ${isOwner?`<button class="btn btn-ghost btn-sm" style="margin-left:10px" onclick="go('editchapter',{id:${n.id},ch:${i}})">${t().editChBtn}</button>`:''}
     </div>`).join('')}
@@ -1658,11 +1720,11 @@ function vRank(){
   <p class="sec-sub">${t().rankSub}</p>
   <div class="rank-tabs">${Object.entries(defs).map(([k,x])=>`<button class="${mode===k?'on':''}" onclick="go('rank',{mode:'${k}'})">${x.l}</button>`).join('')}</div>
   ${list.length?`<div>${list.map((n,i)=>`
-    <div class="rank-row" onclick="go('novel',{id:${n.id}})">
+    <a class="rank-row" href="/novela/${n.id}" onclick="return navClick(event,'novel',{id:${n.id}})">
       <div class="rank-pos">${i+1}</div>
       <div class="rank-main"><h3>${esc(n.title)}</h3><span>${esc(n.author)} · ${n.genres.map(gName).join(', ')}</span></div>
       <div class="rank-metric">${d.f(n)}<small>${d.l}</small></div>
-    </div>`).join('')}</div>`
+    </a>`).join('')}</div>`
   :emptyState(t().emptyRankT,t().emptyRankP,t().heroCta2,"go('write')")}`;
 }
 

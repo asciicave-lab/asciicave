@@ -2,16 +2,15 @@
 User-agent: *
 Allow: /
 
-# Zonas privadas: nunca indexar
-Disallow: /admin/
-Disallow: /moderacion/
-Disallow: /perfil/
-Disallow: /api/
-Disallow: /login
-Disallow: /registro
-
-# Evitar contenido duplicado por parámetros de ordenación/filtrado
-Disallow: /*?orden=
-Disallow: /*?pagina=
+# Zonas privadas: nunca indexar (deben coincidir exactamente con las rutas
+# reales de la SPA — ver gcPath()/parsePath() en index.html)
+Disallow: /escribir
+Disallow: /moderacion
+Disallow: /perfil
+Disallow: /biblioteca
+Disallow: /panel-autor
+Disallow: /novela/*/editar
+Disallow: /novela/*/nuevo-capitulo
+Disallow: /novela/*/capitulo/*/editar
 
 Sitemap: https://asciicave.com/sitemap.xml
