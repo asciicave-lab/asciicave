@@ -64,6 +64,14 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9510274133995629"
      crossorigin="anonymous"></script>
 
+<!-- ============ GoatCounter (analítica) ============
+     no_onload:true porque asciicave es una SPA: la visita "de verdad" a
+     cada sección/novela se cuenta a mano desde gcTrack(), en vez de
+     contar solo la carga inicial de la página. -->
+<script data-goatcounter="https://asciicave.goatcounter.com/count"
+        data-goatcounter-settings='{"no_onload": true}'
+        async src="//gc.zgo.at/count.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -722,6 +730,27 @@ function loadingHtml(){return `<div class="empty"><span class="e-glyph">&gt;_ �
 let activeChannel=null;
 function teardownChannel(){if(activeChannel){sb.removeChannel(activeChannel);activeChannel=null;}}
 
+function gcPath(view,params){
+  switch(view){
+    case 'home':return '/';
+    case 'explore':return params.genre?`/explorar/${encodeURIComponent(params.genre)}`:'/explorar';
+    case 'novel':return `/novela/${params.id}`;
+    case 'reader':return `/novela/${params.id}/capitulo/${(params.ch||0)+1}`;
+    case 'write':return '/escribir';
+    case 'mod':return '/moderacion';
+    case 'rank':return `/rankings/${params.mode||'stars'}`;
+    case 'library':return '/biblioteca';
+    case 'profile':return '/perfil';
+    case 'dashboard':return '/panel-autor';
+    default:return `/${view}`;
+  }
+}
+function gcTrack(view,params){
+  if(window.goatcounter&&window.goatcounter.count){
+    window.goatcounter.count({path:gcPath(view,params||{})});
+  }
+}
+
 async function go(view,params={}){
   state.view=view;state.params=params;state.menuOpen=false;
   teardownChannel();
@@ -746,6 +775,7 @@ async function go(view,params={}){
     state.detailLoading=false;
   }
   render();
+  gcTrack(view,params);
 }
 
 /* =============== AUTENTICACIÓN =============== */
@@ -1690,6 +1720,7 @@ async function boot(){
   await Promise.all([loadHomeNovels(),loadStats()]);
   await loadHomeExtras();
   render();
+  gcTrack('home',{});
   sb.auth.onAuthStateChange(async(event,session)=>{
     if(session&&session.user){
       await loadProfile(session.user);
