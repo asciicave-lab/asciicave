@@ -547,6 +547,9 @@ es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",libra
  profPatreonT:"Mi Patreon de autor",profPatreonP:"Enlaza tu Patreon para que tus lectores puedan apoyarte. Aparecerá en tus novelas y al final de cada capítulo.",
  savePatreon:"Guardar enlace",patreonSaved:"Patreon guardado. Aparecerá en tus obras.",
  saveProfile:"Guardar cambios",profileSaved:"Perfil actualizado.",usernameTaken:"Ese nombre de usuario ya está en uso.",
+ editNovelBtn:"Editar novela",editNovelTitle:"Editar novela",novelUpdated:"Novela actualizada.",
+ editChBtn:"Editar",editChTitle:"Editar capítulo",chapterUpdated:"Capítulo actualizado.",
+ removeCoverBtn:"Quitar portada",
  profLangT:"Idioma / Language",profLangP:"La interfaz está disponible en español e inglés. Las novelas se muestran en su idioma original.",
  showAdultToggle:"Mostrar contenido +18 en explorar e inicio",
  avatarUpload:"Subir foto",avatarRemove:"Quitar foto",
@@ -671,6 +674,9 @@ en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My 
  profPatreonT:"My author Patreon",profPatreonP:"Link your Patreon so readers can support you. It shows on your novels and at the end of every chapter.",
  savePatreon:"Save link",patreonSaved:"Patreon saved. It will appear on your works.",
  saveProfile:"Save changes",profileSaved:"Profile updated.",usernameTaken:"That username is already taken.",
+ editNovelBtn:"Edit novel",editNovelTitle:"Edit novel",novelUpdated:"Novel updated.",
+ editChBtn:"Edit",editChTitle:"Edit chapter",chapterUpdated:"Chapter updated.",
+ removeCoverBtn:"Remove cover",
  profLangT:"Idioma / Language",profLangP:"The interface is available in Spanish and English. Novels display in their original language.",
  showAdultToggle:"Show 18+ content in browse and home",
  avatarUpload:"Upload photo",avatarRemove:"Remove photo",
@@ -736,6 +742,8 @@ function gcPath(view,params){
     case 'explore':return params.genre?`/explorar/${encodeURIComponent(params.genre)}`:'/explorar';
     case 'novel':return `/novela/${params.id}`;
     case 'reader':return `/novela/${params.id}/capitulo/${(params.ch||0)+1}`;
+    case 'editnovel':return `/novela/${params.id}/editar`;
+    case 'editchapter':return `/novela/${params.id}/capitulo/${(params.ch||0)+1}/editar`;
     case 'write':return '/escribir';
     case 'mod':return '/moderacion';
     case 'rank':return `/rankings/${params.mode||'stars'}`;
@@ -757,7 +765,12 @@ function parsePath(pathname){
   if(p[0]==='novela'&&p[1]){
     const id=+p[1];
     if(!Number.isFinite(id))return{view:'home',params:{}};
-    if(p[2]==='capitulo'&&p[3])return{view:'reader',params:{id,ch:Math.max(0,(+p[3]||1)-1)}};
+    if(p[2]==='capitulo'&&p[3]){
+      const ch=Math.max(0,(+p[3]||1)-1);
+      if(p[4]==='editar')return{view:'editchapter',params:{id,ch}};
+      return{view:'reader',params:{id,ch}};
+    }
+    if(p[2]==='editar')return{view:'editnovel',params:{id}};
     return{view:'novel',params:{id}};
   }
   if(p[0]==='escribir')return{view:'write',params:{}};
@@ -777,7 +790,7 @@ async function go(view,params={},opts={}){
     const path=gcPath(view,params);
     if(location.pathname!==path)history.pushState({view,params},'',path);
   }
-  if(view==='novel'||view==='reader'){
+  if(view==='novel'||view==='reader'||view==='editchapter'){
     state.detailLoading=true;render();
     await ensureChapters(params.id);
     if(view==='novel')await refreshNovelLive(params.id);
@@ -795,6 +808,8 @@ async function go(view,params={},opts={}){
     state.detailLoading=true;render();
     await loadDashboardData();
     state.detailLoading=false;
+  }else if(view==='write'){
+    if(state.user)await loadMyNovels();
   }
   render();
   gcTrack(view,params);
@@ -1214,6 +1229,7 @@ function vNovel(){
   const rated=state.ratedIds.has(n.id);
   const cats=[['historia',t().catHistoria],['estilo',t().catEstilo],['gramatica',t().catGramatica],['personajes',t().catPersonajes]];
   const rank=n.status==='aprobada'?rankOf(n.id):null;
+  const isOwner=!!(state.user&&n.ownerId===state.user.id);
   return `
   ${n.status!=='aprobada'&&(isAdmin()||(state.user&&n.ownerId===state.user.id))?`<div class="callout" style="margin-bottom:16px"><b>${t().status[n.status]}</b>${n.rejectReason?' — '+esc(n.rejectReason):''}</div>`:''}
   <div class="novel-head">
@@ -1235,6 +1251,7 @@ function vNovel(){
         <button class="btn btn-ghost" onclick="toggleFav(${n.id})">${state.favs.has(n.id)?t().faved:t().fav}</button>
         <button class="btn ${canRate?'btn-gold':'btn-ghost'}" ${canRate?'':'disabled'} onclick="openRating(${n.id})">${rated?t().yourRating:(readSet.has(0)?t().rate:t().rateLocked)}</button>
         ${rank?`<span class="rank-badge">🏆 ${t().rankPos.replace('{n}',rank)}</span>`:''}
+        ${isOwner?`<button class="btn btn-ghost" onclick="go('editnovel',{id:${n.id}})">${t().editNovelBtn}</button>`:''}
         ${isAdmin()?`<button class="btn btn-wax" onclick="deleteNovel(${n.id})">${t().deleteNovel}</button>`:''}
       </div>
     </div>
@@ -1249,9 +1266,10 @@ function vNovel(){
   ${n.patreon?`<div class="patreon-box"><div class="p-ico">🤝</div><div style="flex:1"><strong>${t().supportPatreon}</strong><small>${t().supportSub}</small></div><a class="btn btn-wax btn-sm" href="${esc(n.patreon)}" target="_blank" rel="noopener">Patreon ↗</a></div>`:''}
   <h2 class="sec-title">${t().tableOfCh}</h2>
   <div class="chap-list">
-    ${chs.map((c,i)=>`<div class="chap-item" onclick="go('reader',{id:${n.id},ch:${i}})">
-      <span><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</span>
+    ${chs.map((c,i)=>`<div class="chap-item">
+      <span style="cursor:pointer;flex:1" onclick="go('reader',{id:${n.id},ch:${i}})"><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</span>
       ${readSet.has(i)?`<span class="read-mark">✓ ${t().read}</span>`:''}
+      ${isOwner?`<button class="btn btn-ghost btn-sm" style="margin-left:10px" onclick="go('editchapter',{id:${n.id},ch:${i}})">${t().editChBtn}</button>`:''}
     </div>`).join('')}
   </div>
   <div style="margin-top:26px">${adBlock()}</div>`;
@@ -1409,6 +1427,108 @@ async function addChapter(){
   if(error){toast(t().errGeneric);return;}
   invalidateChapters(novelId);
   toast(t().chPublished);await loadMyNovels();await loadHomeNovels();go('novel',{id:novelId});
+}
+
+/* =============== EDITAR NOVELA / CAPÍTULO (solo el autor) =============== */
+let editDraft=null;
+function toggleEditDraft(kind,name,max){
+  const set=editDraft[kind];
+  if(set.has(name))set.delete(name);
+  else if(set.size<max)set.add(name);
+  render();
+}
+function onEditCoverChange(e){
+  const file=e.target.files[0];if(!file)return;
+  editDraft.coverFile=file;editDraft.coverPreview=URL.createObjectURL(file);editDraft.coverChanged=true;render();
+}
+function removeEditCover(){
+  editDraft.coverFile=null;editDraft.coverPreview='';editDraft.coverChanged=true;render();
+}
+function vEditNovel(){
+  if(!state.user)return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
+  const n=myNovels().find(x=>x.id===state.params.id);
+  if(!n)return vHome();
+  if(!editDraft||editDraft.id!==n.id){
+    editDraft={id:n.id,title:n.title,syn:n.syn,genres:new Set(n.genres),subs:new Set(n.subs),
+      isAdult:n.isAdult,coverFile:null,coverPreview:n.coverUrl||'',coverChanged:false};
+  }
+  return `<div class="form">
+    <h2 class="sec-title" style="margin-top:0">${t().editNovelTitle}</h2>
+    <div class="field"><label>${t().fTitle}</label><input type="text" value="${esc(editDraft.title)}" oninput="editDraft.title=this.value"></div>
+    <div class="field"><label>${t().fSyn}</label><textarea oninput="editDraft.syn=this.value">${esc(editDraft.syn)}</textarea></div>
+    <div class="field">
+      <label>${t().coverLbl}<span class="hint">${t().coverHint}</span></label>
+      <div class="upload-row">
+        <label class="file-btn">${t().coverUpload}<input type="file" accept="image/*" onchange="onEditCoverChange(event)"></label>
+        ${editDraft.coverPreview?`<img src="${editDraft.coverPreview}" style="width:84px;height:118px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">
+          <button class="btn btn-ghost btn-sm" onclick="removeEditCover()">${t().removeCoverBtn}</button>`:''}
+      </div>
+    </div>
+    <div class="field">
+      <label>${t().fGenres}<span class="hint">— ${t().fGenresHint}</span> <span class="counter ${editDraft.genres.size>=4?'full':''}">${editDraft.genres.size}/4</span></label>
+      <div class="pill-picker">${GENRES.map(g=>{
+        const sel=editDraft.genres.has(g.es),dis=!sel&&editDraft.genres.size>=4;
+        return `<button class="pill ${sel?'sel':''}" ${dis?'disabled':''} onclick="toggleEditDraft('genres','${g.es}',4)">${state.lang==='es'?g.es:g.en}</button>`;}).join('')}</div>
+    </div>
+    <div class="field">
+      <label>${t().fSubs}<span class="hint">— ${t().fSubsHint}</span> <span class="counter ${editDraft.subs.size>=8?'full':''}">${editDraft.subs.size}/8</span></label>
+      <div class="pill-picker">${SUBGENRES.map(g=>{
+        const sel=editDraft.subs.has(g.es),dis=!sel&&editDraft.subs.size>=8;
+        return `<button class="pill ${sel?'sel':''}" ${dis?'disabled':''} onclick="toggleEditDraft('subs','${g.es}',8)">${state.lang==='es'?g.es:g.en}</button>`;}).join('')}</div>
+    </div>
+    <div class="field"><label class="checkbox-field"><input type="checkbox" ${editDraft.isAdult?'checked':''} onchange="editDraft.isAdult=this.checked">${t().adultLbl}</label>
+      <div class="hint" style="margin-left:0;display:block;margin-top:4px">${t().adultHint}</div></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" onclick="saveEditNovel()">${t().saveProfile}</button>
+      <button class="btn btn-ghost" onclick="editDraft=null;go('novel',{id:${n.id}})">${t().cancel}</button>
+    </div>
+  </div>`;
+}
+async function saveEditNovel(){
+  if(!editDraft.title.trim()||!editDraft.syn.trim()||editDraft.genres.size===0){toast(t().needField);return;}
+  const patch={title:editDraft.title.trim(),synopsis:editDraft.syn.trim(),
+    genres:[...editDraft.genres],subgenres:[...editDraft.subs],is_adult:!!editDraft.isAdult};
+  if(editDraft.coverChanged)patch.cover_url=editDraft.coverFile?await uploadImage('covers',editDraft.coverFile):null;
+  const{error}=await sb.from('novels').update(patch).eq('id',editDraft.id);
+  if(error){toast(t().errGeneric);return;}
+  const id=editDraft.id;editDraft=null;
+  toast(t().novelUpdated);
+  await Promise.all([loadHomeNovels(),loadMyNovels()]);
+  go('novel',{id});
+}
+let editChapterDraft=null;
+function vEditChapter(){
+  if(!state.user)return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
+  if(state.detailLoading)return loadingHtml();
+  const n=myNovels().find(x=>x.id===state.params.id);
+  if(!n)return vHome();
+  const chs=CHAPTERS_CACHE[n.id]||[];
+  const i=state.params.ch,c=chs[i];
+  if(!c)return vNovel();
+  if(!editChapterDraft||editChapterDraft.chapterId!==c.id){
+    editChapterDraft={chapterId:c.id,novelId:n.id,idx:i,title:c.title,body:c.body,noteStart:c.note_start||'',noteEnd:c.note_end||''};
+  }
+  return `<div class="form">
+    <h2 class="sec-title" style="margin-top:0">${t().editChTitle}</h2>
+    <div class="field"><label>${t().fChTitleN}</label><input type="text" value="${esc(editChapterDraft.title)}" oninput="editChapterDraft.title=this.value"></div>
+    ${i>0?`<div class="field"><label>${t().fNoteStart}</label><textarea style="min-height:70px" oninput="editChapterDraft.noteStart=this.value">${esc(editChapterDraft.noteStart)}</textarea></div>`:''}
+    <div class="field"><label>${t().fChBodyN}</label><textarea class="chap-body" oninput="editChapterDraft.body=this.value">${esc(editChapterDraft.body)}</textarea></div>
+    ${i>0?`<div class="field"><label>${t().fNoteEnd}</label><textarea style="min-height:70px" oninput="editChapterDraft.noteEnd=this.value">${esc(editChapterDraft.noteEnd)}</textarea></div>`:''}
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" onclick="saveEditChapter()">${t().saveProfile}</button>
+      <button class="btn btn-ghost" onclick="editChapterDraft=null;go('reader',{id:${n.id},ch:${i}})">${t().cancel}</button>
+    </div>
+  </div>`;
+}
+async function saveEditChapter(){
+  if(!editChapterDraft.title.trim()||!editChapterDraft.body.trim()){toast(t().needField);return;}
+  const{error}=await sb.from('chapters').update({title:editChapterDraft.title.trim(),body:editChapterDraft.body,
+    note_start:editChapterDraft.noteStart||null,note_end:editChapterDraft.noteEnd||null}).eq('id',editChapterDraft.chapterId);
+  if(error){toast(t().errGeneric);return;}
+  const novelId=editChapterDraft.novelId,idx=editChapterDraft.idx;
+  invalidateChapters(novelId);editChapterDraft=null;
+  toast(t().chapterUpdated);
+  go('reader',{id:novelId,ch:idx});
 }
 
 /* =============== MODERACIÓN (solo admin) =============== */
@@ -1586,6 +1706,7 @@ function vProfile(){
         <div class="w-meta">${n.chaptersCount} ${t().chapters} · ${fmt(n.followers)} ${t().followers} · ${fmt(n.views)} ${t().views} · ${avgOf(n)?avgOf(n).toFixed(1)+' ★':'— ★'}</div></div>
         <div style="display:flex;gap:8px;align-items:center">
           <span class="mod-status st-${n.status}" style="margin:0">${t().status[n.status]}</span>
+          <button class="btn btn-ghost btn-sm" onclick="go('editnovel',{id:${n.id}})">${t().editNovelBtn}</button>
           ${n.status==='rechazada'?`<button class="btn btn-ghost btn-sm" onclick="resubmit(${n.id})">${t().resubmit}</button>`:''}
         </div>
         ${n.status==='rechazada'&&n.rejectReason?`<div class="reject-note">✗ ${esc(n.rejectReason)}</div>`:''}
@@ -1708,7 +1829,7 @@ async function submitRating(){
 <script>
 /* =============== RENDER GLOBAL =============== */
 function render(){
-  const views={home:vHome,explore:vExplore,novel:vNovel,reader:vReader,write:vWrite,mod:vMod,rank:vRank,library:vLibrary,profile:vProfile,dashboard:vDashboard};
+  const views={home:vHome,explore:vExplore,novel:vNovel,reader:vReader,write:vWrite,mod:vMod,rank:vRank,library:vLibrary,profile:vProfile,dashboard:vDashboard,editnovel:vEditNovel,editchapter:vEditChapter};
 
   $('navLinks').innerHTML=Object.entries(t().nav).map(([k,l])=>
     `<button class="${state.view===k?'active':''}" onclick="go('${k}')">${l}</button>`).join('');

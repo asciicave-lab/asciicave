@@ -139,9 +139,16 @@ drop policy if exists "chapters insert by owner" on public.chapters;
 create policy "chapters insert by owner" on public.chapters for insert with check (
   exists(select 1 from public.novels n where n.id = novel_id and n.owner_id = auth.uid())
 );
--- No hay policy de update/delete: los capítulos no se editan desde el
--- cliente en esta versión, así que quedan protegidos por defecto.
+drop policy if exists "chapters update by owner" on public.chapters;
+create policy "chapters update by owner" on public.chapters for update using (
+  exists(select 1 from public.novels n where n.id = novel_id and n.owner_id = auth.uid())
+) with check (
+  exists(select 1 from public.novels n where n.id = novel_id and n.owner_id = auth.uid())
+);
+-- El autor solo puede editar el contenido. "views" (contador de lecturas)
+-- y "idx" (orden del capítulo) quedan protegidos, no son tocables desde el cliente.
 revoke update on public.chapters from authenticated;
+grant update (title, body, note_start, note_end) on public.chapters to authenticated;
 
 -- ---------- COMENTARIOS ----------
 create table if not exists public.comments (
