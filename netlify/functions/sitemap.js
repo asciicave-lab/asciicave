@@ -19,6 +19,12 @@ function xmlEscape(s) {
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
+// Debe coincidir con slugify() en index.html.
+function slugify(s) {
+  return String(s || "")
+    .normalize("NFD").replace(/[^\x00-\x7F]/g, "")
+    .toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+}
 function urlEntry(loc, lastmod, changefreq, priority) {
   let xml = `  <url>\n    <loc>${xmlEscape(loc)}</loc>\n`;
   if (lastmod) xml += `    <lastmod>${String(lastmod).slice(0, 10)}</lastmod>\n`;
@@ -32,7 +38,7 @@ exports.handler = async function () {
   let novels = [];
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/novels?select=id,reviewed_at,created_at,chapters(idx,created_at)&status=eq.aprobada&order=id.asc`,
+      `${SUPABASE_URL}/rest/v1/novels?select=id,title,reviewed_at,created_at,chapters(idx,created_at)&status=eq.aprobada&order=id.asc`,
       { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
     );
     if (res.ok) novels = await res.json();
@@ -53,12 +59,14 @@ exports.handler = async function () {
   });
   novels.forEach((n) => {
     const lastmod = n.reviewed_at || n.created_at;
-    xml += urlEntry(`${SITE_URL}/novela/${n.id}`, lastmod, "weekly", "0.7");
+    const slug = slugify(n.title);
+    const base = `${SITE_URL}/novela/${n.id}${slug ? "/" + slug : ""}`;
+    xml += urlEntry(base, lastmod, "weekly", "0.7");
     (n.chapters || [])
       .slice()
       .sort((a, b) => a.idx - b.idx)
       .forEach((c) => {
-        xml += urlEntry(`${SITE_URL}/novela/${n.id}/capitulo/${c.idx + 1}`, c.created_at, "monthly", "0.5");
+        xml += urlEntry(`${base}/capitulo/${c.idx + 1}`, c.created_at, "monthly", "0.5");
       });
   });
   xml += `</urlset>\n`;

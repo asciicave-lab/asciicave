@@ -785,6 +785,11 @@ const approved=()=>NOVELS.filter(n=>n.status==='aprobada');
 const isAdmin=()=>state.user&&state.user.role==='admin';
 const myNovels=()=>MY_NOVELS;
 const trendScore=n=>avgOf(n)*Math.log(n.followers+2);
+function slugify(s){
+  return String(s||'').normalize('NFD').replace(/[^\x00-\x7F]/g,'')
+    .toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
+}
+const findNovelForPath=id=>NOVELS.find(x=>x.id===id)||MY_NOVELS.find(x=>x.id===id);
 const accountTypeLabel=v=>({lector:t().accountTypeReader,autor:t().accountTypeAuthor,ambos:t().accountTypeBoth}[v]||v);
 
 function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2800);}
@@ -799,11 +804,11 @@ function gcPath(view,params){
   switch(view){
     case 'home':return '/';
     case 'explore':return params.genre?`/explorar/${encodeURIComponent(params.genre)}`:'/explorar';
-    case 'novel':return `/novela/${params.id}`;
-    case 'reader':return `/novela/${params.id}/capitulo/${(params.ch||0)+1}`;
-    case 'editnovel':return `/novela/${params.id}/editar`;
-    case 'editchapter':return `/novela/${params.id}/capitulo/${(params.ch||0)+1}/editar`;
-    case 'newchapter':return `/novela/${params.id}/nuevo-capitulo`;
+    case 'novel':{const n=findNovelForPath(params.id),s=n?'/'+slugify(n.title):'';return `/novela/${params.id}${s}`;}
+    case 'reader':{const n=findNovelForPath(params.id),s=n?'/'+slugify(n.title):'';return `/novela/${params.id}${s}/capitulo/${(params.ch||0)+1}`;}
+    case 'editnovel':{const n=findNovelForPath(params.id),s=n?'/'+slugify(n.title):'';return `/novela/${params.id}${s}/editar`;}
+    case 'editchapter':{const n=findNovelForPath(params.id),s=n?'/'+slugify(n.title):'';return `/novela/${params.id}${s}/capitulo/${(params.ch||0)+1}/editar`;}
+    case 'newchapter':{const n=findNovelForPath(params.id),s=n?'/'+slugify(n.title):'';return `/novela/${params.id}${s}/nuevo-capitulo`;}
     case 'write':return '/escribir';
     case 'mod':return '/moderacion';
     case 'rank':return `/rankings/${params.mode||'stars'}`;
@@ -885,13 +890,16 @@ function parsePath(pathname){
   if(p[0]==='novela'&&p[1]){
     const id=+p[1];
     if(!Number.isFinite(id))return{view:'home',params:{}};
-    if(p[2]==='capitulo'&&p[3]){
-      const ch=Math.max(0,(+p[3]||1)-1);
-      if(p[4]==='editar')return{view:'editchapter',params:{id,ch}};
+    const KEYWORDS=new Set(['capitulo','editar','nuevo-capitulo']);
+    let i=2;
+    if(p[i]&&!KEYWORDS.has(p[i]))i++; // segmento con el nombre de la novela (slug): se ignora, el id manda
+    if(p[i]==='capitulo'&&p[i+1]){
+      const ch=Math.max(0,(+p[i+1]||1)-1);
+      if(p[i+2]==='editar')return{view:'editchapter',params:{id,ch}};
       return{view:'reader',params:{id,ch}};
     }
-    if(p[2]==='editar')return{view:'editnovel',params:{id}};
-    if(p[2]==='nuevo-capitulo')return{view:'newchapter',params:{id}};
+    if(p[i]==='editar')return{view:'editnovel',params:{id}};
+    if(p[i]==='nuevo-capitulo')return{view:'newchapter',params:{id}};
     return{view:'novel',params:{id}};
   }
   if(p[0]==='escribir')return{view:'write',params:{}};
@@ -1263,7 +1271,7 @@ function avatarHTML(user,size){
 }
 function novelCard(n){
   const a=avgOf(n);
-  return `<a class="card" href="/novela/${n.id}" onclick="return navClick(event,'novel',{id:${n.id}})">
+  return `<a class="card" href="/novela/${n.id}/${slugify(n.title)}" onclick="return navClick(event,'novel',{id:${n.id}})">
     ${n.coverUrl?`<img class="cover-thumb" src="${esc(n.coverUrl)}" alt="" loading="lazy">`:''}
     <div class="tags">${n.isAdult?`<span class="adult-badge">${t().adultBadge}</span>`:''}${n.genres.slice(0,3).map(g=>`<span class="tag g">${esc(gName(g))}</span>`).join('')}</div>
     <h3>${esc(n.title)}</h3>
@@ -1302,11 +1310,11 @@ async function resendVerification(){
 }
 function homeWidgets(){
   const cards=[];
-  if(LATEST_CHAPTERS[0]){const c=LATEST_CHAPTERS[0];cards.push(`<a class="widget-card" href="/novela/${c.novel_id}/capitulo/${c.idx+1}" onclick="return navClick(event,'reader',{id:${c.novel_id},ch:${c.idx}})">
+  if(LATEST_CHAPTERS[0]){const c=LATEST_CHAPTERS[0];cards.push(`<a class="widget-card" href="/novela/${c.novel_id}/${slugify(c.novels&&c.novels.title)}/capitulo/${c.idx+1}" onclick="return navClick(event,'reader',{id:${c.novel_id},ch:${c.idx}})">
     <span class="w-label">${t().latestChaptersT}</span><h4>${esc(c.title)}</h4><span>${esc(c.novels&&c.novels.title||'')}</span></a>`);}
-  if(GROWING_NOVEL){cards.push(`<a class="widget-card" href="/novela/${GROWING_NOVEL.id}" onclick="return navClick(event,'novel',{id:${GROWING_NOVEL.id}})">
+  if(GROWING_NOVEL){cards.push(`<a class="widget-card" href="/novela/${GROWING_NOVEL.id}/${slugify(GROWING_NOVEL.title)}" onclick="return navClick(event,'novel',{id:${GROWING_NOVEL.id}})">
     <span class="w-label">${t().growingT}</span><h4>${esc(GROWING_NOVEL.title)}</h4><span>${t().growingSub}</span></a>`);}
-  if(BEST_CHAPTER){cards.push(`<a class="widget-card" href="/novela/${BEST_CHAPTER.novelId}/capitulo/${BEST_CHAPTER.chapterIdx+1}" onclick="return navClick(event,'reader',{id:${BEST_CHAPTER.novelId},ch:${BEST_CHAPTER.chapterIdx}})">
+  if(BEST_CHAPTER){cards.push(`<a class="widget-card" href="/novela/${BEST_CHAPTER.novelId}/${slugify(BEST_CHAPTER.novelTitle)}/capitulo/${BEST_CHAPTER.chapterIdx+1}" onclick="return navClick(event,'reader',{id:${BEST_CHAPTER.novelId},ch:${BEST_CHAPTER.chapterIdx}})">
     <span class="w-label">${t().bestChapterT}</span><h4>${esc(BEST_CHAPTER.chapterTitle)}</h4><span>${esc(BEST_CHAPTER.novelTitle)}</span></a>`);}
   return cards.length?`<div class="widget-row">${cards.join('')}</div>`:'';
 }
@@ -1426,7 +1434,7 @@ function vNovel(){
   <h2 class="sec-title">${t().tableOfCh}</h2>
   <div class="chap-list">
     ${chs.map((c,i)=>`<div class="chap-item">
-      <a href="/novela/${n.id}/capitulo/${i+1}" onclick="return navClick(event,'reader',{id:${n.id},ch:${i}})" style="flex:1;color:inherit;text-decoration:none"><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</a>
+      <a href="/novela/${n.id}/${slugify(n.title)}/capitulo/${i+1}" onclick="return navClick(event,'reader',{id:${n.id},ch:${i}})" style="flex:1;color:inherit;text-decoration:none"><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</a>
       ${readSet.has(i)?`<span class="read-mark">✓ ${t().read}</span>`:''}
       ${isOwner?`<button class="btn btn-ghost btn-sm" style="margin-left:10px" onclick="go('editchapter',{id:${n.id},ch:${i}})">${t().editChBtn}</button>`:''}
     </div>`).join('')}
@@ -1793,7 +1801,7 @@ function vRank(){
   <p class="sec-sub">${t().rankSub}</p>
   <div class="rank-tabs">${Object.entries(defs).map(([k,x])=>`<button class="${mode===k?'on':''}" onclick="go('rank',{mode:'${k}'})">${x.l}</button>`).join('')}</div>
   ${list.length?`<div>${list.map((n,i)=>`
-    <a class="rank-row" href="/novela/${n.id}" onclick="return navClick(event,'novel',{id:${n.id}})">
+    <a class="rank-row" href="/novela/${n.id}/${slugify(n.title)}" onclick="return navClick(event,'novel',{id:${n.id}})">
       <div class="rank-pos">${i+1}</div>
       <div class="rank-main"><h3>${esc(n.title)}</h3><span>${esc(n.author)} · ${n.genres.map(gName).join(', ')}</span></div>
       <div class="rank-metric">${d.f(n)}<small>${d.l}</small></div>
