@@ -374,6 +374,25 @@ footer .f-links{margin-top:6px;font-size:.75rem}
   .rating-panel{grid-template-columns:1fr}
   .user-chip .u-name{display:none}
 }
+@media(max-width:600px){
+  .nav{padding:0 12px;gap:8px}
+  .logo{font-size:1.05rem;gap:6px}
+  .nav-right{gap:6px}
+  .btn-label{display:none}
+  .coffee-btn,.premium-pill{padding:6px 9px;font-size:.85rem}
+  .lang-toggle button{padding:5px 8px}
+  .user-chip{padding:5px 8px 5px 5px}
+  main{padding:20px 14px 70px}
+  .rank-row{grid-template-columns:36px 1fr auto;gap:10px;padding:12px 10px}
+  .rank-pos{font-size:1.4rem}
+  .dash-stats,.author-grid{grid-template-columns:repeat(2,1fr)}
+  .editor-toolbar{gap:8px}
+  .editor-toolbar .word-count{margin-left:0;flex-basis:100%}
+  .account-type-picker{grid-template-columns:1fr}
+  .modal{padding:22px}
+  .novel-actions{gap:8px}
+  .novel-actions .btn{flex:1 1 auto}
+}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -755,6 +774,9 @@ const state={lang:'es',premium:false,view:'home',params:{},booting:true,detailLo
 const t=()=>T[state.lang];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+/* Separa el icono inicial del resto del texto para poder ocultar el texto
+   en pantallas estrechas y dejar solo el icono (ver .btn-label en el CSS) */
+const iconLabel=s=>{const i=String(s).indexOf(' ');return i===-1?esc(s):`${esc(s.slice(0,i))}<span class="btn-label">${esc(s.slice(i))}</span>`;};
 const fmt=n=>n>=1000?(n/1000).toFixed(1).replace('.0','')+'k':String(n||0);
 const gName=es=>{const g=GENRES.find(x=>x.es===es)||SUBGENRES.find(x=>x.es===es);return g?(state.lang==='es'?g.es:g.en):es;};
 const avgOf=n=>{const r=n.r;const a=(Number(r.historia)+Number(r.estilo)+Number(r.gramatica)+Number(r.personajes))/4;return n.votes?a:0;};
@@ -2034,8 +2056,8 @@ function render(){
 
   const badge=isAdmin()&&state.pendingCount?`<span class="badge">${state.pendingCount}</span>`:'';
   $('navRight').innerHTML=`
-    <a class="coffee-btn" href="${COFFEE_URL}" target="_blank" rel="noopener">${t().coffeeBtn}</a>
-    <button class="premium-pill" onclick="go('profile')">${t().premiumSoon}</button>
+    <a class="coffee-btn" href="${COFFEE_URL}" target="_blank" rel="noopener">${iconLabel(t().coffeeBtn)}</a>
+    <button class="premium-pill" onclick="go('profile')">${iconLabel(t().premiumSoon)}</button>
     <div class="lang-toggle">
       <button class="${state.lang==='es'?'on':''}" onclick="setLang('es')">ES</button>
       <button class="${state.lang==='en'?'on':''}" onclick="setLang('en')">EN</button>
