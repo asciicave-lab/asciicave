@@ -2333,7 +2333,6 @@ function render(){
   const badge=isAdmin()&&state.pendingCount?`<span class="badge">${state.pendingCount}</span>`:'';
   $('navRight').innerHTML=`
     <a class="coffee-btn" href="${COFFEE_URL}" target="_blank" rel="noopener">${iconLabel(t().coffeeBtn)}</a>
-    <button class="premium-pill" onclick="go('profile')">${iconLabel(t().premiumSoon)}</button>
     <div class="lang-toggle">
       <button class="${state.lang==='es'?'on':''}" onclick="setLang('es')">ES</button>
       <button class="${state.lang==='en'?'on':''}" onclick="setLang('en')">EN</button>
