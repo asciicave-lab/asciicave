@@ -358,6 +358,24 @@ footer .f-links{margin-top:6px;font-size:.75rem}
 .author-card-add:hover{border-color:var(--gold);color:var(--gold)}
 .author-card-add .add-ico{font-size:2.2rem;font-family:var(--font-display);line-height:1}
 
+/* ---------- Foro ---------- */
+.forum-cat-list{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
+.forum-cat-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);border-radius:8px;color:var(--paper);text-decoration:none}
+.forum-cat-row:hover{background:var(--ink-2)}
+.forum-cat-ico{font-size:1.4rem;flex-shrink:0}
+.forum-cat-info h4{font-family:var(--font-display);font-size:1.1rem;font-weight:600}
+.forum-cat-info span{color:var(--muted);font-size:.82rem}
+.forum-thread-row{display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);border-radius:8px;color:var(--paper);text-decoration:none}
+.forum-thread-row:hover{background:var(--ink-2)}
+.forum-thread-main{display:flex;flex-direction:column;gap:4px}
+.forum-thread-main h4{font-family:var(--font-display);font-size:1.05rem;font-weight:600}
+.forum-thread-main span{color:var(--muted);font-size:.78rem}
+.forum-thread-stats{text-align:center;font-family:var(--font-mono);white-space:nowrap}
+.forum-thread-stats b{display:block;font-size:1.1rem;color:var(--gold)}
+.forum-thread-stats small{color:var(--muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.5px}
+.forum-thread-last{text-align:right;font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:2px;white-space:nowrap}
+.forum-thread-last b{color:var(--paper)}
+
 /* ---------- Selector de tipo de cuenta / aviso +18 ---------- */
 .account-type-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .account-type-picker button{border:1px solid var(--line);background:none;color:var(--muted);border-radius:10px;padding:12px 8px;font-size:.85rem}
@@ -392,6 +410,8 @@ footer .f-links{margin-top:6px;font-size:.75rem}
   .modal{padding:22px}
   .novel-actions{gap:8px}
   .novel-actions .btn{flex:1 1 auto}
+  .forum-thread-row{grid-template-columns:1fr;gap:6px}
+  .forum-thread-stats,.forum-thread-last{text-align:left}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -477,16 +497,47 @@ const SUBGENRES=[
 ];
 const COVERS=["linear-gradient(160deg,#2b3a67,#0e1526)","linear-gradient(160deg,#6b2d2d,#1a0e0e)","linear-gradient(160deg,#3d5a4c,#101c16)","linear-gradient(160deg,#5c4a1e,#1f1808)","linear-gradient(160deg,#4a2d5c,#150e1f)","linear-gradient(160deg,#2d5c5a,#0a1918)","linear-gradient(160deg,#5c3a2d,#1c110c)"];
 
+/* =============== FORO — categorías fijas =============== */
+const FORUM_GROUPS=[
+ {group:"Comunidad",groupEn:"Community",cats:[
+   {key:"general",es:"General",en:"General",descEs:"Charla general sobre lo que quieras.",descEn:"General chat about anything."},
+   {key:"celebracion",es:"Celebración",en:"Celebration",descEs:"¿Te ha pasado algo genial en asciicave? ¡Compártelo aquí!",descEn:"Something great happened on asciicave? Share it here!"},
+   {key:"presentaciones",es:"Presentaciones",en:"Introductions",descEs:"Preséntate o da la bienvenida a la gente nueva.",descEn:"Introduce yourself or welcome newcomers."},
+   {key:"ayuda",es:"Petición de ayuda",en:"Assistance Request",descEs:"¿Necesitas ayuda con algo? Pregunta a la comunidad.",descEn:"Need help with something? Ask the community."}
+ ]},
+ {group:"Novelas",groupEn:"Fictions",cats:[
+   {key:"recomendaciones",es:"Recomendaciones",en:"Recommendations",descEs:"Pide o comparte tus novelas favoritas de asciicave.",descEn:"Ask for or share your favorite asciicave novels."}
+ ]},
+ {group:"Consejos de escritura",groupEn:"Writing Tips & Discussions",cats:[
+   {key:"guias",es:"Guías de la comunidad",en:"Guides by the Community",descEs:"Guías y tutoriales escritos por otros usuarios.",descEn:"Guides and tutorials written by other users."},
+   {key:"resenas",es:"Reseñas: consejos y debate",en:"Reviewing: Tips & Discussion",descEs:"Cómo escribir mejores reseñas y hablar de ellas.",descEn:"How to write better reviews and discuss them."},
+   {key:"escritura",es:"Escritura: consejos y debate",en:"Writing: Tips & Discussions",descEs:"Técnica, estilo, bloqueos de escritor y más.",descEn:"Craft, style, writer's block and more."},
+   {key:"marketing",es:"Marketing",en:"Marketing",descEs:"Cómo dar a conocer tu obra.",descEn:"How to promote your work."}
+ ]},
+ {group:"Foros",groupEn:"Forums",cats:[
+   {key:"arte",es:"Arte",en:"Art",descEs:"Comparte tus dibujos, cómics, poemas... ¡todo vale!",descEn:"Share your drawings, comics, poems... anything goes!"},
+   {key:"juegos",es:"Juegos",en:"Games",descEs:"Un rincón para hablar de videojuegos.",descEn:"A corner to talk about video games."},
+   {key:"debate",es:"Debate",en:"Debate",descEs:"Debate ideas y temas de actualidad relacionados con la ficción.",descEn:"Debate ideas and current topics related to fiction."},
+   {key:"software",es:"Software y tutoriales",en:"Software & Tutorials",descEs:"Herramientas útiles y tutoriales para escritores.",descEn:"Useful tools and tutorials for writers."}
+ ]}
+];
+const FORUM_CAT_LOOKUP=Object.fromEntries(FORUM_GROUPS.flatMap(g=>g.cats.map(c=>[c.key,c])));
+const forumCatLabel=key=>{const c=FORUM_CAT_LOOKUP[key];return c?(state.lang==='es'?c.es:c.en):key;};
+
 /* Caché local de datos (se rellena desde Supabase) */
 let NOVELS=[];         // novelas aprobadas
 let MY_NOVELS=[];      // obras propias (cualquier estado)
 const CHAPTERS_CACHE={};
+let FORUM_THREADS=[];        // hilos de la categoría actual
+let FORUM_POPULAR=[];        // hilos populares para la portada del foro
+let FORUM_CURRENT_THREAD=null;
+const FORUM_POSTS_CACHE={};  // threadId -> respuestas[]
 let LATEST_CHAPTERS=[],GROWING_NOVEL=null,BEST_CHAPTER=null,RECOMMENDED=[];
 </script>
 <script>
 /* =============== TRADUCCIONES =============== */
 const T={
-es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",library:"Mi biblioteca"},
+es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",write:"Escribir",library:"Mi biblioteca"},
  premiumOff:"✦ Premium",premiumOn:"✦ Premium activo",
  loginBtn:"Entrar / Registrarse",logout:"Cerrar sesión",myProfile:"Mi perfil",myWorks:"Mis obras",myDashboard:"Panel de autor",modArea:"Solicitudes",
  heroTitle:'La cueva donde las historias en español <em>echan raíces</em>',
@@ -620,11 +671,22 @@ es:{nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",write:"Escribir",libra
  dashStatRank:"Mejor puesto",dashStatWords:"palabras totales",dashStatReviews:"valoraciones recibidas",
  dashLatestComments:"Últimos comentarios recibidos",dashNoComments:"Todavía no tienes comentarios en tus capítulos.",
  dashAddNovel:"Añadir obra",goToDashboard:"→ Ir al panel de autor",
+ forumTitle:"Foro",forumSub:"Habla con otros lectores y autores de asciicave",
+ forumPopular:"Hilos populares",forumReplies:"respuestas",byLbl:"por",
+ pinned:"Fijado",locked:"Cerrado",lastPostBy:"Último mensaje de",noThreads:"Todavía no hay hilos en esta categoría. ¡Sé el primero en abrir uno!",
+ newThreadBtn:"Nuevo hilo",newThreadTitle:"Crear un hilo nuevo",threadTitleLbl:"Título del hilo",threadBodyLbl:"Mensaje",
+ publishThreadBtn:"Publicar hilo",threadCreated:"¡Hilo publicado! +2 puntos",
+ pin:"Fijar",unpin:"Quitar de fijados",lock:"Cerrar hilo",unlock:"Reabrir hilo",
+ deleteThreadBtn:"Eliminar hilo",confirmDeleteThread:"¿Seguro que quieres eliminar este hilo y todas sus respuestas? No se puede deshacer.",threadDeleted:"Hilo eliminado.",
+ deletePostBtn:"Eliminar",confirmDeletePost:"¿Eliminar esta respuesta?",
+ noReplies:"Todavía no hay respuestas. ¡Sé el primero en comentar!",
+ threadLockedMsg:"Este hilo está cerrado y ya no admite respuestas nuevas.",
+ replyPh:"Escribe tu respuesta…",replyBtn:"Responder · +1 punto",
  viewPage:"Ver página",addChapterBtn:"+ Capítulo",
  loading:"Cargando…",
  status:{aprobada:"aprobada",pendiente:"pendiente",rechazada:"rechazada"}
 },
-en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My library"},
+en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",forum:"Forum",write:"Write",library:"My library"},
  premiumOff:"✦ Premium",premiumOn:"✦ Premium active",
  loginBtn:"Log in / Sign up",logout:"Log out",myProfile:"My profile",myWorks:"My works",myDashboard:"Author dashboard",modArea:"Submissions",
  heroTitle:'The cave where Spanish-language stories <em>take root</em>',
@@ -758,6 +820,17 @@ en:{nav:{home:"Home",explore:"Browse",rank:"Rankings",write:"Write",library:"My 
  dashStatRank:"Best rank",dashStatWords:"total words",dashStatReviews:"reviews received",
  dashLatestComments:"Latest comments received",dashNoComments:"No comments on your chapters yet.",
  dashAddNovel:"Add work",goToDashboard:"→ Go to author dashboard",
+ forumTitle:"Forum",forumSub:"Talk with other readers and authors on asciicave",
+ forumPopular:"Popular threads",forumReplies:"replies",byLbl:"by",
+ pinned:"Pinned",locked:"Locked",lastPostBy:"Last post by",noThreads:"No threads in this category yet. Be the first to open one!",
+ newThreadBtn:"New thread",newThreadTitle:"Create a new thread",threadTitleLbl:"Thread title",threadBodyLbl:"Message",
+ publishThreadBtn:"Post thread",threadCreated:"Thread posted! +2 points",
+ pin:"Pin",unpin:"Unpin",lock:"Lock thread",unlock:"Reopen thread",
+ deleteThreadBtn:"Delete thread",confirmDeleteThread:"Delete this thread and all its replies? This can't be undone.",threadDeleted:"Thread deleted.",
+ deletePostBtn:"Delete",confirmDeletePost:"Delete this reply?",
+ noReplies:"No replies yet. Be the first to comment!",
+ threadLockedMsg:"This thread is locked and no longer accepts new replies.",
+ replyPh:"Write your reply…",replyBtn:"Reply · +1 point",
  viewPage:"View page",addChapterBtn:"+ Chapter",
  loading:"Loading…",
  status:{aprobada:"approved",pendiente:"pending",rechazada:"rejected"}
@@ -815,6 +888,10 @@ function gcPath(view,params){
     case 'library':return '/biblioteca';
     case 'profile':return '/perfil';
     case 'dashboard':return '/panel-autor';
+    case 'forum':return '/foro';
+    case 'forumcategory':return `/foro/${params.cat}`;
+    case 'forumthread':{const s=params.title?'/'+slugify(params.title):'';return `/foro/hilo/${params.id}${s}`;}
+    case 'newthread':return `/foro/${params.cat}/nuevo`;
     default:return `/${view}`;
   }
 }
@@ -829,7 +906,7 @@ const SITE_URL='https://asciicave.com';
 const DEFAULT_TITLE='AsciiCave — Publica y lee novelas web en español, gratis';
 const DEFAULT_DESC='AsciiCave es la plataforma de novelas web para el público hispanohablante. Publica tu historia por capítulos, gana lectores, recibe valoraciones por historia, estilo, gramática y personajes, y monetiza con Patreon.';
 const DEFAULT_IMG=SITE_URL+'/og-cover.png';
-const PRIVATE_VIEWS=new Set(['write','mod','library','profile','dashboard','editnovel','editchapter','newchapter']);
+const PRIVATE_VIEWS=new Set(['write','mod','library','profile','dashboard','editnovel','editchapter','newchapter','newthread']);
 function truncateForMeta(s,n){
   s=String(s||'').replace(/\s+/g,' ').trim();
   return s.length>n?s.slice(0,n-1).trimEnd()+'…':s;
@@ -860,6 +937,15 @@ function updateMetaTags(view,params){
   }else if(view==='rank'){
     title='Rankings de novelas web en español — AsciiCave';
     desc='Las novelas web en español mejor valoradas, con más seguidores y más leídas en AsciiCave.';
+  }else if(view==='forum'){
+    title='Foro de la comunidad — AsciiCave';
+    desc='Habla con otros lectores y autores: presentaciones, ayuda, recomendaciones, consejos de escritura y más.';
+  }else if(view==='forumcategory'){
+    const c=FORUM_CAT_LOOKUP[params.cat];
+    if(c){title=`${state.lang==='es'?c.es:c.en} — Foro de AsciiCave`;desc=state.lang==='es'?c.descEs:c.descEn;}
+  }else if(view==='forumthread'&&FORUM_CURRENT_THREAD&&FORUM_CURRENT_THREAD.id===params.id){
+    title=`${FORUM_CURRENT_THREAD.title} — Foro de AsciiCave`;
+    desc=truncateForMeta(FORUM_CURRENT_THREAD.body,155);
   }
   document.title=title;
   setMetaTag('meta[name="description"]',desc);
@@ -908,6 +994,16 @@ function parsePath(pathname){
   if(p[0]==='biblioteca')return{view:'library',params:{}};
   if(p[0]==='perfil')return{view:'profile',params:{}};
   if(p[0]==='panel-autor')return{view:'dashboard',params:{}};
+  if(p[0]==='foro'){
+    if(!p[1])return{view:'forum',params:{}};
+    if(p[1]==='hilo'&&p[2]){
+      const id=+p[2];
+      if(!Number.isFinite(id))return{view:'forum',params:{}};
+      return{view:'forumthread',params:{id}};
+    }
+    if(p[2]==='nuevo')return{view:'newthread',params:{cat:p[1]}};
+    return{view:'forumcategory',params:{cat:p[1]}};
+  }
   return{view:'home',params:{}};
 }
 
@@ -939,6 +1035,19 @@ async function go(view,params={},opts={}){
     state.detailLoading=false;
   }else if(view==='write'){
     if(state.user)await loadMyNovels();
+  }else if(view==='forum'){
+    state.detailLoading=true;render();
+    await loadForumHome();
+    state.detailLoading=false;
+  }else if(view==='forumcategory'){
+    state.detailLoading=true;render();
+    await loadForumCategory(params.cat);
+    state.detailLoading=false;
+  }else if(view==='forumthread'){
+    state.detailLoading=true;render();
+    await loadForumThread(params.id);
+    sb.rpc('fn_register_thread_view',{p_thread_id:params.id});
+    state.detailLoading=false;
   }
   updateMetaTags(view,params);
   render();
@@ -1232,6 +1341,64 @@ async function uploadImage(bucket,file){
   if(error)return null;
   const{data}=sb.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
+}
+
+/* =============== FORO: capa de datos =============== */
+async function loadForumHome(){
+  const{data}=await sb.from('forum_threads')
+    .select('id,category,title,replies_count,last_post_at,author:profiles!forum_threads_author_id_fkey(username)')
+    .order('last_post_at',{ascending:false}).limit(5);
+  FORUM_POPULAR=data||[];
+}
+async function loadForumCategory(cat){
+  const{data}=await sb.from('forum_threads')
+    .select('*, author:profiles!forum_threads_author_id_fkey(username,avatar_url), last_author:profiles!forum_threads_last_post_author_id_fkey(username)')
+    .eq('category',cat).order('is_pinned',{ascending:false}).order('last_post_at',{ascending:false});
+  FORUM_THREADS=data||[];
+}
+async function loadForumThread(id){
+  const{data:thread}=await sb.from('forum_threads')
+    .select('*, author:profiles!forum_threads_author_id_fkey(username,avatar_url)')
+    .eq('id',id).maybeSingle();
+  FORUM_CURRENT_THREAD=thread;
+  if(!thread)return;
+  const{data:posts}=await sb.from('forum_posts')
+    .select('*, author:profiles(username,avatar_url)')
+    .eq('thread_id',id).order('created_at');
+  FORUM_POSTS_CACHE[id]=posts||[];
+}
+let newThreadDraft={};
+async function submitNewThread(cat){
+  if(!state.user){openLogin();return;}
+  if(!state.user.emailConfirmed){toast(t().needVerified);return;}
+  const title=($('ftTitle').value||'').trim(),body=($('ftBody').value||'').trim();
+  if(!title||!body){toast(t().needField);return;}
+  const{data,error}=await sb.from('forum_threads').insert({category:cat,author_id:state.user.id,title,body}).select().single();
+  if(error){toast(t().errGeneric);return;}
+  toast(t().threadCreated);
+  go('forumthread',{id:data.id,title:data.title});
+}
+async function submitForumReply(threadId){
+  const el=$('fpBody');
+  const body=(el.value||'').trim();
+  if(!body)return;
+  if(!state.user.emailConfirmed){toast(t().needVerified);return;}
+  const{error}=await sb.from('forum_posts').insert({thread_id:threadId,author_id:state.user.id,body});
+  if(error){toast(t().errGeneric);return;}
+  await loadForumThread(threadId);
+  render();
+}
+async function pinThread(id,val,cat){await sb.rpc('fn_set_thread_flags',{p_thread_id:id,p_pinned:val});await loadForumThread(id);render();}
+async function lockThread(id,val){await sb.rpc('fn_set_thread_flags',{p_thread_id:id,p_locked:val});await loadForumThread(id);render();}
+async function deleteThread(id,cat){
+  if(!confirm(t().confirmDeleteThread))return;
+  await sb.from('forum_threads').delete().eq('id',id);
+  toast(t().threadDeleted);go('forumcategory',{cat});
+}
+async function deleteForumPost(postId,threadId){
+  if(!confirm(t().confirmDeletePost))return;
+  await sb.from('forum_posts').delete().eq('id',postId);
+  await loadForumThread(threadId);render();
 }
 </script>
 <script>
@@ -1829,6 +1996,107 @@ function vLibrary(){
   ${faved.length?`<h3 style="font-family:var(--font-display);font-size:1.3rem;margin-top:26px">★ ${t().libFavs}</h3>${faved.map(row).join('')}`:''}`;
 }
 
+/* =============== FORO =============== */
+function vForum(){
+  if(state.detailLoading)return loadingHtml();
+  return `
+  <h2 class="sec-title">${t().forumTitle}</h2><p class="sec-sub">${t().forumSub}</p>
+  ${FORUM_POPULAR.length?`
+  <div class="panel wide" style="margin-bottom:26px">
+    <h3>${t().forumPopular}</h3>
+    ${FORUM_POPULAR.map(th=>`<div class="work-row" style="cursor:pointer" onclick="go('forumthread',{id:${th.id},title:${JSON.stringify(th.title)}})">
+      <div><h4>${esc(th.title)}</h4><div class="w-meta">${t().byLbl} ${esc(th.author&&th.author.username||'—')} · ${forumCatLabel(th.category)}</div></div>
+      <span class="stars-inline">${th.replies_count} ${t().forumReplies}</span>
+    </div>`).join('')}
+  </div>`:''}
+  ${FORUM_GROUPS.map(g=>`
+    <h3 style="font-family:var(--font-display);font-size:1.4rem;margin:26px 0 10px;color:var(--gold)">${esc(state.lang==='es'?g.group:g.groupEn)}</h3>
+    <div class="forum-cat-list">
+      ${g.cats.map(c=>`<a class="forum-cat-row" href="/foro/${c.key}" onclick="return navClick(event,'forumcategory',{cat:'${c.key}'})">
+        <div class="forum-cat-ico">💬</div>
+        <div class="forum-cat-info"><h4>${esc(state.lang==='es'?c.es:c.en)}</h4><span>${esc(state.lang==='es'?c.descEs:c.descEn)}</span></div>
+      </a>`).join('')}
+    </div>`).join('')}`;
+}
+function vForumCategory(){
+  if(state.detailLoading)return loadingHtml();
+  const cat=state.params.cat;
+  const catInfo=FORUM_CAT_LOOKUP[cat];
+  if(!catInfo)return vForum();
+  return `
+  <a style="cursor:pointer;font-size:.85rem" onclick="go('forum')">← ${t().forumTitle}</a>
+  <h2 class="sec-title" style="margin-top:8px">${esc(state.lang==='es'?catInfo.es:catInfo.en)}</h2>
+  <p class="sec-sub">${esc(state.lang==='es'?catInfo.descEs:catInfo.descEn)}</p>
+  ${state.user?`<button class="btn btn-gold" onclick="go('newthread',{cat:'${cat}'})" style="margin-bottom:18px">${t().newThreadBtn}</button>`
+    :`<button class="btn btn-ghost" onclick="openLogin()" style="margin-bottom:18px">${t().commentLogin}</button>`}
+  ${FORUM_THREADS.length?FORUM_THREADS.map(th=>`
+    <a class="forum-thread-row" href="/foro/${cat}/hilo/${th.id}" onclick="return navClick(event,'forumthread',{id:${th.id},title:${JSON.stringify(th.title)}})">
+      <div class="forum-thread-main">
+        ${th.is_pinned?`<span class="tag g">📌 ${t().pinned}</span>`:''}${th.is_locked?`<span class="tag">🔒 ${t().locked}</span>`:''}
+        <h4>${esc(th.title)}</h4>
+        <span>${t().byLbl} ${esc(th.author&&th.author.username||'—')} · ${new Date(th.created_at).toLocaleDateString(state.lang==='es'?'es-ES':'en-US')}</span>
+      </div>
+      <div class="forum-thread-stats"><b>${th.replies_count}</b><small>${t().forumReplies}</small></div>
+      <div class="forum-thread-last">
+        <span>${t().lastPostBy}</span><b>${esc((th.last_author&&th.last_author.username)||(th.author&&th.author.username)||'—')}</b>
+        <span>${new Date(th.last_post_at).toLocaleDateString(state.lang==='es'?'es-ES':'en-US')}</span>
+      </div>
+    </a>`).join(''):`<div class="callout">${t().noThreads}</div>`}`;
+}
+function vNewThread(){
+  if(!state.user)return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
+  const cat=state.params.cat;
+  const catInfo=FORUM_CAT_LOOKUP[cat];
+  if(!catInfo)return vForum();
+  return `<div class="form">
+    <h2 class="sec-title" style="margin-top:0">${t().newThreadTitle}</h2>
+    <p class="sec-sub" style="margin-top:-14px">${esc(state.lang==='es'?catInfo.es:catInfo.en)}</p>
+    ${!state.user.emailConfirmed?verifyBanner():''}
+    <div class="field"><label>${t().threadTitleLbl}</label><input type="text" id="ftTitle" maxlength="140"></div>
+    <div class="field"><label>${t().threadBodyLbl}</label><textarea id="ftBody" style="min-height:180px"></textarea></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" ${state.user.emailConfirmed?'':'disabled'} onclick="submitNewThread('${cat}')">${t().publishThreadBtn}</button>
+      <button class="btn btn-ghost" onclick="go('forumcategory',{cat:'${cat}'})">${t().cancel}</button>
+    </div>
+  </div>`;
+}
+function vForumThread(){
+  if(state.detailLoading)return loadingHtml();
+  const th=FORUM_CURRENT_THREAD;
+  if(!th)return vForum();
+  const posts=FORUM_POSTS_CACHE[th.id]||[];
+  const canModerate=state.user&&(state.user.id===th.author_id||isAdmin());
+  return `
+  <a style="cursor:pointer;font-size:.85rem" onclick="go('forumcategory',{cat:'${th.category}'})">← ${esc(forumCatLabel(th.category))}</a>
+  <h1 style="font-family:var(--font-display);font-size:1.9rem;margin:10px 0 4px">${esc(th.title)}</h1>
+  <div style="color:var(--muted);font-size:.85rem;margin-bottom:20px">${t().byLbl} <b style="color:var(--paper)">${esc(th.author&&th.author.username||'—')}</b> · ${new Date(th.created_at).toLocaleDateString(state.lang==='es'?'es-ES':'en-US')}</div>
+  ${isAdmin()?`<div style="display:flex;gap:8px;margin-bottom:16px">
+    <button class="btn btn-ghost btn-sm" onclick="pinThread(${th.id},${!th.is_pinned})">${th.is_pinned?t().unpin:t().pin}</button>
+    <button class="btn btn-ghost btn-sm" onclick="lockThread(${th.id},${!th.is_locked})">${th.is_locked?t().unlock:t().lock}</button>
+  </div>`:''}
+  <div class="comment" style="border-bottom:1px solid var(--line);padding-bottom:18px">
+    ${avatarHTML({avatarUrl:th.author&&th.author.avatar_url},34)}
+    <div style="flex:1"><p style="white-space:pre-wrap">${esc(th.body)}</p>
+    ${canModerate?`<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="deleteThread(${th.id},'${th.category}')">${t().deleteThreadBtn}</button>`:''}
+    </div>
+  </div>
+  <h3 style="font-family:var(--font-display);font-size:1.3rem;margin:24px 0 10px">${t().forumReplies} (${posts.length})</h3>
+  ${posts.length?posts.map(p=>`<div class="comment">
+    ${avatarHTML({avatarUrl:p.author&&p.author.avatar_url},34)}
+    <div style="flex:1"><div class="c-head"><b>${esc(p.author&&p.author.username||'—')}</b> · ${new Date(p.created_at).toLocaleDateString(state.lang==='es'?'es-ES':'en-US')}</div>
+    <p style="white-space:pre-wrap">${esc(p.body)}</p>
+    ${state.user&&(state.user.id===p.author_id||isAdmin())?`<button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="deleteForumPost(${p.id},${th.id})">${t().deletePostBtn}</button>`:''}
+    </div>
+  </div>`).join(''):`<p style="color:var(--muted);font-size:.88rem">${t().noReplies}</p>`}
+  ${th.is_locked?`<div class="callout warn" style="margin-top:18px">${t().threadLockedMsg}</div>`
+    :state.user?(state.user.emailConfirmed?`<div class="comment-form" style="margin-top:18px">
+      ${avatarHTML(state.user,34)}
+      <div style="flex:1"><textarea id="fpBody" placeholder="${t().replyPh}"></textarea>
+      <button class="btn btn-gold btn-sm" style="margin-top:8px" onclick="submitForumReply(${th.id})">${t().replyBtn}</button></div>
+    </div>`:verifyBanner())
+    :`<button class="btn btn-ghost btn-sm" style="margin-top:18px" onclick="openLogin()">${t().commentLogin}</button>`}`;
+}
+
 /* =============== PANEL DE AUTOR =============== */
 function wordCount(text){return ((text||'').match(/\S+/g)||[]).length;}
 function authorNovelCard(n){
@@ -2057,7 +2325,7 @@ async function submitRating(){
 <script>
 /* =============== RENDER GLOBAL =============== */
 function render(){
-  const views={home:vHome,explore:vExplore,novel:vNovel,reader:vReader,write:vWrite,mod:vMod,rank:vRank,library:vLibrary,profile:vProfile,dashboard:vDashboard,editnovel:vEditNovel,editchapter:vEditChapter,newchapter:vNewChapter};
+  const views={home:vHome,explore:vExplore,novel:vNovel,reader:vReader,write:vWrite,mod:vMod,rank:vRank,library:vLibrary,profile:vProfile,dashboard:vDashboard,editnovel:vEditNovel,editchapter:vEditChapter,newchapter:vNewChapter,forum:vForum,forumcategory:vForumCategory,forumthread:vForumThread,newthread:vNewThread};
 
   $('navLinks').innerHTML=Object.entries(t().nav).map(([k,l])=>
     `<button class="${state.view===k?'active':''}" onclick="go('${k}')">${l}</button>`).join('');

@@ -431,3 +431,112 @@ begin
   alter publication supabase_realtime add table public.novels;
 exception when duplicate_object then null;
 end $$;
+
+-- ============================================================
+-- FOROS — categorías fijas (viven en el cliente, en FORUM_GROUPS
+-- dentro de index.html), aquí solo hilos y respuestas.
+-- ============================================================
+create table if not exists public.forum_threads (
+  id bigint generated always as identity primary key,
+  category text not null,
+  author_id uuid not null references public.profiles(id) on delete cascade,
+  title text not null,
+  body text not null,
+  is_pinned boolean not null default false,
+  is_locked boolean not null default false,
+  replies_count int not null default 0,
+  views_count int not null default 0,
+  last_post_at timestamptz not null default now(),
+  last_post_author_id uuid references public.profiles(id),
+  created_at timestamptz not null default now()
+);
+alter table public.forum_threads enable row level security;
+create index if not exists idx_forum_threads_category on public.forum_threads(category, is_pinned desc, last_post_at desc);
+
+drop policy if exists "forum_threads select" on public.forum_threads;
+create policy "forum_threads select" on public.forum_threads for select using (true);
+drop policy if exists "forum_threads insert own" on public.forum_threads;
+create policy "forum_threads insert own" on public.forum_threads for insert with check (auth.uid() = author_id);
+drop policy if exists "forum_threads delete own or admin" on public.forum_threads;
+create policy "forum_threads delete own or admin" on public.forum_threads for delete using (auth.uid() = author_id or public.is_admin());
+
+-- El autor solo puede editar el contenido; pin/lock/contadores quedan
+-- protegidos, solo los toca fn_set_thread_flags o los triggers de abajo.
+revoke update on public.forum_threads from authenticated;
+grant update (title, body) on public.forum_threads to authenticated;
+
+create table if not exists public.forum_posts (
+  id bigint generated always as identity primary key,
+  thread_id bigint not null references public.forum_threads(id) on delete cascade,
+  author_id uuid not null references public.profiles(id) on delete cascade,
+  body text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.forum_posts enable row level security;
+create index if not exists idx_forum_posts_thread on public.forum_posts(thread_id, created_at);
+
+drop policy if exists "forum_posts select" on public.forum_posts;
+create policy "forum_posts select" on public.forum_posts for select using (true);
+drop policy if exists "forum_posts insert own" on public.forum_posts;
+create policy "forum_posts insert own" on public.forum_posts for insert with check (
+  auth.uid() = author_id
+  and exists(select 1 from public.forum_threads t where t.id = thread_id and not t.is_locked)
+);
+drop policy if exists "forum_posts delete own or admin" on public.forum_posts;
+create policy "forum_posts delete own or admin" on public.forum_posts for delete using (auth.uid() = author_id or public.is_admin());
+
+revoke update on public.forum_posts from authenticated;
+grant update (body) on public.forum_posts to authenticated;
+
+-- Mantiene el contador de respuestas y el "último mensaje" del hilo,
+-- y da +1 punto por responder en el foro.
+create or replace function public.trg_fn_forum_post_maintain()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  update public.forum_threads set
+    replies_count = replies_count + 1,
+    last_post_at = new.created_at,
+    last_post_author_id = new.author_id
+  where id = new.thread_id;
+  update public.profiles set points = points + 1 where id = new.author_id;
+  return new;
+end;
+$$;
+drop trigger if exists t_forum_post_maintain on public.forum_posts;
+create trigger t_forum_post_maintain after insert on public.forum_posts
+  for each row execute procedure public.trg_fn_forum_post_maintain();
+
+-- +2 puntos por abrir un hilo nuevo.
+create or replace function public.trg_fn_forum_thread_points()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  update public.profiles set points = points + 2 where id = new.author_id;
+  return new;
+end;
+$$;
+drop trigger if exists t_forum_thread_points on public.forum_threads;
+create trigger t_forum_thread_points after insert on public.forum_threads
+  for each row execute procedure public.trg_fn_forum_thread_points();
+
+create or replace function public.fn_register_thread_view(p_thread_id bigint)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  update public.forum_threads set views_count = views_count + 1 where id = p_thread_id;
+end;
+$$;
+grant execute on function public.fn_register_thread_view(bigint) to authenticated, anon;
+
+-- Fijar / cerrar un hilo (solo admin).
+create or replace function public.fn_set_thread_flags(p_thread_id bigint, p_pinned boolean default null, p_locked boolean default null)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not authorized';
+  end if;
+  update public.forum_threads set
+    is_pinned = coalesce(p_pinned, is_pinned),
+    is_locked = coalesce(p_locked, is_locked)
+  where id = p_thread_id;
+end;
+$$;
+grant execute on function public.fn_set_thread_flags(bigint, boolean, boolean) to authenticated;
