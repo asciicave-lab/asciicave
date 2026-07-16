@@ -527,7 +527,7 @@ const T={nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",writ
  premiumOff:"✦ Premium",premiumOn:"✦ Premium activo",
  loginBtn:"Entrar / Registrarse",logout:"Cerrar sesión",myProfile:"Mi perfil",myWorks:"Mis obras",myDashboard:"Panel de autor",modArea:"Solicitudes",
  heroTitle:'La cueva donde las historias en español <em>echan raíces</em>',
- heroSub:"Publica tu novela por capítulos, gana lectores, recibe valoraciones por historia, estilo, gramática y personajes, y monetiza con Patreon. Lee gratis; con Premium, sin anuncios.",
+ heroSub:"Publica tu novela por capítulos, gana lectores, recibe valoraciones por historia, estilo, gramática y personajes, y monetiza con Patreon.",
  heroCta1:"Empezar a leer",heroCta2:"Publicar mi novela",
  emptyHomeT:"La cueva espera su primera historia",
  emptyHomeP:"Aún no hay novelas publicadas. Regístrate, envía tu obra a revisión y estrena la portada de asciicave.com.",
@@ -1294,13 +1294,13 @@ function emptyState(titulo,texto,btnLabel,btnAction){
   </div>`;
 }
 function constellationSVG(){
-  return `<svg class="constellation" width="300" height="300" viewBox="0 0 300 300" aria-hidden="true">
+  return `<svg class="constellation" width="300" height="300" viewBox="-15 0 330 300" aria-hidden="true">
    <defs><radialGradient id="glow"><stop offset="0%" stop-color="#E3B254" stop-opacity=".9"/><stop offset="100%" stop-color="#E3B254" stop-opacity="0"/></radialGradient></defs>
    <polygon points="150,40 260,150 150,260 40,150" fill="none" stroke="rgba(227,178,84,.35)" stroke-width="1" stroke-dasharray="3 5"/>
    ${[[150,40,t().catHistoria],[260,150,t().catEstilo],[150,260,t().catGramatica],[40,150,t().catPersonajes]].map(([x,y,l],i)=>`
     <circle cx="${x}" cy="${y}" r="14" fill="url(#glow)"/>
     <text x="${x}" y="${y+5}" text-anchor="middle" font-size="15" fill="#E3B254">★</text>
-    <text x="${x}" y="${y+(i===0?-22:i===2?32:5)}" ${i===1?'dx="24" text-anchor="start"':i===3?'dx="-24" text-anchor="end"':'text-anchor="middle"'} font-size="11" fill="#8B94A8" font-family="IBM Plex Mono">${l}</text>`).join('')}
+    <text x="${x}" y="${i===0?y-22:y+30}" text-anchor="middle" font-size="11" fill="#8B94A8" font-family="IBM Plex Mono">${l}</text>`).join('')}
    <circle cx="150" cy="150" r="3" fill="#EDE7D8"/>
   </svg>`;
 }
