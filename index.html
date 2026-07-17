@@ -105,7 +105,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(12,19,34,.92);backdrop-f
 .nav{max-width:1180px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;gap:16px}
 .logo{font-family:var(--font-mono);font-size:1.25rem;font-weight:600;letter-spacing:.5px;color:var(--paper);display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
 .logo .glyph{color:var(--gold);font-size:1.05rem;border:1px solid rgba(227,178,84,.5);border-radius:6px;padding:2px 7px;background:var(--gold-soft)}
-.nav-links{display:flex;gap:2px;flex:1;overflow-x:auto}
+.nav-links{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto}
 .nav-links::-webkit-scrollbar{display:none}
 .nav-links button{background:none;border:none;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.92rem;white-space:nowrap}
 .nav-links button:hover{color:var(--paper);background:var(--ink-3)}
@@ -397,7 +397,7 @@ footer .f-links{margin-top:6px;font-size:.75rem}
   .logo{font-size:1.05rem;gap:6px}
   .nav-right{gap:6px}
   .btn-label{display:none}
-  .coffee-btn,.premium-pill{padding:6px 9px;font-size:.85rem}
+  .coffee-btn,.premium-pill,.login-btn{padding:6px 10px;font-size:.8rem}
   .lang-toggle button{padding:5px 8px}
   .user-chip{padding:5px 8px 5px 5px}
   main{padding:20px 14px 70px}
@@ -2176,7 +2176,7 @@ function render(){
         ${isAdmin()?`<button onclick="go('mod')">${t().modArea}${badge}</button>`:''}
         <button onclick="logout()">${t().logout}</button>
       </div>`:''}
-    `:`<button class="login-btn" onclick="openLogin()">${t().loginBtn}</button>`}`;
+    `:`<button class="login-btn" onclick="openLogin()">${iconLabel(t().loginBtn)}</button>`}`;
 
   $('app').innerHTML=(views[state.view]||vHome)();
   $('foot').innerHTML=`${t().footer}<div class="f-links">
