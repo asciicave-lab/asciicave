@@ -480,7 +480,7 @@ const SUBGENRES=[
  "Ópera espacial","Steampunk","Piratas","Detectives","Supervivencia","Dragones","Vampiros","Distopía",
  "Viajes en el tiempo","Superhéroes","No humano","Cocina","Guerra","Política","Slow burn","GameLit",
  "Ciberpunk","Postapocalíptico","Crimen organizado","Segunda oportunidad","Fantasmas","Cultivo demoníaco",
- "Harem inverso","Ecchi","Yandere"
+ "Harem inverso","Ecchi","Yandere","Omegaverse"
 ];
 const COVERS=["linear-gradient(160deg,#2b3a67,#0e1526)","linear-gradient(160deg,#6b2d2d,#1a0e0e)","linear-gradient(160deg,#3d5a4c,#101c16)","linear-gradient(160deg,#5c4a1e,#1f1808)","linear-gradient(160deg,#4a2d5c,#150e1f)","linear-gradient(160deg,#2d5c5a,#0a1918)","linear-gradient(160deg,#5c3a2d,#1c110c)"];
 
@@ -519,6 +519,7 @@ let FORUM_THREADS=[];        // hilos de la categoría actual
 let FORUM_POPULAR=[];        // hilos populares para la portada del foro
 let FORUM_CURRENT_THREAD=null;
 const FORUM_POSTS_CACHE={};  // threadId -> respuestas[]
+let POINTS_LEADERBOARD=[];   // clasificación de puntos (lector/autor)
 let LATEST_CHAPTERS=[],GROWING_NOVEL=null,BEST_CHAPTER=null,RECOMMENDED=[];
 </script>
 <script>
@@ -610,6 +611,8 @@ const T={nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",writ
  readExcerpt:"Extracto del capítulo 1:",historyMod:"Historial de decisiones",
  rankTitle:"Rankings",rankSub:"Actualizados en tiempo real con la actividad de la comunidad",
  rkStars:"Media de estrellas",rkFollow:"Seguidores",rkFavs:"Favoritos",rkViews:"Lecturas",
+ rkPointsReader:"Puntos de lector",rkPointsAuthor:"Puntos de autor",rkPointsSub:"puntos",
+ noRankedUsers:"Todavía no hay nadie en esta clasificación.",
  rankPos:"Puesto #{n}",
  libTitle:"Mi biblioteca",libSub:"Tus novelas seguidas y favoritas, con tu progreso",
  libFollowing:"Siguiendo",libFavs:"Favoritas",progress:"progreso",
@@ -633,7 +636,7 @@ const T={nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",writ
  profLangT:"Idioma / Language",profLangP:"La interfaz está disponible en español e inglés. Las novelas se muestran en su idioma original.",
  showAdultToggle:"Mostrar contenido +18 en explorar e inicio",
  avatarUpload:"Subir foto",avatarRemove:"Quitar foto",
- pointsLbl:"puntos",
+ pointsLbl:"puntos",pointsReaderLbl:"puntos de lector",pointsAuthorLbl:"puntos de autor",
  myWorksSub:"Estado de tus solicitudes y obras publicadas",
  resubmit:"Reenviar a revisión",resubmitted:"Obra reenviada a la cola de revisión.",
  deleteNovel:"Eliminar novela",novelDeleted:"Novela eliminada.",
@@ -883,6 +886,10 @@ async function go(view,params={},opts={}){
     state.detailLoading=true;render();
     await loadForumThread(params.id);
     sb.rpc('fn_register_thread_view',{p_thread_id:params.id});
+    state.detailLoading=false;
+  }else if(view==='rank'&&(params.mode==='points_reader'||params.mode==='points_author')){
+    state.detailLoading=true;render();
+    await loadPointsLeaderboard(params.mode);
     state.detailLoading=false;
   }
   updateMetaTags(view,params);
@@ -1503,6 +1510,7 @@ async function registerView(novelId,chIdx){
   if(state.user){
     await sb.from('reading_progress').upsert({user_id:state.user.id,novel_id:novelId,
       read_chapters:[...state.read[novelId]],updated_at:new Date().toISOString()});
+    state.user.pointsReader=(state.user.pointsReader||0)+2;state.user.points=(state.user.points||0)+2;
   }
 }
 </script>
@@ -1790,9 +1798,35 @@ async function rejectNovel(id){
 }
 
 /* =============== RANKINGS =============== */
+const RANK_TABS=[['stars','rkStars'],['follow','rkFollow'],['favs','rkFavs'],['views','rkViews'],['points_reader','rkPointsReader'],['points_author','rkPointsAuthor']];
+function rankTabsHtml(mode){
+  return `<div class="rank-tabs">${RANK_TABS.map(([k,lk])=>`<button class="${mode===k?'on':''}" onclick="go('rank',{mode:'${k}'})">${t()[lk]}</button>`).join('')}</div>`;
+}
+async function loadPointsLeaderboard(mode){
+  const col=mode==='points_author'?'points_author':'points_reader';
+  const{data}=await sb.from('profiles').select(`username,avatar_url,role,${col}`).order(col,{ascending:false}).limit(50);
+  POINTS_LEADERBOARD=data||[];
+}
+function vRankPoints(mode){
+  if(state.detailLoading)return loadingHtml();
+  const col=mode==='points_author'?'points_author':'points_reader';
+  const label=mode==='points_author'?t().rkPointsAuthor:t().rkPointsReader;
+  return `
+  <h2 class="sec-title">${t().rankTitle}</h2>
+  <p class="sec-sub">${t().rankSub}</p>
+  ${rankTabsHtml(mode)}
+  ${POINTS_LEADERBOARD.length?`<div>${POINTS_LEADERBOARD.map((p,i)=>`
+    <div class="rank-row">
+      <div class="rank-pos">${i+1}</div>
+      <div class="rank-main" style="display:flex;align-items:center;gap:10px">${avatarHTML({avatarUrl:p.avatar_url},28)}<h3>${esc(p.username)}</h3></div>
+      <div class="rank-metric">${fmt(p[col]||0)}<small>${t().rkPointsSub}</small></div>
+    </div>`).join('')}</div>`
+  :emptyState(t().emptyRankT,t().noRankedUsers,'','')}`;
+}
 function vRank(){
   if(state.booting)return loadingHtml();
   const mode=state.params.mode||'stars';
+  if(mode==='points_reader'||mode==='points_author')return vRankPoints(mode);
   const defs={stars:{l:t().rkStars,v:n=>avgOf(n),f:n=>avgOf(n).toFixed(2)+' ★'},
     follow:{l:t().rkFollow,v:n=>n.followers,f:n=>fmt(n.followers)},
     favs:{l:t().rkFavs,v:n=>n.favs,f:n=>fmt(n.favs)},
@@ -1802,7 +1836,7 @@ function vRank(){
   return `
   <h2 class="sec-title">${t().rankTitle}</h2>
   <p class="sec-sub">${t().rankSub}</p>
-  <div class="rank-tabs">${Object.entries(defs).map(([k,x])=>`<button class="${mode===k?'on':''}" onclick="go('rank',{mode:'${k}'})">${x.l}</button>`).join('')}</div>
+  ${rankTabsHtml(mode)}
   ${list.length?`<div>${list.map((n,i)=>`
     <a class="rank-row" href="/novela/${n.id}/${slugify(n.title)}" onclick="return navClick(event,'novel',{id:${n.id}})">
       <div class="rank-pos">${i+1}</div>
@@ -1971,7 +2005,8 @@ function vDashboard(){
     <div class="dash-stat"><div class="n">${fmt(totalWords)}</div><div class="l">${t().dashStatWords}</div></div>
     <div class="dash-stat"><div class="n">${fmt(totalReviews)}</div><div class="l">${t().dashStatReviews}</div></div>
     <div class="dash-stat"><div class="n">${fmt(totalFollowers)}</div><div class="l">${t().dashStatFollowers}</div></div>
-    <div class="dash-stat"><div class="n">${state.user.points}</div><div class="l">${t().dashStatPoints}</div></div>
+    <div class="dash-stat"><div class="n">${state.user.pointsAuthor}</div><div class="l">${t().pointsAuthorLbl}</div></div>
+    <div class="dash-stat"><div class="n">${state.user.pointsReader}</div><div class="l">${t().pointsReaderLbl}</div></div>
   </div>
   <div class="author-grid">
     ${works.map(authorNovelCard).join('')}
@@ -2010,7 +2045,10 @@ function vProfile(){
           <button type="button" class="${profileAccountType()==='ambos'?'sel':''}" onclick="setProfileAccountType('ambos')">${t().accountTypeBoth}</button>
         </div></div>`:`<span style="font-family:var(--font-mono);font-size:.75rem;color:var(--gold);display:block;margin-bottom:12px">${t().roleAdmin}</span>`}
       <button class="btn btn-wax btn-sm" onclick="saveProfileBasics()">${t().saveProfile}</button>
-      <div class="points-badge" style="margin:12px 0 0">✦ ${state.user.points} ${t().pointsLbl}</div>
+      <div class="points-badge" style="margin:12px 0 0;flex-direction:column;align-items:flex-start;gap:4px">
+        <span>✦ ${state.user.pointsReader} ${t().pointsReaderLbl}</span>
+        <span>✦ ${state.user.pointsAuthor} ${t().pointsAuthorLbl}</span>
+      </div>
       <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="logout()">${t().logout}</button>
     </div>
     <div class="panel">
@@ -2148,7 +2186,7 @@ async function submitRating(){
     historia:rateTmp.historia,estilo:rateTmp.estilo,gramatica:rateTmp.gramatica,personajes:rateTmp.personajes});
   if(error){closeModal();toast(error.code==='23505'?t().alreadyRated:t().errGeneric);return;}
   state.ratedIds.add(novelId);
-  if(state.user)state.user.points=(state.user.points||0)+10;
+  if(state.user){state.user.pointsReader=(state.user.pointsReader||0)+10;state.user.points=(state.user.points||0)+10;}
   closeModal();toast(t().sent);
   await refreshNovelLive(novelId);render();
 }
@@ -2216,7 +2254,9 @@ async function loadProfile(authUser){
     role:(data&&data.role)||'user',
     avatarUrl:(data&&data.avatar_url)||null,
     patreon:(data&&data.patreon_url)||'',
-    points:(data&&data.points)||0,
+    pointsReader:(data&&data.points_reader)||0,
+    pointsAuthor:(data&&data.points_author)||0,
+    points:((data&&data.points_reader)||0)+((data&&data.points_author)||0),
     showAdult:(data&&data.show_adult)||false,
     onboarded:data?data.onboarded:true
   };

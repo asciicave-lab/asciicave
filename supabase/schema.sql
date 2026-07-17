@@ -26,6 +26,11 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 alter table public.profiles enable row level security;
+-- Puntos separados por rol: de lector (leer, valorar, comentar, foro) y
+-- de autor (publicar capítulos, recibir valoraciones). "points" se deja
+-- como quedó (histórico), ya no se usa; el ranking usa estas dos columnas.
+alter table public.profiles add column if not exists points_reader int not null default 0;
+alter table public.profiles add column if not exists points_author int not null default 0;
 
 drop policy if exists "profiles select" on public.profiles;
 create policy "profiles select" on public.profiles for select using (true);
@@ -229,6 +234,25 @@ create policy "reading_progress insert own" on public.reading_progress for inser
 drop policy if exists "reading_progress update own" on public.reading_progress;
 create policy "reading_progress update own" on public.reading_progress for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- +2 puntos de lector por cada capítulo NUEVO marcado como leído. Compara
+-- el tamaño del array antes/después para no volver a contar los que ya
+-- estaban leídos (el cliente siempre reenvía el array completo).
+create or replace function public.trg_fn_reading_points()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_new_count int := coalesce(array_length(new.read_chapters, 1), 0);
+  v_old_count int := case when tg_op = 'UPDATE' then coalesce(array_length(old.read_chapters, 1), 0) else 0 end;
+begin
+  if v_new_count > v_old_count then
+    update public.profiles set points_reader = points_reader + (v_new_count - v_old_count) * 2 where id = new.user_id;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists t_reading_points on public.reading_progress;
+create trigger t_reading_points after insert or update on public.reading_progress
+  for each row execute procedure public.trg_fn_reading_points();
+
 -- ============================================================
 -- Triggers: mantienen contadores y puntos automáticamente.
 -- Corren como "security definer" (dueño postgres), así que pueden
@@ -284,9 +308,9 @@ begin
   where n.id = new.novel_id
   returning n.owner_id into v_owner;
 
-  update public.profiles set points = points + 10 where id = new.user_id;
+  update public.profiles set points_reader = points_reader + 10 where id = new.user_id;
   if v_owner is not null then
-    update public.profiles set points = points + 2 where id = v_owner;
+    update public.profiles set points_author = points_author + 2 where id = v_owner;
   end if;
   return new;
 end;
@@ -304,7 +328,7 @@ begin
     update public.novels set chapters_count = chapters_count + 1 where id = new.novel_id
       returning owner_id into v_owner;
     if v_owner is not null then
-      update public.profiles set points = points + 15 where id = v_owner;
+      update public.profiles set points_author = points_author + 15 where id = v_owner;
     end if;
     return new;
   elsif tg_op = 'DELETE' then
@@ -327,7 +351,7 @@ begin
   select count(*) into v_prior from public.comments
     where chapter_id = new.chapter_id and user_id = new.user_id and id <> new.id;
   if v_prior = 0 then
-    update public.profiles set points = points + 3 where id = new.user_id;
+    update public.profiles set points_reader = points_reader + 3 where id = new.user_id;
   end if;
   return new;
 end;
@@ -498,7 +522,7 @@ begin
     last_post_at = new.created_at,
     last_post_author_id = new.author_id
   where id = new.thread_id;
-  update public.profiles set points = points + 1 where id = new.author_id;
+  update public.profiles set points_reader = points_reader + 1 where id = new.author_id;
   return new;
 end;
 $$;
@@ -510,7 +534,7 @@ create trigger t_forum_post_maintain after insert on public.forum_posts
 create or replace function public.trg_fn_forum_thread_points()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  update public.profiles set points = points + 2 where id = new.author_id;
+  update public.profiles set points_reader = points_reader + 2 where id = new.author_id;
   return new;
 end;
 $$;
