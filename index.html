@@ -1874,7 +1874,7 @@ function vForum(){
   ${FORUM_POPULAR.length?`
   <div class="panel wide" style="margin-bottom:26px">
     <h3>${t().forumPopular}</h3>
-    ${FORUM_POPULAR.map(th=>`<div class="work-row" style="cursor:pointer" onclick="go('forumthread',{id:${th.id},title:${JSON.stringify(th.title)}})">
+    ${FORUM_POPULAR.map(th=>`<div class="work-row" style="cursor:pointer" onclick="go('forumthread',{id:${th.id},title:${esc(JSON.stringify(th.title))}})">
       <div><h4>${esc(th.title)}</h4><div class="w-meta">${t().byLbl} ${esc(th.author&&th.author.username||'—')} · ${forumCatLabel(th.category)}</div></div>
       <span class="stars-inline">${th.replies_count} ${t().forumReplies}</span>
     </div>`).join('')}
@@ -1900,7 +1900,7 @@ function vForumCategory(){
   ${state.user?`<button class="btn btn-gold" onclick="go('newthread',{cat:'${cat}'})" style="margin-bottom:18px">${t().newThreadBtn}</button>`
     :`<button class="btn btn-ghost" onclick="openLogin()" style="margin-bottom:18px">${t().commentLogin}</button>`}
   ${FORUM_THREADS.length?FORUM_THREADS.map(th=>`
-    <a class="forum-thread-row" href="/foro/${cat}/hilo/${th.id}" onclick="return navClick(event,'forumthread',{id:${th.id},title:${JSON.stringify(th.title)}})">
+    <a class="forum-thread-row" href="/foro/hilo/${th.id}/${slugify(th.title)}" onclick="return navClick(event,'forumthread',{id:${th.id},title:${esc(JSON.stringify(th.title))}})">
       <div class="forum-thread-main">
         ${th.is_pinned?`<span class="tag g">📌 ${t().pinned}</span>`:''}${th.is_locked?`<span class="tag">🔒 ${t().locked}</span>`:''}
         <h4>${esc(th.title)}</h4>
