@@ -1842,7 +1842,7 @@ function vRank(){
       <div class="rank-pos">${i+1}</div>
       <div class="rank-main"><h3>${esc(n.title)}</h3><span>${esc(n.author)} · ${n.genres.map(gName).join(', ')}</span></div>
       <div class="rank-metric">${d.f(n)}<small>${d.l}</small></div>
-    </a>`).join('')}</div>`
+    </a>${i===4?`<div style="margin:16px 0">${adBlock()}</div>`:''}`).join('')}</div>`
   :emptyState(t().emptyRankT,t().emptyRankP,t().heroCta2,"go('write')")}`;
 }
 
@@ -1899,7 +1899,7 @@ function vForumCategory(){
   <p class="sec-sub">${esc(catInfo.descEs)}</p>
   ${state.user?`<button class="btn btn-gold" onclick="go('newthread',{cat:'${cat}'})" style="margin-bottom:18px">${t().newThreadBtn}</button>`
     :`<button class="btn btn-ghost" onclick="openLogin()" style="margin-bottom:18px">${t().commentLogin}</button>`}
-  ${FORUM_THREADS.length?FORUM_THREADS.map(th=>`
+  ${FORUM_THREADS.length?FORUM_THREADS.map((th,i)=>`
     <a class="forum-thread-row" href="/foro/hilo/${th.id}/${slugify(th.title)}" onclick="return navClick(event,'forumthread',{id:${th.id},title:${esc(JSON.stringify(th.title))}})">
       <div class="forum-thread-main">
         ${th.is_pinned?`<span class="tag g">📌 ${t().pinned}</span>`:''}${th.is_locked?`<span class="tag">🔒 ${t().locked}</span>`:''}
@@ -1911,7 +1911,7 @@ function vForumCategory(){
         <span>${t().lastPostBy}</span><b>${esc((th.last_author&&th.last_author.username)||(th.author&&th.author.username)||'—')}</b>
         <span>${new Date(th.last_post_at).toLocaleDateString('es-ES')}</span>
       </div>
-    </a>`).join(''):`<div class="callout">${t().noThreads}</div>`}`;
+    </a>${i===5?`<div style="margin:16px 0">${adBlock()}</div>`:''}`).join(''):`<div class="callout">${t().noThreads}</div>`}`;
 }
 function vNewThread(){
   if(!state.user)return emptyState(t().writeWallT,t().writeWallP,t().writeWallBtn,"openLogin()");
@@ -1950,6 +1950,7 @@ function vForumThread(){
     ${canModerate?`<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="deleteThread(${th.id},'${th.category}')">${t().deleteThreadBtn}</button>`:''}
     </div>
   </div>
+  <div style="margin:20px 0">${adBlock()}</div>
   <h3 style="font-family:var(--font-display);font-size:1.3rem;margin:24px 0 10px">${t().forumReplies} (${posts.length})</h3>
   ${posts.length?posts.map(p=>`<div class="comment">
     ${avatarHTML({avatarUrl:p.author&&p.author.avatar_url},34)}
