@@ -41,7 +41,8 @@ create policy "profiles insert own" on public.profiles for insert with check (au
 -- points / role / account_type / onboarded quedan protegidas: solo las
 -- tocan los triggers y funciones "security definer" de abajo.
 revoke update on public.profiles from authenticated;
-grant update (username, avatar_url, patreon_url, show_adult, account_type, onboarded) on public.profiles to authenticated;
+grant update (username, avatar_url, patreon_url, show_adult, account_type, onboarded, notify_forum) on public.profiles to authenticated;
+alter table public.profiles add column if not exists notify_forum boolean not null default true;
 drop policy if exists "profiles update own" on public.profiles;
 create policy "profiles update own" on public.profiles for update using (auth.uid() = id) with check (auth.uid() = id);
 
@@ -564,3 +565,81 @@ begin
 end;
 $$;
 grant execute on function public.fn_set_thread_flags(bigint, boolean, boolean) to authenticated;
+
+-- ============================================================
+-- NOTIFICACIONES — comentarios en tus capítulos y respuestas en
+-- tus hilos del foro. Solo las crean los triggers de abajo, nunca
+-- el cliente directamente.
+-- ============================================================
+create table if not exists public.notifications (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  type text not null check (type in ('chapter_comment','forum_reply')),
+  actor_id uuid references public.profiles(id) on delete set null,
+  novel_id bigint references public.novels(id) on delete cascade,
+  chapter_id bigint references public.chapters(id) on delete cascade,
+  chapter_idx int,
+  thread_id bigint references public.forum_threads(id) on delete cascade,
+  preview text,
+  is_read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table public.notifications enable row level security;
+create index if not exists idx_notifications_user on public.notifications(user_id, created_at desc);
+
+drop policy if exists "notifications select own" on public.notifications;
+create policy "notifications select own" on public.notifications for select using (auth.uid() = user_id);
+drop policy if exists "notifications update own" on public.notifications;
+create policy "notifications update own" on public.notifications for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- El cliente solo puede marcarlas como leídas, nada más.
+revoke update on public.notifications from authenticated;
+grant update (is_read) on public.notifications to authenticated;
+
+create or replace function public.trg_fn_notify_chapter_comment()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_novel_id bigint;
+  v_owner uuid;
+  v_idx int;
+begin
+  select c.novel_id, c.idx, n.owner_id into v_novel_id, v_idx, v_owner
+  from public.chapters c join public.novels n on n.id = c.novel_id
+  where c.id = new.chapter_id;
+  if v_owner is not null and v_owner <> new.user_id then
+    insert into public.notifications (user_id, type, actor_id, novel_id, chapter_id, chapter_idx, preview)
+    values (v_owner, 'chapter_comment', new.user_id, v_novel_id, new.chapter_id, v_idx, left(new.text, 140));
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists t_notify_chapter_comment on public.comments;
+create trigger t_notify_chapter_comment after insert on public.comments
+  for each row execute procedure public.trg_fn_notify_chapter_comment();
+
+create or replace function public.trg_fn_notify_forum_reply()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_thread_author uuid;
+  v_notify boolean;
+begin
+  select t.author_id into v_thread_author from public.forum_threads t where t.id = new.thread_id;
+  if v_thread_author is not null and v_thread_author <> new.author_id then
+    select notify_forum into v_notify from public.profiles where id = v_thread_author;
+    if coalesce(v_notify, true) then
+      insert into public.notifications (user_id, type, actor_id, thread_id, preview)
+      values (v_thread_author, 'forum_reply', new.author_id, new.thread_id, left(new.body, 140));
+    end if;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists t_notify_forum_reply on public.forum_posts;
+create trigger t_notify_forum_reply after insert on public.forum_posts
+  for each row execute procedure public.trg_fn_notify_forum_reply();
+
+do $$
+begin
+  alter publication supabase_realtime add table public.notifications;
+exception when duplicate_object then null;
+end $$;

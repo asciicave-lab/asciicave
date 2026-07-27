@@ -124,6 +124,15 @@ header{position:sticky;top:0;z-index:50;background:rgba(12,19,34,.92);backdrop-f
 .dropdown button:hover{background:var(--ink-3)}
 .dropdown .badge{background:var(--gold);color:var(--ink);border-radius:10px;padding:0 7px;font-size:.72rem;font-weight:700;margin-left:6px}
 .login-btn{background:var(--gold);color:var(--ink);border:none;border-radius:20px;padding:6px 16px;font-size:.85rem;font-weight:600;white-space:nowrap}
+.bell-btn{position:relative;background:none;border:1px solid var(--line);color:var(--paper);border-radius:50%;width:34px;height:34px;font-size:.95rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bell-btn:hover{border-color:var(--gold)}
+.bell-btn .badge{position:absolute;top:-4px;right:-4px;background:var(--wax);color:var(--paper);border-radius:10px;min-width:16px;height:16px;font-size:.62rem;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.notif-panel{width:300px;max-height:400px;overflow-y:auto}
+.notif-panel .np-head{display:flex;justify-content:space-between;align-items:center;padding:6px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.notif-item{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;background:none;border:none;color:var(--paper);padding:9px 10px;border-radius:7px;font-size:.82rem}
+.notif-item:hover{background:var(--ink-3)}
+.notif-item.unread{background:var(--gold-soft)}
+.notif-item .n-meta{color:var(--muted);font-size:.72rem;margin-top:2px}
 
 main{max-width:1180px;margin:0 auto;padding:28px 20px 90px;position:relative;z-index:1}
 
@@ -520,6 +529,9 @@ let FORUM_POPULAR=[];        // hilos populares para la portada del foro
 let FORUM_CURRENT_THREAD=null;
 const FORUM_POSTS_CACHE={};  // threadId -> respuestas[]
 let POINTS_LEADERBOARD=[];   // clasificación de puntos (lector/autor)
+let NOTIFICATIONS=[];        // notificaciones del usuario logueado
+let notifOpen=false;
+let notifChannel=null;
 let LATEST_CHAPTERS=[],GROWING_NOVEL=null,BEST_CHAPTER=null,RECOMMENDED=[];
 </script>
 <script>
@@ -635,6 +647,10 @@ const T={nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",writ
  removeCoverBtn:"Quitar portada",
  profLangT:"Idioma / Language",profLangP:"La interfaz está disponible en español e inglés. Las novelas se muestran en su idioma original.",
  showAdultToggle:"Mostrar contenido +18 en explorar e inicio",
+ notifTitle:"Notificaciones",markAllRead:"Marcar todo como leído",noNotifs:"No tienes notificaciones.",
+ notifComment:"comentó en tu capítulo",notifReply:"respondió a tu hilo",
+ notifSettingsP:"Elige de qué te avisamos mientras usas asciicave.",
+ notifyForumToggle:"Notificarme cuando respondan a mis hilos del foro",
  avatarUpload:"Subir foto",avatarRemove:"Quitar foto",
  pointsLbl:"puntos",pointsReaderLbl:"puntos de lector",pointsAuthorLbl:"puntos de autor",
  myWorksSub:"Estado de tus solicitudes y obras publicadas",
@@ -1150,6 +1166,63 @@ async function refreshPendingCount(){
   if(!isAdmin()){state.pendingCount=0;return;}
   const{count}=await sb.from('novels').select('id',{count:'exact',head:true}).eq('status','pendiente');
   state.pendingCount=count||0;
+}
+async function loadNotifications(){
+  if(!state.user){NOTIFICATIONS=[];return;}
+  const{data}=await sb.from('notifications')
+    .select('*, actor:profiles!notifications_actor_id_fkey(username,avatar_url)')
+    .eq('user_id',state.user.id).order('created_at',{ascending:false}).limit(20);
+  NOTIFICATIONS=data||[];
+}
+function subscribeNotifications(){
+  if(notifChannel){sb.removeChannel(notifChannel);notifChannel=null;}
+  if(!state.user)return;
+  notifChannel=sb.channel('notif-'+state.user.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+state.user.id},async()=>{
+      await loadNotifications();render();
+    }).subscribe();
+}
+function toggleNotifPanel(){notifOpen=!notifOpen;render();}
+function notifText(n){
+  if(n.type==='chapter_comment')return t().notifComment;
+  if(n.type==='forum_reply')return t().notifReply;
+  return '';
+}
+async function openNotification(id){
+  const n=NOTIFICATIONS.find(x=>x.id===id);
+  if(!n)return;
+  notifOpen=false;
+  if(!n.is_read){
+    n.is_read=true;
+    sb.from('notifications').update({is_read:true}).eq('id',id);
+  }
+  if(n.type==='chapter_comment'&&n.novel_id!=null){
+    go('reader',{id:n.novel_id,ch:n.chapter_idx||0});
+  }else if(n.type==='forum_reply'&&n.thread_id!=null){
+    go('forumthread',{id:n.thread_id});
+  }else{
+    render();
+  }
+}
+async function markAllNotifsRead(){
+  const ids=NOTIFICATIONS.filter(n=>!n.is_read);
+  if(!ids.length)return;
+  NOTIFICATIONS.forEach(n=>n.is_read=true);
+  render();
+  await sb.from('notifications').update({is_read:true}).eq('user_id',state.user.id).eq('is_read',false);
+}
+function notifPanelHtml(){
+  return `<div class="dropdown notif-panel">
+    <div class="np-head">
+      <b style="font-size:.85rem">${t().notifTitle}</b>
+      ${NOTIFICATIONS.some(n=>!n.is_read)?`<a style="cursor:pointer;font-size:.76rem" onclick="markAllNotifsRead()">${t().markAllRead}</a>`:''}
+    </div>
+    ${NOTIFICATIONS.length?NOTIFICATIONS.map(n=>`<button class="notif-item ${n.is_read?'':'unread'}" onclick="openNotification(${n.id})">
+      ${avatarHTML({avatarUrl:n.actor&&n.actor.avatar_url},28)}
+      <span style="flex:1"><b>${esc(n.actor&&n.actor.username||'—')}</b> ${notifText(n)}
+      <span class="n-meta">${new Date(n.created_at).toLocaleDateString('es-ES')}</span></span>
+    </button>`).join(''):`<p style="color:var(--muted);font-size:.82rem;padding:10px">${t().noNotifs}</p>`}
+  </div>`;
 }
 async function loadModQueue(){
   if(!isAdmin())return;
@@ -2065,6 +2138,10 @@ function vProfile(){
       <h3>${t().profAdsT}</h3><p>${t().profAdsP}</p>
       <label class="checkbox-field" style="margin-top:14px"><input type="checkbox" ${state.user.showAdult?'checked':''} onchange="toggleShowAdult(this.checked)">${t().showAdultToggle}</label>
     </div>
+    <div class="panel">
+      <h3>${t().notifTitle}</h3><p>${t().notifSettingsP}</p>
+      <label class="checkbox-field"><input type="checkbox" ${state.user.notifyForum?'checked':''} onchange="toggleNotifyForum(this.checked)">${t().notifyForumToggle}</label>
+    </div>
     <div class="panel wide">
       <h3>${t().myWorks}</h3><p>${t().myWorksSub}</p>
       ${works.length?works.map(n=>`<div class="work-row">
@@ -2127,6 +2204,10 @@ async function removeAvatar(){
 async function toggleShowAdult(v){
   await sb.from('profiles').update({show_adult:v}).eq('id',state.user.id);
   state.user.showAdult=v;render();
+}
+async function toggleNotifyForum(v){
+  await sb.from('profiles').update({notify_forum:v}).eq('id',state.user.id);
+  state.user.notifyForum=v;render();
 }
 
 /* =============== INTERACCIONES (requieren cuenta) =============== */
@@ -2201,9 +2282,12 @@ function render(){
     `<button class="${state.view===k?'active':''}" onclick="go('${k}')">${l}</button>`).join('');
 
   const badge=isAdmin()&&state.pendingCount?`<span class="badge">${state.pendingCount}</span>`:'';
+  const unreadNotifs=state.user?NOTIFICATIONS.filter(n=>!n.is_read).length:0;
   $('navRight').innerHTML=`
     <a class="coffee-btn" href="${COFFEE_URL}" target="_blank" rel="noopener">${iconLabel(t().coffeeBtn)}</a>
     ${state.user?`
+      <button class="bell-btn" onclick="toggleNotifPanel()" aria-label="${t().notifTitle}">🔔${unreadNotifs?`<span class="badge">${unreadNotifs>9?'9+':unreadNotifs}</span>`:''}</button>
+      ${notifOpen?notifPanelHtml():''}
       <button class="user-chip" onclick="toggleMenu()">
         ${avatarHTML(state.user,24)}
         <span class="u-name">${esc(state.user.username)}</span>
@@ -2239,6 +2323,8 @@ async function boot(){
     }else{
       state.user=null;
       await loadInteractionSets();
+      NOTIFICATIONS=[];notifOpen=false;
+      subscribeNotifications();
     }
     if(!bootedOnce){bootedOnce=true;state.booting=false;}
     await go(state.view,state.params,{skipHistory:true});
@@ -2259,10 +2345,13 @@ async function loadProfile(authUser){
     pointsAuthor:(data&&data.points_author)||0,
     points:((data&&data.points_reader)||0)+((data&&data.points_author)||0),
     showAdult:(data&&data.show_adult)||false,
+    notifyForum:data?data.notify_forum!==false:true,
     onboarded:data?data.onboarded:true
   };
   await loadInteractionSets();
   await loadMyNovels();
+  await loadNotifications();
+  subscribeNotifications();
   if(isAdmin())await refreshPendingCount();
   if(!state.user.onboarded)queueMicrotask(openOnboardModal);
 }
