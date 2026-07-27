@@ -651,6 +651,8 @@ const T={nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",writ
  notifComment:"comentó en tu capítulo",notifReply:"respondió a tu hilo",
  notifSettingsP:"Elige de qué te avisamos mientras usas asciicave.",
  notifyForumToggle:"Notificarme cuando respondan a mis hilos del foro",
+ notifNewChapter:"publicó un nuevo capítulo",
+ notifyNewChaptersToggle:"Notificarme de nuevos capítulos en lo que sigo o tengo en favoritos",
  avatarUpload:"Subir foto",avatarRemove:"Quitar foto",
  pointsLbl:"puntos",pointsReaderLbl:"puntos de lector",pointsAuthorLbl:"puntos de autor",
  myWorksSub:"Estado de tus solicitudes y obras publicadas",
@@ -1170,7 +1172,7 @@ async function refreshPendingCount(){
 async function loadNotifications(){
   if(!state.user){NOTIFICATIONS=[];return;}
   const{data}=await sb.from('notifications')
-    .select('*, actor:profiles!notifications_actor_id_fkey(username,avatar_url)')
+    .select('*, actor:profiles!notifications_actor_id_fkey(username,avatar_url), novel:novels(title)')
     .eq('user_id',state.user.id).order('created_at',{ascending:false}).limit(20);
   NOTIFICATIONS=data||[];
 }
@@ -1184,8 +1186,10 @@ function subscribeNotifications(){
 }
 function toggleNotifPanel(){notifOpen=!notifOpen;render();}
 function notifText(n){
-  if(n.type==='chapter_comment')return t().notifComment;
+  const novelBit=n.novel&&n.novel.title?` «${esc(n.novel.title)}»`:'';
+  if(n.type==='chapter_comment')return t().notifComment+novelBit;
   if(n.type==='forum_reply')return t().notifReply;
+  if(n.type==='new_chapter')return t().notifNewChapter+novelBit;
   return '';
 }
 async function openNotification(id){
@@ -1196,7 +1200,7 @@ async function openNotification(id){
     n.is_read=true;
     sb.from('notifications').update({is_read:true}).eq('id',id);
   }
-  if(n.type==='chapter_comment'&&n.novel_id!=null){
+  if((n.type==='chapter_comment'||n.type==='new_chapter')&&n.novel_id!=null){
     go('reader',{id:n.novel_id,ch:n.chapter_idx||0});
   }else if(n.type==='forum_reply'&&n.thread_id!=null){
     go('forumthread',{id:n.thread_id});
@@ -2141,6 +2145,7 @@ function vProfile(){
     <div class="panel">
       <h3>${t().notifTitle}</h3><p>${t().notifSettingsP}</p>
       <label class="checkbox-field"><input type="checkbox" ${state.user.notifyForum?'checked':''} onchange="toggleNotifyForum(this.checked)">${t().notifyForumToggle}</label>
+      <label class="checkbox-field" style="margin-top:10px"><input type="checkbox" ${state.user.notifyNewChapters?'checked':''} onchange="toggleNotifyNewChapters(this.checked)">${t().notifyNewChaptersToggle}</label>
     </div>
     <div class="panel wide">
       <h3>${t().myWorks}</h3><p>${t().myWorksSub}</p>
@@ -2208,6 +2213,10 @@ async function toggleShowAdult(v){
 async function toggleNotifyForum(v){
   await sb.from('profiles').update({notify_forum:v}).eq('id',state.user.id);
   state.user.notifyForum=v;render();
+}
+async function toggleNotifyNewChapters(v){
+  await sb.from('profiles').update({notify_new_chapters:v}).eq('id',state.user.id);
+  state.user.notifyNewChapters=v;render();
 }
 
 /* =============== INTERACCIONES (requieren cuenta) =============== */
@@ -2346,6 +2355,7 @@ async function loadProfile(authUser){
     points:((data&&data.points_reader)||0)+((data&&data.points_author)||0),
     showAdult:(data&&data.show_adult)||false,
     notifyForum:data?data.notify_forum!==false:true,
+    notifyNewChapters:data?data.notify_new_chapters!==false:true,
     onboarded:data?data.onboarded:true
   };
   await loadInteractionSets();

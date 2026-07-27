@@ -643,3 +643,36 @@ begin
   alter publication supabase_realtime add table public.notifications;
 exception when duplicate_object then null;
 end $$;
+
+-- ============================================================
+-- NOTIFICACIONES DE CAPÍTULO NUEVO — avisa a quien sigue o tiene
+-- en favoritos una novela cuando se publica un capítulo.
+-- ============================================================
+alter table public.profiles add column if not exists notify_new_chapters boolean not null default true;
+grant update (notify_new_chapters) on public.profiles to authenticated;
+
+alter table public.notifications drop constraint if exists notifications_type_check;
+alter table public.notifications add constraint notifications_type_check
+  check (type in ('chapter_comment','forum_reply','new_chapter'));
+
+create or replace function public.trg_fn_notify_new_chapter()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_owner uuid;
+begin
+  select owner_id into v_owner from public.novels where id = new.novel_id;
+  insert into public.notifications (user_id, type, actor_id, novel_id, chapter_id, chapter_idx, preview)
+  select f.user_id, 'new_chapter', v_owner, new.novel_id, new.id, new.idx, new.title
+  from (
+    select user_id from public.follows where novel_id = new.novel_id
+    union
+    select user_id from public.favorites where novel_id = new.novel_id
+  ) f
+  join public.profiles p on p.id = f.user_id
+  where f.user_id <> v_owner and coalesce(p.notify_new_chapters, true);
+  return new;
+end;
+$$;
+drop trigger if exists t_notify_new_chapter on public.chapters;
+create trigger t_notify_new_chapter after insert on public.chapters
+  for each row execute procedure public.trg_fn_notify_new_chapter();
