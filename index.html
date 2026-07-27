@@ -1198,7 +1198,8 @@ async function openNotification(id){
   notifOpen=false;
   if(!n.is_read){
     n.is_read=true;
-    sb.from('notifications').update({is_read:true}).eq('id',id);
+    const{error}=await sb.from('notifications').update({is_read:true}).eq('id',id);
+    if(error)n.is_read=false;
   }
   if((n.type==='chapter_comment'||n.type==='new_chapter')&&n.novel_id!=null){
     go('reader',{id:n.novel_id,ch:n.chapter_idx||0});
@@ -2326,6 +2327,10 @@ async function boot(){
   history.replaceState({view:initial.view,params:initial.params},'',gcPath(initial.view,initial.params));
   await go(initial.view,initial.params,{skipHistory:true});
   sb.auth.onAuthStateChange(async(event,session)=>{
+    // El token se renueva solo en segundo plano (o al volver a la pestaña)
+    // sin que cambien tus datos: no hay nada que recargar, y hacerlo pisaba
+    // cosas como marcar una notificación como leída justo después de verla.
+    if(event==='TOKEN_REFRESHED')return;
     if(event==='PASSWORD_RECOVERY')renderNewPasswordModal();
     if(session&&session.user){
       await loadProfile(session.user);
