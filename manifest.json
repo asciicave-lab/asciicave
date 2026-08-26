@@ -1,0 +1,20 @@
+{
+  "name": "AsciiCave — Novelas web en español",
+  "short_name": "AsciiCave",
+  "description": "Publica y lee novelas web en español, gratis. Foro de la comunidad, ranking en vivo y sistema de puntos para autores y lectores.",
+  "start_url": "/?utm_source=pwa",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0C1322",
+  "theme_color": "#0C1322",
+  "orientation": "any",
+  "lang": "es",
+  "dir": "ltr",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

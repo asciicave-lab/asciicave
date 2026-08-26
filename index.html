@@ -15,6 +15,15 @@
 <link rel="alternate" hreflang="x-default" href="https://asciicave.com/">
 <meta name="theme-color" content="#0C1322">
 
+<!-- ============ PWA (app instalable) ============ -->
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AsciiCave">
+<meta name="mobile-web-app-capable" content="yes">
+
 <!-- Open Graph (Facebook, WhatsApp, Discord…) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AsciiCave">
@@ -653,6 +662,7 @@ const T={nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",writ
  notifyForumToggle:"Notificarme cuando respondan a mis hilos del foro",
  notifNewChapter:"publicó un nuevo capítulo",
  notifyNewChaptersToggle:"Notificarme de nuevos capítulos en lo que sigo o tengo en favoritos",
+ installApp:"Instalar app",appInstalled:"¡AsciiCave instalada! Búscala en tu pantalla de inicio.",
  avatarUpload:"Subir foto",avatarRemove:"Quitar foto",
  pointsLbl:"puntos",pointsReaderLbl:"puntos de lector",pointsAuthorLbl:"puntos de autor",
  myWorksSub:"Estado de tus solicitudes y obras publicadas",
@@ -2294,6 +2304,7 @@ function render(){
   const badge=isAdmin()&&state.pendingCount?`<span class="badge">${state.pendingCount}</span>`:'';
   const unreadNotifs=state.user?NOTIFICATIONS.filter(n=>!n.is_read).length:0;
   $('navRight').innerHTML=`
+    ${deferredInstallPrompt?`<button class="bell-btn" onclick="installApp()" aria-label="${t().installApp}" title="${t().installApp}">📲</button>`:''}
     <a class="coffee-btn" href="${COFFEE_URL}" target="_blank" rel="noopener">${iconLabel(t().coffeeBtn)}</a>
     ${state.user?`
       <button class="bell-btn" onclick="toggleNotifPanel()" aria-label="${t().notifTitle}">🔔${unreadNotifs?`<span class="badge">${unreadNotifs>9?'9+':unreadNotifs}</span>`:''}</button>
@@ -2316,6 +2327,20 @@ function render(){
     <a href="/terminos.html">${t().footTerms}</a> · <a href="/privacidad.html">${t().footPrivacy}</a> · <a href="mailto:chriswynlive@gmail.com">${t().footContact}</a> · <a href="/escribir" onclick="return navClick(event,'write',{})">${t().footAuthors}</a>
   </div>`;
   activateAds();
+}
+
+/* =============== PWA (instalar app + service worker) =============== */
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;render();});
+window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;toast(t().appInstalled);render();});
+async function installApp(){
+  if(!deferredInstallPrompt)return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt=null;render();
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
 }
 
 /* =============== ARRANQUE =============== */
