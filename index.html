@@ -1537,7 +1537,7 @@ function vNovel(){
       ${isOwner?`<button class="btn btn-ghost btn-sm" style="margin-left:10px" onclick="go('editchapter',{id:${n.id},ch:${i}})">${t().editChBtn}</button>`:''}
     </div>`).join('')}
   </div>
-  <div style="margin-top:26px">${adBlock()}</div>`;
+  ${n.isAdult?'':`<div style="margin-top:26px">${adBlock()}</div>`}`;
 }
 function confirmAdult(id){state.adultConfirmed.add(id);render();}
 
@@ -1560,7 +1560,7 @@ function vReader(){
     ${i>0&&c.note_start?`<div class="author-note"><span class="an-label">${t().anStart}</span>${esc(c.note_start)}</div>`:''}
     <div class="reader-body">${c.body.split(/\n+/).filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join('')}</div>
     ${i>0&&c.note_end?`<div class="author-note"><span class="an-label">${t().anEnd}</span>${esc(c.note_end)}</div>`:''}
-    <div style="margin-top:30px">${adBlock()}</div>
+    ${n.isAdult?'':`<div style="margin-top:30px">${adBlock()}</div>`}
     ${n.patreon?`<div class="patreon-box"><div class="p-ico">🤝</div><div style="flex:1"><strong>${t().supportPatreon}</strong><small>${t().supportSub}</small></div><a class="btn btn-wax btn-sm" href="${esc(n.patreon)}" target="_blank" rel="noopener">Patreon ↗</a></div>`:''}
     ${canRate?`<div class="rate-nudge"><p style="margin-bottom:12px">${t().rateNudge}</p><button class="btn btn-gold btn-sm" onclick="openRating(${n.id})">${t().rateNow}</button></div>`:''}
     <div class="comments">
