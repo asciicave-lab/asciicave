@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.asciicave.twa",
+        "sha256_cert_fingerprints": ["E6:53:6A:32:84:EE:D9:D2:0D:9B:2C:30:CD:F1:1F:AA:40:21:2E:DF:5A:65:EC:BA:7C:EE:98:B4:46:F7:EB:D3"]
+      }
+    }]
