@@ -119,6 +119,10 @@ header{position:sticky;top:0;z-index:50;background:rgba(12,19,34,.92);backdrop-f
 .nav-links button{background:none;border:none;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.92rem;white-space:nowrap}
 .nav-links button:hover{color:var(--paper);background:var(--ink-3)}
 .nav-links button.active{color:var(--gold);background:var(--gold-soft)}
+.nav-hamburger{display:none;position:relative;flex-shrink:0}
+.nav-hamburger>button{background:none;border:1px solid var(--line);color:var(--paper);border-radius:8px;width:34px;height:34px;font-size:1.05rem;display:flex;align-items:center;justify-content:center}
+.nav-hamburger>button:hover{border-color:var(--gold)}
+.dropdown button.active{color:var(--gold);background:var(--gold-soft)}
 .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;position:relative}
 .lang-toggle{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .lang-toggle button{background:none;border:none;color:var(--muted);padding:5px 10px;font-size:.8rem;font-family:var(--font-mono)}
@@ -414,6 +418,8 @@ footer .f-links{margin-top:6px;font-size:.75rem}
   .nav{padding:0 12px;gap:8px}
   .logo{font-size:1.05rem;gap:6px}
   .nav-right{gap:6px}
+  .nav-links{display:none}
+  .nav-hamburger{display:block}
   .btn-label{display:none}
   .coffee-btn,.premium-pill,.login-btn{padding:6px 10px;font-size:.8rem}
   .lang-toggle button{padding:5px 8px}
@@ -439,6 +445,7 @@ footer .f-links{margin-top:6px;font-size:.75rem}
   <div class="nav">
     <div class="logo" onclick="go('home')"><span class="glyph">&gt;_</span> asciicave</div>
     <nav class="nav-links" id="navLinks" aria-label="Navegación principal"></nav>
+    <div class="nav-hamburger" id="navHamburger"></div>
     <div class="nav-right" id="navRight"></div>
   </div>
 </header>
@@ -544,6 +551,8 @@ const FORUM_POSTS_CACHE={};  // threadId -> respuestas[]
 let POINTS_LEADERBOARD=[];   // clasificación de puntos (lector/autor)
 let NOTIFICATIONS=[];        // notificaciones del usuario logueado
 let notifOpen=false;
+let navMenuOpen=false;
+function toggleNavMenu(){navMenuOpen=!navMenuOpen;render();}
 let notifChannel=null;
 let LATEST_CHAPTERS=[],GROWING_NOVEL=null,BEST_CHAPTER=null,RECOMMENDED=[];
 </script>
@@ -660,7 +669,7 @@ const T={nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",writ
  removeCoverBtn:"Quitar portada",
  profLangT:"Idioma / Language",profLangP:"La interfaz está disponible en español e inglés. Las novelas se muestran en su idioma original.",
  showAdultToggle:"Mostrar contenido +18 en explorar e inicio",
- notifTitle:"Notificaciones",markAllRead:"Marcar todo como leído",noNotifs:"No tienes notificaciones.",
+ notifTitle:"Notificaciones",markAllRead:"Marcar todo como leído",noNotifs:"No tienes notificaciones.",menuLbl:"Menú",
  notifComment:"comentó en tu capítulo",notifReply:"respondió a tu hilo",
  notifSettingsP:"Elige de qué te avisamos mientras usas asciicave.",
  notifyForumToggle:"Notificarme cuando respondan a mis hilos del foro",
@@ -879,7 +888,7 @@ function parsePath(pathname){
 }
 
 async function go(view,params={},opts={}){
-  state.view=view;state.params=params;state.menuOpen=false;
+  state.view=view;state.params=params;state.menuOpen=false;navMenuOpen=false;notifOpen=false;
   teardownChannel();
   window.scrollTo({top:0});
   if(!opts.skipHistory){
@@ -2302,8 +2311,12 @@ async function submitRating(){
 function render(){
   const views={home:vHome,explore:vExplore,novel:vNovel,reader:vReader,write:vWrite,mod:vMod,rank:vRank,library:vLibrary,profile:vProfile,dashboard:vDashboard,editnovel:vEditNovel,editchapter:vEditChapter,newchapter:vNewChapter,forum:vForum,forumcategory:vForumCategory,forumthread:vForumThread,newthread:vNewThread};
 
-  $('navLinks').innerHTML=Object.entries(t().nav).map(([k,l])=>
+  const navButtons=Object.entries(t().nav).map(([k,l])=>
     `<button class="${state.view===k?'active':''}" onclick="go('${k}')">${l}</button>`).join('');
+  $('navLinks').innerHTML=navButtons;
+  $('navHamburger').innerHTML=`
+    <button onclick="toggleNavMenu()" aria-label="${t().menuLbl}">☰</button>
+    ${navMenuOpen?`<div class="dropdown">${navButtons}</div>`:''}`;
 
   const badge=isAdmin()&&state.pendingCount?`<span class="badge">${state.pendingCount}</span>`:'';
   const unreadNotifs=state.user?NOTIFICATIONS.filter(n=>!n.is_read).length:0;
