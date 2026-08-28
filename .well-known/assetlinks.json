@@ -3,6 +3,9 @@
       "target": {
         "namespace": "android_app",
         "package_name": "com.asciicave.twa",
-        "sha256_cert_fingerprints": ["E6:53:6A:32:84:EE:D9:D2:0D:9B:2C:30:CD:F1:1F:AA:40:21:2E:DF:5A:65:EC:BA:7C:EE:98:B4:46:F7:EB:D3"]
+        "sha256_cert_fingerprints": [
+          "E6:53:6A:32:84:EE:D9:D2:0D:9B:2C:30:CD:F1:1F:AA:40:21:2E:DF:5A:65:EC:BA:7C:EE:98:B4:46:F7:EB:D3",
+          "A5:E7:3A:2F:25:8F:16:04:04:EB:F0:7B:FC:60:6C:91:9B:E1:9A:16:81:7A:8F:69:F8:55:01:03:CE:99:CD:C4"
+        ]
       }
     }]
