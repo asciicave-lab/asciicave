@@ -1,2 +1,18 @@
 /sitemap.xml   /.netlify/functions/sitemap   200
-/*    /index.html   200
+
+# Rutas reales de la SPA (deben coincidir con parsePath() en index.html)
+/explorar        /index.html   200
+/explorar/*      /index.html   200
+/novela/*        /index.html   200
+/rankings        /index.html   200
+/rankings/*      /index.html   200
+/foro            /index.html   200
+/foro/*          /index.html   200
+/escribir        /index.html   200
+/moderacion      /index.html   200
+/biblioteca      /index.html   200
+/perfil          /index.html   200
+/panel-autor     /index.html   200
+
+# Cualquier otra ruta inexistente: 404 real (evita "soft 404" en Google)
+/*               /404.html     404

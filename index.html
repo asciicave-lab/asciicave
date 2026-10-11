@@ -11,8 +11,6 @@
 <link rel="canonical" href="https://asciicave.com/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="alternate" hreflang="es" href="https://asciicave.com/">
-<link rel="alternate" hreflang="en" href="https://asciicave.com/en/">
-<link rel="alternate" hreflang="x-default" href="https://asciicave.com/">
 <meta name="theme-color" content="#0C1322">
 
 <!-- ============ PWA (app instalable) ============ -->
@@ -51,12 +49,7 @@
       "url": "https://asciicave.com/",
       "name": "AsciiCave",
       "description": "Plataforma de novelas web en español",
-      "inLanguage": ["es", "en"],
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": { "@type": "EntryPoint", "urlTemplate": "https://asciicave.com/buscar?q={search_term_string}" },
-        "query-input": "required name=search_term_string"
-      }
+      "inLanguage": "es"
     },
     {
       "@type": "Organization",
@@ -454,6 +447,18 @@ footer .f-links{margin-top:6px;font-size:.75rem}
   </div>
 </header>
 <main id="app"></main>
+<noscript>
+  <section style="max-width:720px;margin:40px auto;padding:0 20px;color:#EDE7D8;font-family:system-ui,sans-serif">
+    <h1>AsciiCave: novelas web en español</h1>
+    <p>Plataforma de novelas web para el público hispanohablante. Lee gratis y publica tu historia por capítulos, con valoraciones, foro y rankings en vivo. Necesitas activar JavaScript para usar la web.</p>
+    <ul>
+      <li><a href="/explorar" style="color:#E3B254">Explorar novelas</a></li>
+      <li><a href="/rankings" style="color:#E3B254">Rankings</a></li>
+      <li><a href="/foro" style="color:#E3B254">Foro de la comunidad</a></li>
+      <li><a href="/escribir" style="color:#E3B254">Publicar mi novela</a></li>
+    </ul>
+  </section>
+</noscript>
 <footer id="foot"></footer>
 <div id="modalRoot"></div>
 
@@ -1691,7 +1696,7 @@ function vWrite(){
       <label>${t().coverLbl}<span class="hint">${t().coverHint}</span></label>
       <div class="upload-row">
         <label class="file-btn">${t().coverUpload}<input type="file" accept="image/*" onchange="onCoverChange(event)"></label>
-        ${draft.coverPreview?`<img src="${draft.coverPreview}" style="width:84px;height:118px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">`:''}
+        ${draft.coverPreview?`<img alt="Vista previa de la portada" src="${draft.coverPreview}" style="width:84px;height:118px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">`:''}
       </div>
     </div>
     <div class="field">
@@ -1802,7 +1807,7 @@ function vEditNovel(){
       <label>${t().coverLbl}<span class="hint">${t().coverHint}</span></label>
       <div class="upload-row">
         <label class="file-btn">${t().coverUpload}<input type="file" accept="image/*" onchange="onEditCoverChange(event)"></label>
-        ${editDraft.coverPreview?`<img src="${editDraft.coverPreview}" style="width:84px;height:118px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">
+        ${editDraft.coverPreview?`<img alt="Vista previa de la portada" src="${editDraft.coverPreview}" style="width:84px;height:118px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">
           <button class="btn btn-ghost btn-sm" onclick="removeEditCover()">${t().removeCoverBtn}</button>`:''}
       </div>
     </div>

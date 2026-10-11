@@ -14,6 +14,21 @@ const GENRES = [
   "Contemporáneo", "Yaoi (BL)", "Yuri (GL)", "Harem", "Shounen", "Seinen", "Josei"
 ];
 
+// Debe coincidir con SUBGENRES en index.html.
+const SUBGENRES = [
+  "Progresión", "Antihéroe", "Magia", "Artes marciales", "Reencarnación", "Isekai", "Sistema", "Mazmorras",
+  "Academia", "Realeza", "Mitología", "Protagonista femenina", "Villano protagonista", "Apocalipsis", "IA",
+  "Ópera espacial", "Steampunk", "Piratas", "Detectives", "Supervivencia", "Dragones", "Vampiros", "Distopía",
+  "Viajes en el tiempo", "Superhéroes", "No humano", "Cocina", "Guerra", "Política", "Slow burn", "GameLit",
+  "Ciberpunk", "Postapocalíptico", "Crimen organizado", "Segunda oportunidad", "Fantasmas", "Cultivo demoníaco",
+  "Harem inverso", "Ecchi", "Yandere", "Omegaverse"
+];
+// Debe coincidir con las claves de FORUM_GROUPS en index.html.
+const FORUM_CATS = [
+  "general", "celebracion", "presentaciones", "ayuda", "recomendaciones",
+  "guias", "resenas", "escritura", "marketing", "arte", "juegos", "debate", "software"
+];
+
 function xmlEscape(s) {
   return String(s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -51,11 +66,17 @@ exports.handler = async function () {
   xml += urlEntry(`${SITE_URL}/`, null, "daily", "1.0");
   xml += urlEntry(`${SITE_URL}/explorar`, null, "daily", "0.9");
   xml += urlEntry(`${SITE_URL}/rankings`, null, "daily", "0.8");
-  xml += urlEntry(`${SITE_URL}/escribir`, null, "monthly", "0.6");
+  xml += urlEntry(`${SITE_URL}/foro`, null, "daily", "0.6");
   xml += urlEntry(`${SITE_URL}/terminos.html`, null, "yearly", "0.3");
   xml += urlEntry(`${SITE_URL}/privacidad.html`, null, "yearly", "0.3");
   GENRES.forEach((g) => {
     xml += urlEntry(`${SITE_URL}/explorar/${encodeURIComponent(g)}`, null, "daily", "0.7");
+  });
+  SUBGENRES.forEach((g) => {
+    xml += urlEntry(`${SITE_URL}/explorar/${encodeURIComponent(g)}`, null, "daily", "0.5");
+  });
+  FORUM_CATS.forEach((c) => {
+    xml += urlEntry(`${SITE_URL}/foro/${c}`, null, "daily", "0.4");
   });
   novels.forEach((n) => {
     const lastmod = n.reviewed_at || n.created_at;
