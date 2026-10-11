@@ -163,6 +163,10 @@ main{max-width:1180px;margin:0 auto;padding:28px 20px 90px;position:relative;z-i
 .btn-gold:hover{filter:brightness(1.1)}
 .btn-ghost{background:none;border:1px solid var(--line);color:var(--paper)}
 .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.play-btn{display:inline-flex;align-items:center;gap:9px;text-decoration:none}
+.play-btn svg{width:16px;height:16px;flex:none}
+/* La app instalada (TWA) corre en modo standalone/fullscreen: ahí el botón de descarga sobra */
+@media (display-mode:standalone),(display-mode:fullscreen){.play-btn{display:none}}
 .btn-wax{background:none;border:1px solid var(--wax);color:var(--wax)}
 .btn-wax:hover{background:var(--wax);color:var(--paper)}
 .btn-leaf{background:none;border:1px solid var(--leaf);color:var(--leaf)}
@@ -690,7 +694,8 @@ const T={nav:{home:"Inicio",explore:"Explorar",rank:"Rankings",forum:"Foro",writ
       ["🎧","AudioNovela+","Convierte tu novela en audiolibro con narradores profesionales.","Probar gratis"]],
  statNovels:"novelas publicadas",statReaders:"lectores registrados",statChapters:"capítulos",
  footer:"asciicave.com — plataforma de novelas web para el público hispanohablante.",
- footTerms:"Términos",footPrivacy:"Privacidad",footContact:"Contacto",footAuthors:"Para autores",
+ footTerms:"Términos",footPrivacy:"Privacidad",footContact:"Contacto",footAuthors:"Para autores",footApp:"App de Android",
+ shareBtn:"↗ Compartir",linkCopied:"Enlace copiado",shareText:"Mira esta novela en AsciiCave:",
  coffeeBtn:"☕ Invítame un café",
  adultBadge:"+18",
  adultGateT:"Contenido para adultos",adultGateP:"Esta obra está marcada como +18 por su autor. Confirma que tienes la edad legal para acceder a este tipo de contenido.",
@@ -746,6 +751,17 @@ function slugify(s){
 const findNovelForPath=id=>NOVELS.find(x=>x.id===id)||MY_NOVELS.find(x=>x.id===id);
 const accountTypeLabel=v=>({lector:t().accountTypeReader,autor:t().accountTypeAuthor,ambos:t().accountTypeBoth}[v]||v);
 
+/* Compartir novela: hoja nativa en móvil; en escritorio copia el enlace al portapapeles */
+async function shareNovel(id){
+  const n=NOVELS.find(x=>x.id===id);
+  if(!n)return;
+  const url=SITE_URL+gcPath('novel',{id});
+  try{
+    if(navigator.share){await navigator.share({title:n.title,text:`${t().shareText} ${n.title}`,url});return;}
+    await navigator.clipboard.writeText(url);
+    toast(t().linkCopied);
+  }catch(e){/* el usuario cerró la hoja de compartir: no es un error */}
+}
 function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2800);}
 function toggleMenu(){state.menuOpen=!state.menuOpen;render();}
 function loadingHtml(){return `<div class="empty"><span class="e-glyph">&gt;_ ▌</span><h3>${t().loading}</h3></div>`;}
@@ -1447,6 +1463,7 @@ function vHome(){
       <div class="hero-actions">
         <button class="btn btn-gold" onclick="go('explore')">${t().heroCta1}</button>
         <button class="btn btn-ghost" onclick="go('write')">${t().heroCta2}</button>
+        <a class="btn btn-ghost play-btn" href="https://play.google.com/store/apps/details?id=com.asciicave.twa&referrer=utm_source%3Dasciicave_web%26utm_medium%3Dhero" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 2.6v18.8c0 .6.7.9 1.1.6L20.6 12.5c.4-.3.4-.8 0-1.1L5.1 2C4.7 1.7 4 2 4 2.6z"/></svg>Disponible en Google Play</a>
       </div>
       <div class="stat-row" style="margin-top:26px">
         <span><b>${list.length}</b> ${t().statNovels}</span>
@@ -1527,6 +1544,7 @@ function vNovel(){
         <button class="btn btn-gold" onclick="go('reader',{id:${n.id},ch:0})">${t().readCh1}</button>
         <button class="btn btn-ghost" onclick="toggleFollow(${n.id})">${state.follows.has(n.id)?t().following:t().follow}</button>
         <button class="btn btn-ghost" onclick="toggleFav(${n.id})">${state.favs.has(n.id)?t().faved:t().fav}</button>
+        ${n.status==='aprobada'?`<button class="btn btn-ghost" onclick="shareNovel(${n.id})">${t().shareBtn}</button>`:''}
         <button class="btn ${canRate?'btn-gold':'btn-ghost'}" ${canRate?'':'disabled'} onclick="openRating(${n.id})">${rated?t().yourRating:(readSet.has(0)?t().rate:t().rateLocked)}</button>
         ${rank?`<span class="rank-badge">🏆 ${t().rankPos.replace('{n}',rank)}</span>`:''}
         ${isOwner?`<button class="btn btn-ghost" onclick="go('editnovel',{id:${n.id}})">${t().editNovelBtn}</button>`:''}
@@ -2341,7 +2359,7 @@ function render(){
 
   $('app').innerHTML=(views[state.view]||vHome)();
   $('foot').innerHTML=`${t().footer}<div class="f-links">
-    <a href="/terminos.html">${t().footTerms}</a> · <a href="/privacidad.html">${t().footPrivacy}</a> · <a href="mailto:chriswynlive@gmail.com">${t().footContact}</a> · <a href="/escribir" onclick="return navClick(event,'write',{})">${t().footAuthors}</a>
+    <a href="/terminos.html">${t().footTerms}</a> · <a href="/privacidad.html">${t().footPrivacy}</a> · <a href="mailto:chriswynlive@gmail.com">${t().footContact}</a> · <a href="/escribir" onclick="return navClick(event,'write',{})">${t().footAuthors}</a> · <a class="play-btn" href="https://play.google.com/store/apps/details?id=com.asciicave.twa&referrer=utm_source%3Dasciicave_web%26utm_medium%3Dfooter" target="_blank" rel="noopener">${t().footApp}</a>
   </div>`;
   activateAds();
 }
