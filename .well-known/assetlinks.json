@@ -1,11 +1,16 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.asciicave.twa",
-        "sha256_cert_fingerprints": [
-          "E6:53:6A:32:84:EE:D9:D2:0D:9B:2C:30:CD:F1:1F:AA:40:21:2E:DF:5A:65:EC:BA:7C:EE:98:B4:46:F7:EB:D3",
-          "A5:E7:3A:2F:25:8F:16:04:04:EB:F0:7B:FC:60:6C:91:9B:E1:9A:16:81:7A:8F:69:F8:55:01:03:CE:99:CD:C4"
-        ]
-      }
-    }]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.asciicave.twa",
+      "sha256_cert_fingerprints": [
+        "E6:53:6A:32:84:EE:D9:D2:0D:9B:2C:30:CD:F1:1F:AA:40:21:2E:DF:5A:65:EC:BA:7C:EE:98:B4:46:F7:EB:D3",
+        "A5:E7:3A:2F:25:8F:16:04:04:EB:F0:7B:FC:60:6C:91:9B:E1:9A:16:81:7A:8F:69:F8:55:01:03:CE:99:CD:C4",
+        "48:FF:4C:4F:03:00:8A:41:9A:09:D2:64:4E:37:04:39:18:DB:E8:ED:EE:23:A6:60:3A:09:3D:F6:2E:AF:B4:7A"
+      ]
+    }
+  }
+]
