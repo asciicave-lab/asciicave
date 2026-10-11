@@ -1464,7 +1464,7 @@ function vHome(){
     ${top.length>3?`<div style="margin:26px 0">${adBlock()}</div>
     <h2 class="sec-title">${t().newArrivals}</h2>
     <p class="sec-sub">${t().newSub}</p>
-    <div class="grid">${top.slice(3).map(novelCard).join('')}</div>`:''}
+    <div class="grid">${list.slice().sort((a,b)=>new Date(b.reviewedAt||b.createdAt||0)-new Date(a.reviewedAt||a.createdAt||0)).slice(0,2).map(novelCard).join('')}</div>`:''}
     ${RECOMMENDED.length?`<h2 class="sec-title">${t().recommendedT}</h2><p class="sec-sub">${t().recommendedSub}</p><div class="grid">${RECOMMENDED.map(novelCard).join('')}</div>`:''}
   `}`;
 }
