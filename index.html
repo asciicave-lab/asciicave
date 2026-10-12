@@ -1500,13 +1500,13 @@ function vExplore(){
   let cards='';
   list.forEach((n,i)=>{cards+=novelCard(n);if(i===2)cards+=`<div style="grid-column:1/-1">${adBlock()}</div>`;});
   return `
-  <h2 class="sec-title">${t().nav.explore}</h2>
-  <p class="sec-sub">${list.length} ${t().statNovels}</p>
-  <div class="pill-picker" style="margin-bottom:22px">
+  <h1 class="sec-title">${f?`Novelas de ${esc(f)} en español`:t().nav.explore}</h1>
+  <p class="sec-sub">${f?`Descubre novelas web de ${esc(f)} en español, gratis y por capítulos, escritas por autores de la comunidad AsciiCave.`:'Explora novelas web en español por género: fantasía, LitRPG, romance, terror y mucho más.'} ${list.length} ${list.length===1?'novela publicada':'novelas publicadas'}.</p>
+  <div class="pill-picker" data-nosnippet style="margin-bottom:22px">
     <button class="pill ${!f?'sel':''}" onclick="go('explore')">Todos</button>
     ${GENRES.map(g=>`<button class="pill ${f===g?'sel':''}" onclick="go('explore',{genre:'${g}'})">${g}</button>`).join('')}
   </div>
-  <details class="sub-filter" style="margin:-8px 0 22px" ${SUBGENRES.includes(f)?'open':''}>
+  <details class="sub-filter" data-nosnippet style="margin:-8px 0 22px" ${SUBGENRES.includes(f)?'open':''}>
     <summary style="cursor:pointer;color:var(--muted);font-size:.9rem;margin-bottom:12px">Subgéneros y etiquetas (${SUBGENRES.length})</summary>
     <div class="pill-picker">
       ${SUBGENRES.map(g=>`<button class="pill ${f===g?'sel':''}" onclick="go('explore',{genre:'${g}'})">${g}</button>`).join('')}
